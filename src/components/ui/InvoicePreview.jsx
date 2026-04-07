@@ -1,7 +1,16 @@
 /* eslint-disable no-unused-vars */
+import { addressAPIs } from '@/api/addressApi/addressApis';
+import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
 import { settingsAPI } from '@/api/settings/settingsApi';
-import { getFilenameFromUrl } from '@/appUtils/helperFunctions';
+import {
+  getEnterpriseId,
+  getFilenameFromUrl,
+} from '@/appUtils/helperFunctions';
 import { cn } from '@/lib/utils';
+import {
+  addClientAddress,
+  getGstAddressesList,
+} from '@/services/address_Services/AddressServices';
 import {
   addUpdateAddress,
   getInvoicePreviewConfig,
@@ -9,16 +18,13 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { CalendarDays, Plus } from 'lucide-react';
 import moment from 'moment';
-import { useEffect, useState } from 'react';
-import { addressAPIs } from '@/api/addressApi/addressApis';
-import {
-  addClientAddress,
-  getGstAddressesList,
-} from '@/services/address_Services/AddressServices';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { getAllAssociateMembers } from '@/services/Associate_Members_Services/AssociateMembersServices';
+import { toast } from 'sonner';
+import AddNewAddress from '../enterprise/AddNewAddress';
 import PINVerifyModal from '../invoices/PINVerifyModal';
 import ViewPdf from '../pdf/ViewPdf';
-import AddAddress from '../settings/AddAddress';
 import AddBankAccount from '../settings/AddBankAccount';
 import { Button } from './button';
 import DatePickers from './DatePickers';
@@ -26,6 +32,7 @@ import ErrorBox from './ErrorBox';
 import { Input } from './input';
 import { Label } from './label';
 import Loading from './Loading';
+import { RadioGroup, RadioGroupItem } from './radio-group';
 import {
   Select,
   SelectContent,
@@ -34,7 +41,6 @@ import {
   SelectValue,
 } from './select';
 import { Textarea } from './textarea';
-import AddNewAddress from '../enterprise/AddNewAddress';
 
 const InvoicePreview = ({
   order,
@@ -57,6 +63,7 @@ const InvoicePreview = ({
   isPINError,
   setIsPINError = false,
 }) => {
+  const enterpriseId = getEnterpriseId();
   const [open, setOpen] = useState(false);
   const [invoiceDateState, setInvoiceDateState] = useState(() =>
     order?.invoiceDate ? new Date(order.invoiceDate) : new Date(),
@@ -75,6 +82,19 @@ const InvoicePreview = ({
   const [paymentTerms, setPaymentTerms] = useState('');
   const [selectedDate, setSelectedDate] = useState(null);
   const [paymentDueDate, setPaymentDueDate] = useState(null);
+  const [saveAsGstDraft, setSaveAsGstDraft] = useState(
+    order?.saveAsGstDraft !== undefined
+      ? String(order.saveAsGstDraft)
+      : 'false',
+  );
+  const [rcmClassification, setRcmClassification] = useState(
+    order?.rcmClassification !== undefined
+      ? String(order.rcmClassification)
+      : 'false',
+  );
+  const [authorizedPerson, setAuthorizedPerson] = useState(
+    order?.authorizedPersonId ? String(order.authorizedPersonId) : undefined,
+  );
   // State for social link input
   const [socialLink, setSocialLink] = useState('');
   const [isBankAccountAdding, setIsBankAccountAdding] = useState(false);
@@ -141,6 +161,22 @@ const InvoicePreview = ({
       !!selectedGst?.id,
   });
 
+  // api call to fetch authorized persons
+  const { data: authorizerdMembers, isLoading: isAuthorizedMembersLoading } =
+    useQuery({
+      queryKey: [
+        associateMemberApi.getAllAssociateMembers.endpointKey,
+        enterpriseId,
+      ],
+      queryFn: () => getAllAssociateMembers(enterpriseId),
+      onError: (error) => {
+        toast.error(
+          error.response?.data?.message || 'Failed to fetch members list',
+        );
+      },
+      select: (membersList) => membersList.data.data,
+    });
+
   const validation = (order) => {
     const errors = {};
     if (!order?.invoiceDate) {
@@ -172,7 +208,103 @@ const InvoicePreview = ({
       >
         {/* Left side: Controls */}
         {isBankAccountDetailsSelectable && isCustomerRemarksAddable && (
-          <div className="navScrollBarStyles flex h-full w-1/3 flex-col gap-4 overflow-y-auto overflow-x-hidden px-2">
+          <div className="scrollBarStyles flex h-full w-1/3 flex-col gap-4 overflow-y-auto overflow-x-hidden px-2">
+            {/*  save as gst draft with two radio - yes or no */}
+            {order?.clientType === 'B2B' && order?.orderType === 'SALES' && (
+              <div className="flex flex-col">
+                <Label className="mb-2 block text-sm font-medium">
+                  Save this invoice to GST Draft (GSTR-1 / IMS)?
+                </Label>
+                <div className="flex items-center gap-2">
+                  <RadioGroup
+                    value={saveAsGstDraft}
+                    onValueChange={(value) => {
+                      setSaveAsGstDraft(value);
+                    }}
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="true" id="save-gst-yes" />
+                      <Label htmlFor="save-gst-yes" className="cursor-pointer">
+                        Yes
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="false" id="save-gst-no" />
+                      <Label htmlFor="save-gst-no" className="cursor-pointer">
+                        No
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </div>
+            )}
+
+            {/* Select Authorized Person */}
+            {order?.clientType === 'B2B' && order?.orderType === 'SALES' && (
+              <div className="flex flex-col">
+                <Label className="mb-2 block text-sm font-medium">
+                  Select Authorized Person
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Select
+                    onValueChange={(value) => {
+                      setAuthorizedPerson(value);
+                    }}
+                    value={authorizedPerson}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select Authorized Person" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {authorizerdMembers?.map((person) => (
+                        <SelectItem key={person.id} value={person.id}>
+                          {person.invitation?.userDetails?.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
+            {/* RCM */}
+            {order?.clientType === 'B2B' && order?.orderType === 'PURCHASE' && (
+              <div className="flex flex-col">
+                <Label className="mb-2 block text-sm font-medium">
+                  RCM Classification
+                </Label>
+                <div className="flex items-center gap-2">
+                  <RadioGroup
+                    value={rcmClassification}
+                    onValueChange={(value) => {
+                      setRcmClassification(value);
+                    }}
+                    className="flex flex-col gap-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="normal" id="normal" />
+                      <Label htmlFor="normal" className="cursor-pointer">
+                        None (Normal GST)
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="gta" id="gta" />
+                      <Label htmlFor="gta" className="cursor-pointer">
+                        Goods Transport Agency (GTA)
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="advocate" id="advocate" />
+                      <Label htmlFor="advocate" className="cursor-pointer">
+                        Advocate / Advocate firm
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </div>
+            )}
+
             {/* invoice date */}
             {order?.clientType === 'B2B' && (
               <div className="flex flex-col">
@@ -196,6 +328,7 @@ const InvoicePreview = ({
                 )}
               </div>
             )}
+
             {/* gst list */}
             {invoicePreviewConfig?.gstList?.length > 0 && (
               <div>
@@ -521,9 +654,16 @@ const InvoicePreview = ({
                 billingAddressId: billingAddress,
                 shippingAddressId: shippingAddress,
                 dueDate: formatDate,
-                invoiceDate: invoiceDateState ?? null,
+                invoiceDate: invoiceDateState
+                  ? invoiceDateState.toISOString()
+                  : null,
                 selectedGstNumber: selectedGst?.gstNumber,
                 paymentTerms,
+                saveAsGstDraft: saveAsGstDraft === 'true',
+                rcmClassification,
+                authorizedPersonId: authorizedPerson
+                  ? Number(authorizedPerson)
+                  : null,
               };
 
               if (order?.clientType === 'B2B') {
@@ -581,8 +721,15 @@ const InvoicePreview = ({
                   socialLinks: socialLink,
                   billingAddressId: billingAddress,
                   shippingAddressId: shippingAddress,
-                  invoiceDate: invoiceDateState ?? null,
+                  invoiceDate: invoiceDateState
+                    ? invoiceDateState.toISOString()
+                    : null,
                   selectedGstNumber: selectedGst?.gstNumber,
+                  saveAsGstDraft: saveAsGstDraft === 'true',
+                  rcmClassification,
+                  authorizedPersonId: authorizedPerson
+                    ? Number(authorizedPerson)
+                    : null,
                 };
 
                 if (order?.clientType === 'B2B') {
@@ -611,6 +758,11 @@ const InvoicePreview = ({
             ...order,
             selectedGstNumber: selectedGst?.gstNumber,
             invoiceDate: invoiceDateState ?? null,
+            saveAsGstDraft: saveAsGstDraft === 'true',
+            rcmClassification,
+            authorizedPersonId: authorizedPerson
+              ? Number(authorizedPerson)
+              : null,
           }}
           customerRemarks={remarks}
           socialLinks={socialLink}

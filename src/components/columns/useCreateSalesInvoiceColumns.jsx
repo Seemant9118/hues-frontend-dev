@@ -6,6 +6,7 @@ import { SessionStorageService } from '@/lib/utils';
 import { Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
 
 export const useCreateSalesInvoiceColumns = (
   isOrder,
@@ -24,10 +25,11 @@ export const useCreateSalesInvoiceColumns = (
         <DataTableColumnHeader column={column} title={translations('item')} />
       ),
       cell: ({ row }) => {
-        const { productName, serviceName } = row.original;
+        const { productName, serviceName, isFromLinkedOrder } = row.original;
         return (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-start gap-2">
             <span>{productName || serviceName}</span>
+            {isFromLinkedOrder && <Badge>From Order</Badge>}
           </div>
         );
       },

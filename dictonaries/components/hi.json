@@ -209,6 +209,9 @@
             },
             "form": {
                 "label": {
+                    "source": "स्रोत",
+                    "reference_number": "संदर्भ संख्या",
+                    "linked_with_order": "ऑर्डर के साथ लिंक करें",
                     "type": "क्लाइंट प्रकार",
                     "client": "क्लाइंट",
                     "customer": "ग्राहक",
@@ -226,6 +229,8 @@
                     "amount": "कुल राशि"
                 },
                 "errorMsg": {
+                    "source": "*कृपया एक स्रोत चुनें",
+                    "reference_number": "*कृपया एक संदर्भ संख्या दर्ज करें",
                     "customer": "*कृपया एक ग्राहक जोड़ें या चुनें",
                     "client": "*कृपया एक क्लाइंट चुनें",
                     "vendor": "*कृपया एक विक्रेता चुनें",
@@ -248,6 +253,15 @@
                     "invoice_created_successfully": "चालान सफलतापूर्वक बनाया गया"
                 },
                 "input": {
+                    "source": {
+                        "placeholder": "स्रोत चुनें"
+                    },
+                    "reference_number": {
+                        "placeholder": "संदर्भ संख्या दर्ज करें"
+                    },
+                    "linked_with_order": {
+                        "placeholder": "ऑर्डर संख्या दर्ज करें"
+                    },
                     "clientType": {
                         "b2b": "बी2बी",
                         "b2c": "बी2सी"

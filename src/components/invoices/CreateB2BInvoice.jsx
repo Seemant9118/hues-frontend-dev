@@ -2,7 +2,6 @@
 /* eslint-disable no-unsafe-optional-chaining */
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
-import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { userAuth } from '@/api/user_auth/Users';
 import {
@@ -23,19 +22,29 @@ import {
   createClient,
   getClients,
 } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
-import { previewDirectInvoice } from '@/services/Invoice_Services/Invoice_Services';
-import { createInvoice } from '@/services/Orders_Services/Orders_Services';
+import {
+  createInvoiceForAcceptedOrder,
+  previewDirectInvoice,
+  previewInvoice,
+} from '@/services/Invoice_Services/Invoice_Services';
+import {
+  createInvoice,
+  GetSales,
+  OrderDetails,
+} from '@/services/Orders_Services/Orders_Services';
 import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { ChevronDown, Plus } from 'lucide-react';
+import { ChevronDown, Info, Plus } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import Select from 'react-select';
+import ReactSelect from 'react-select';
+import AsyncSelect from 'react-select/async';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
+import Tooltips from '../auth/Tooltips';
 import { useCreateSalesInvoiceColumns } from '../columns/useCreateSalesInvoiceColumns';
 import DatePickers from '../ui/DatePickers';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
@@ -45,6 +54,13 @@ import InvoicePreview from '../ui/InvoicePreview';
 import Loading from '../ui/Loading';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 import Wrapper from '../wrappers/Wrapper';
 import InvoiceTypePopover from './InvoiceTypePopover';
 
@@ -89,6 +105,12 @@ const CreateB2BInvoice = ({
   });
 
   const [order, setOrder] = useState({
+    source: b2bInvoiceDraft?.source || '',
+    invoiceReferenceNumber: b2bInvoiceDraft?.invoiceReferenceNumber || null,
+    orderId: b2bInvoiceDraft?.orderId || null,
+    selectedOrder: b2bInvoiceDraft?.selectedOrder || null,
+    saveAsGstDraft: b2bInvoiceDraft?.saveAsGstDraft || false,
+    authorizedPersonId: b2bInvoiceDraft?.authorizedPersonId || null,
     clientType: 'B2B',
     sellerEnterpriseId: enterpriseId,
     buyerId: b2bInvoiceDraft?.buyerId || null,
@@ -106,7 +128,7 @@ const CreateB2BInvoice = ({
     selectedValue: b2bInvoiceDraft?.selectedValue || null,
     selectedGstNumber: null,
     getAddressRelatedData: b2bInvoiceDraft?.getAddressRelatedData || null,
-    invoiceDate: b2bInvoiceDraft?.invoiceDate || null,
+    invoiceDate: b2bInvoiceDraft?.invoiceDate || moment().format('YYYY-MM-DD'),
   });
 
   // fetch units
@@ -223,6 +245,16 @@ const CreateB2BInvoice = ({
   const validation = ({ order }) => {
     const errorObj = {};
 
+    if (!order.source) {
+      errorObj.source = translations('form.errorMsg.source');
+    }
+
+    if (order.source !== 'hues' && !order.invoiceReferenceNumber) {
+      errorObj.invoiceReferenceNumber = translations(
+        'form.errorMsg.reference_number',
+      );
+    }
+
     if (order.clientType === 'B2B' && order?.buyerId == null) {
       errorObj.buyerId = translations('form.errorMsg.client');
     }
@@ -260,7 +292,13 @@ const CreateB2BInvoice = ({
       );
     }, 0);
 
-    return { totalAmount, totalGstAmt };
+    const totalDiscountAmt = order.orderItems.reduce(
+      (totalDisc, orderItem) =>
+        totalDisc + (Number(orderItem.discountAmount) || 0),
+      0,
+    );
+
+    return { totalAmount, totalGstAmt, totalDiscountAmt };
   };
 
   const grossAmt = order.orderItems.reduce(
@@ -268,12 +306,17 @@ const CreateB2BInvoice = ({
     0,
   );
 
-  const { totalAmount, totalGstAmt } = handleSetTotalAmt();
+  const { totalAmount, totalGstAmt, totalDiscountAmt } = handleSetTotalAmt();
   const totalAmtWithGst = totalAmount + totalGstAmt;
 
   // create invoice mutation
   const invoiceMutation = useMutation({
-    mutationFn: createInvoice,
+    mutationFn: (data) => {
+      if (data.orderId) {
+        return createInvoiceForAcceptedOrder(data);
+      }
+      return createInvoice(data);
+    },
     onSuccess: (res) => {
       toast.success(
         translations('form.successMsg.invoice_created_successfully'),
@@ -292,15 +335,33 @@ const CreateB2BInvoice = ({
     },
   });
 
+  const getMappedPayloadRows = (updatedOrder) => {
+    if (!updatedOrder.orderId) return updatedOrder.orderItems || [];
+
+    return (updatedOrder.orderItems || []).map((item) => ({
+      orderItemId: item.orderItemId || item.id,
+      quantity: Number(item.quantity) || 0,
+      unitPrice: Number(item.unitPrice) || 0,
+      gstPerUnit: Number(item.gstPerUnit) || 0,
+      totalAmount: Number(item.totalAmount) || 0,
+      totalGstAmount: Number(item.totalGstAmount) || 0,
+      productType: item.productType || updatedOrder.invoiceType || 'GOODS',
+      discountPercentage: Number(item.discountPercentage) || 0,
+      discountAmount: Number(item.discountAmount) || 0,
+    }));
+  };
+
   const handleSubmit = (updatedOrder) => {
     const isError = validation({ order: updatedOrder });
 
     if (Object.keys(isError).length === 0) {
       invoiceMutation.mutate({
         ...updatedOrder,
+        invoiceItems: getMappedPayloadRows(updatedOrder),
         buyerId: Number(updatedOrder.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
         gstAmount: parseFloat(totalGstAmt.toFixed(2)),
+        discountAmount: parseFloat(totalDiscountAmt.toFixed(2)),
       });
       setErrorMsg({});
     } else {
@@ -310,8 +371,14 @@ const CreateB2BInvoice = ({
 
   // preview invoice
   const previewInvMutation = useMutation({
-    mutationKey: [invoiceApi.previewDirectInvoice.endpointKey],
-    mutationFn: previewDirectInvoice,
+    mutationKey: ['mixed_previewInvoice'],
+    mutationFn: (data) => {
+      // If orderId is present, use previewInvoice, else use previewDirectInvoice (currently added)
+      if (data.orderId) {
+        return previewInvoice(data);
+      }
+      return previewDirectInvoice(data);
+    },
     onSuccess: (data) => {
       if (data?.data?.data) {
         const base64StrToRenderPDF = data?.data?.data;
@@ -333,10 +400,11 @@ const CreateB2BInvoice = ({
       setErrorMsg({});
       previewInvMutation.mutate({
         ...updatedOrder,
-        invoiceItems: updatedOrder.orderItems,
+        invoiceItems: getMappedPayloadRows(updatedOrder),
         buyerId: Number(updatedOrder.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
         gstAmount: parseFloat(totalGstAmt.toFixed(2)),
+        discountAmount: parseFloat(totalDiscountAmt.toFixed(2)),
       });
     } else {
       setErrorMsg(isError);
@@ -384,7 +452,9 @@ const CreateB2BInvoice = ({
 
       {!isInvoicePreview && (
         <>
+          {/* Identifiers */}
           <div className="grid grid-cols-3 gap-4 rounded-sm border border-neutral-200 p-4">
+            {/* Invoice Date */}
             <div className="flex flex-col gap-1">
               <Label className="flex gap-1">
                 {translations('form.label.invoice_date')}
@@ -397,9 +467,7 @@ const CreateB2BInvoice = ({
                     order.invoiceDate ? new Date(order.invoiceDate) : null
                   }
                   onChange={(date) => {
-                    const formattedForAPI = date
-                      ? moment(date).format('YYYY-MM-DD')
-                      : null;
+                    const formattedForAPI = date ? date.toISOString() : null;
 
                     setOrder((prev) => ({
                       ...prev,
@@ -423,7 +491,235 @@ const CreateB2BInvoice = ({
 
               {errorMsg.invoiceDate && <ErrorBox msg={errorMsg.invoiceDate} />}
             </div>
+            {/* Source */}
+            <div className="flex flex-col gap-1">
+              <Label className="flex gap-1">
+                {translations('form.label.source')}
+                <span className="text-red-600">*</span>
+              </Label>
 
+              <Select
+                value={order.source}
+                onValueChange={(value) => setOrder({ ...order, source: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={translations('form.input.source.placeholder')}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hues">Hues</SelectItem>
+                  <SelectItem value="tally">Tally</SelectItem>
+                  <SelectItem value="other">Other ERP</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {errorMsg.source && <ErrorBox msg={errorMsg.source} />}
+            </div>
+
+            {/* Refernce No. */}
+            <div className="flex flex-col gap-1">
+              <Label className="flex gap-1">
+                {translations('form.label.reference_number')}
+                {order.source !== 'hues' && (
+                  <span className="text-red-600">*</span>
+                )}
+              </Label>
+              <Input
+                type="text"
+                placeholder={translations(
+                  'form.input.reference_number.placeholder',
+                )}
+                value={order.invoiceReferenceNumber || ''}
+                onChange={(e) => {
+                  setOrder({
+                    ...order,
+                    invoiceReferenceNumber: e.target.value,
+                  });
+                }}
+              />
+              {errorMsg.invoiceReferenceNumber && (
+                <ErrorBox msg={errorMsg.invoiceReferenceNumber} />
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 rounded-sm border border-neutral-200 p-4">
+            {/* linked with Order - AsyncSelect */}
+            <div className="flex flex-col gap-1">
+              <Label className="flex gap-1">
+                {translations('form.label.linked_with_order')}
+                <Tooltips
+                  trigger={
+                    <Info
+                      size={16}
+                      className="cursor-pointer text-neutral-500"
+                    />
+                  }
+                  content="Optional: Select an order to link its items. Otherwise, a new order will be created for this invoice."
+                />
+              </Label>
+
+              <div className="flex w-full flex-col gap-1">
+                <AsyncSelect
+                  cacheOptions
+                  defaultOptions={false}
+                  name="linkedOrder"
+                  placeholder={translations(
+                    'form.input.linked_with_order.placeholder',
+                  )}
+                  loadOptions={(inputValue) =>
+                    new Promise((resolve) => {
+                      if (inputValue.length < 3) {
+                        resolve([]);
+                        return;
+                      }
+                      if (window.searchOrderTimeout)
+                        clearTimeout(window.searchOrderTimeout);
+                      window.searchOrderTimeout = setTimeout(async () => {
+                        try {
+                          const response = await GetSales({
+                            id: enterpriseId,
+                            data: {
+                              page: 1,
+                              limit: 10,
+                              searchString: inputValue,
+                              status: ['ACCEPTED'],
+                            },
+                          });
+                          const ordersData = response?.data?.data?.data || [];
+                          resolve(
+                            ordersData.map((orderItem) => ({
+                              value: orderItem.id,
+                              label:
+                                orderItem.referenceNumber ||
+                                `Order #${orderItem.id}`,
+                              originalData: orderItem,
+                            })),
+                          );
+                        } catch (e) {
+                          resolve([]);
+                        }
+                      }, 500);
+                    })
+                  }
+                  styles={getStylesForSelectComponent()}
+                  className="text-sm"
+                  classNamePrefix="select"
+                  value={order.selectedOrder || null}
+                  onChange={async (selectedOption) => {
+                    let prependedItems = order.orderItems || [];
+                    let prependedClientData = {};
+                    let prependedItemTypeData = {};
+
+                    // Fetch specific order details to prepend data
+                    if (selectedOption?.value) {
+                      try {
+                        const detailsRes = await OrderDetails(
+                          selectedOption.value,
+                        );
+                        const orderData = detailsRes?.data?.data;
+                        if (orderData) {
+                          if (orderData.orderItems) {
+                            // Format order items and add flag
+                            const formattedOrderItems =
+                              orderData.orderItems.map((item) => {
+                                const pName =
+                                  item.productType === 'GOODS'
+                                    ? item.productDetails?.productName
+                                    : item.productDetails?.serviceName;
+                                return {
+                                  ...item,
+                                  productName:
+                                    pName || item.productName || 'Unknown Item',
+                                  serviceName: pName || item.serviceName,
+                                  isFromLinkedOrder: true,
+                                };
+                              });
+
+                            // Filter out any items from the order that might already be in prependedItems.
+                            // Keep existing manually added items unaltered.
+                            const manualItems = prependedItems.filter(
+                              (i) => !i.isFromLinkedOrder,
+                            );
+                            prependedItems = [
+                              ...formattedOrderItems,
+                              ...manualItems,
+                            ];
+                          }
+
+                          // Map Client
+                          if (orderData.buyerId) {
+                            const matchedClient = clientOptions?.find(
+                              (opt) => opt.value === orderData.buyerId,
+                            );
+                            if (matchedClient) {
+                              prependedClientData = {
+                                buyerId: matchedClient.value,
+                                selectedValue: matchedClient,
+                                buyerType: matchedClient.isEnterpriseActive
+                                  ? 'ENTERPRISE'
+                                  : 'UNCONFIRMED_ENTERPRISE',
+                                getAddressRelatedData: {
+                                  clientId: matchedClient.clientId,
+                                  clientEnterpriseId:
+                                    matchedClient.clientEnterpriseId,
+                                },
+                              };
+                            }
+                          }
+
+                          // Map Item Type
+                          const apiItemType =
+                            orderData.invoiceType || orderData.orderType;
+                          if (
+                            apiItemType === 'GOODS' ||
+                            apiItemType === 'SERVICE'
+                          ) {
+                            prependedItemTypeData = {
+                              invoiceType: apiItemType,
+                            };
+                          }
+                        }
+                      } catch (error) {
+                        toast.error('Error fetching order details');
+                      }
+                    } else {
+                      // If the user clears the linked order search, remove the linked items
+                      prependedItems = prependedItems.filter(
+                        (i) => !i.isFromLinkedOrder,
+                      );
+                    }
+
+                    const updatedOrder = {
+                      ...order,
+                      ...prependedClientData,
+                      ...prependedItemTypeData,
+                      orderId: selectedOption?.value || null,
+                      selectedOrder: selectedOption || null,
+                      orderItems: prependedItems, // Update with prepended items
+                    };
+
+                    setOrder(updatedOrder);
+                    saveDraftToSession({
+                      key: 'b2bInvoiceDraft',
+                      data: updatedOrder,
+                    });
+                  }}
+                  // isSearchable
+                  // isClearable
+                  noOptionsMessage={() => 'Type at least 3 characters'}
+                  components={{
+                    DropdownIndicator: () => null,
+                    ClearIndicator: () => null,
+                  }}
+                />
+              </div>
+
+              {errorMsg.invoiceDate && <ErrorBox msg={errorMsg.invoiceDate} />}
+            </div>
+
+            {/* Client */}
             <div className="flex flex-col gap-1">
               <Label className="flex gap-1">
                 {translations('form.label.client')}
@@ -431,7 +727,7 @@ const CreateB2BInvoice = ({
               </Label>
 
               <div className="flex w-full flex-col gap-1">
-                <Select
+                <ReactSelect
                   name="clients"
                   placeholder={translations('form.input.client.placeholder')}
                   options={clientOptions}
@@ -495,13 +791,14 @@ const CreateB2BInvoice = ({
               </div>
             </div>
 
+            {/* Item Type */}
             <div className="flex flex-col gap-1">
               <Label className="flex gap-1">
                 {translations('form.label.item_type')}
                 <span className="text-red-600">*</span>
               </Label>
 
-              <Select
+              <ReactSelect
                 name="itemType"
                 placeholder={translations('form.input.item_type.placeholder')}
                 options={itemTypeOptions}
@@ -562,7 +859,7 @@ const CreateB2BInvoice = ({
                 </Label>
 
                 <div className="flex flex-col gap-1">
-                  <Select
+                  <ReactSelect
                     name="items"
                     value={
                       itemClientListingOptions?.find(
@@ -1005,6 +1302,7 @@ const CreateB2BInvoice = ({
 
       {isInvoicePreview && (
         <InvoicePreview
+          enterpriseId={enterpriseId}
           order={order}
           setOrder={setOrder}
           getAddressRelatedData={order?.getAddressRelatedData}

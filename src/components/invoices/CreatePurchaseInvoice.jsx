@@ -27,11 +27,10 @@ import { createPurchaseInvoice } from '@/services/Orders_Services/Orders_Service
 import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
-import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import Select from 'react-select';
+import ReactSelect from 'react-select';
 import { toast } from 'sonner';
 import AddModal from '../Modals/AddModal';
 import { useCreateSalesInvoiceColumns } from '../columns/useCreateSalesInvoiceColumns';
@@ -43,6 +42,13 @@ import InvoicePreview from '../ui/InvoicePreview';
 import Loading from '../ui/Loading';
 import SubHeader from '../ui/Sub-header';
 import { Button } from '../ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 import Wrapper from '../wrappers/Wrapper';
 
 const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
@@ -95,6 +101,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
     selectedGstNumber: null,
     getAddressRelatedData: purchaseInvoiceDraft?.getAddressRelatedData || null,
     invoiceDate: purchaseInvoiceDraft?.invoiceDate || null,
+    source: purchaseInvoiceDraft?.source || '',
     refrenceNumber: purchaseInvoiceDraft?.refrenceNumber || '',
   });
 
@@ -209,6 +216,10 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
       errorObj.invoiceType = translations('form.errorMsg.item_type');
     }
 
+    if (!order?.source || String(order.source).trim() === '') {
+      errorObj.source = '*Please enter Source';
+    }
+
     if (!order?.refrenceNumber || String(order.refrenceNumber).trim() === '') {
       errorObj.refrenceNumber = '*Please enter Invoice No.';
     }
@@ -242,7 +253,13 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
       );
     }, 0);
 
-    return { totalAmount, totalGstAmt };
+    const totalDiscountAmt = order.orderItems.reduce(
+      (totalDisc, orderItem) =>
+        totalDisc + (Number(orderItem.discountAmount) || 0),
+      0,
+    );
+
+    return { totalAmount, totalGstAmt, totalDiscountAmt };
   };
 
   const grossAmt = order.orderItems.reduce(
@@ -250,7 +267,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
     0,
   );
 
-  const { totalAmount, totalGstAmt } = handleSetTotalAmt();
+  const { totalAmount, totalGstAmt, totalDiscountAmt } = handleSetTotalAmt();
   const totalAmtWithGst = totalAmount + totalGstAmt;
 
   // create invoice mutation
@@ -285,6 +302,19 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
         buyerId: Number(updatedOrder.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
         gstAmount: parseFloat(totalGstAmt.toFixed(2)),
+        discountAmount: parseFloat(totalDiscountAmt.toFixed(2)),
+        invoiceItems: updatedOrder.orderItems.map((item) => ({
+          ...item,
+          productId: item.productId || item.catalogueItemId || item.id,
+          quantity: Number(item.quantity) || 0,
+          unitPrice: Number(item.unitPrice) || 0,
+          gstPerUnit: Number(item.gstPerUnit) || 0,
+          totalAmount: Number(item.totalAmount) || 0,
+          totalGstAmount: Number(item.totalGstAmount) || 0,
+          productType: item.productType || updatedOrder.invoiceType || 'GOODS',
+          discountPercentage: Number(item.discountPercentage) || 0,
+          discountAmount: Number(item.discountAmount) || 0,
+        })),
       });
       setErrorMsg({});
     } else {
@@ -317,10 +347,22 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
       setErrorMsg({});
       previewInvMutation.mutate({
         ...updatedOrder,
-        invoiceItems: updatedOrder.orderItems,
         buyerId: Number(updatedOrder.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
         gstAmount: parseFloat(totalGstAmt.toFixed(2)),
+        discountAmount: parseFloat(totalDiscountAmt.toFixed(2)),
+        invoiceItems: updatedOrder.orderItems.map((item) => ({
+          ...item,
+          productId: item.productId || item.catalogueItemId || item.id,
+          quantity: Number(item.quantity) || 0,
+          unitPrice: Number(item.unitPrice) || 0,
+          gstPerUnit: Number(item.gstPerUnit) || 0,
+          totalAmount: Number(item.totalAmount) || 0,
+          totalGstAmount: Number(item.totalGstAmount) || 0,
+          productType: item.productType || updatedOrder.invoiceType || 'GOODS',
+          discountPercentage: Number(item.discountPercentage) || 0,
+          discountAmount: Number(item.discountAmount) || 0,
+        })),
       });
     } else {
       setErrorMsg(isError);
@@ -357,20 +399,86 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
 
       {!isInvoicePreview && (
         <>
-          <div className="grid grid-cols-4 gap-4 rounded-sm border border-neutral-200 p-4">
-            {/* Invoice ID */}
+          {/* Identifiers */}
+          <div className="grid grid-cols-3 gap-4 rounded-sm border border-neutral-200 p-4">
+            {/* Invoice Date */}
             <div className="flex flex-col gap-1">
               <Label className="flex gap-1">
-                {translations('form.label.invoiceNo')}
+                {translations('form.label.invoice_date')}
                 <span className="text-red-600">*</span>
               </Label>
 
+              <div className="relative flex items-center rounded-sm border p-2">
+                <DatePickers
+                  selected={
+                    order.invoiceDate ? new Date(order.invoiceDate) : null
+                  }
+                  onChange={(date) => {
+                    const formattedForAPI = date ? date.toISOString() : null;
+
+                    setOrder((prev) => ({
+                      ...prev,
+                      invoiceDate: formattedForAPI,
+                    }));
+
+                    saveDraftToSession({
+                      key: 'purchaseInvoiceDraft',
+                      data: {
+                        ...order,
+                        invoiceDate: formattedForAPI,
+                        isGstApplicableForSelectedVendor,
+                      },
+                    });
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="dd/mm/yyyy"
+                  className="max-w-xs"
+                />
+              </div>
+
+              {errorMsg.invoiceDate && <ErrorBox msg={errorMsg.invoiceDate} />}
+            </div>
+
+            {/* Source */}
+            <div className="flex flex-col gap-1">
+              <Label className="flex gap-1">
+                {translations('form.label.source')}
+                <span className="text-red-600">*</span>
+              </Label>
+
+              <Select
+                value={order.source}
+                onValueChange={(value) => setOrder({ ...order, source: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={translations('form.input.source.placeholder')}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hues">Hues</SelectItem>
+                  <SelectItem value="tally">Tally</SelectItem>
+                  <SelectItem value="other">Other ERP</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {errorMsg.source && <ErrorBox msg={errorMsg.source} />}
+            </div>
+
+            {/* Refernce No. */}
+            <div className="flex flex-col gap-1">
+              <Label className="flex gap-1">
+                {translations('form.label.reference_number')}
+                <span className="text-red-600">*</span>
+              </Label>
               <Input
                 type="text"
-                placeholder="Enter Invoice No."
-                value={order?.refrenceNumber || ''}
+                placeholder={translations(
+                  'form.input.reference_number.placeholder',
+                )}
+                value={order.refrenceNumber || ''}
                 onChange={(e) => {
-                  const { value } = e.target;
+                  const {value} = e.target;
 
                   const updatedOrder = {
                     ...order,
@@ -395,52 +503,13 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                   }
                 }}
               />
-
               {errorMsg.refrenceNumber && (
                 <ErrorBox msg={errorMsg.refrenceNumber} />
               )}
             </div>
+          </div>
 
-            {/* Invoice Date */}
-            <div className="flex flex-col gap-1">
-              <Label className="flex gap-1">
-                {translations('form.label.invoice_date')}
-                <span className="text-red-600">*</span>
-              </Label>
-
-              <div className="relative flex items-center rounded-sm border p-2">
-                <DatePickers
-                  selected={
-                    order.invoiceDate ? new Date(order.invoiceDate) : null
-                  }
-                  onChange={(date) => {
-                    const formattedForAPI = date
-                      ? moment(date).format('YYYY-MM-DD')
-                      : null;
-
-                    setOrder((prev) => ({
-                      ...prev,
-                      invoiceDate: formattedForAPI,
-                    }));
-
-                    saveDraftToSession({
-                      key: 'purchaseInvoiceDraft',
-                      data: {
-                        ...order,
-                        invoiceDate: formattedForAPI,
-                        isGstApplicableForSelectedVendor,
-                      },
-                    });
-                  }}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="dd/mm/yyyy"
-                  className="w-full"
-                />
-              </div>
-
-              {errorMsg.invoiceDate && <ErrorBox msg={errorMsg.invoiceDate} />}
-            </div>
-
+          <div className="mt-4 grid grid-cols-2 gap-4 rounded-sm border border-neutral-200 p-4">
             {/* Vendor Select */}
             <div className="flex flex-col gap-1">
               <Label className="flex gap-1">
@@ -448,7 +517,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
               </Label>
 
               <div className="flex w-full flex-col gap-1">
-                <Select
+                <ReactSelect
                   name="vendors"
                   placeholder="Select vendor"
                   options={vendorOptions}
@@ -520,7 +589,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                 <span className="text-red-600">*</span>
               </Label>
 
-              <Select
+              <ReactSelect
                 name="itemType"
                 placeholder={translations('form.input.item_type.placeholder')}
                 options={itemTypeOptions}
@@ -585,7 +654,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                 </Label>
 
                 <div className="flex flex-col gap-1">
-                  <Select
+                  <ReactSelect
                     name="items"
                     value={
                       itemVendorListingOptions?.find(

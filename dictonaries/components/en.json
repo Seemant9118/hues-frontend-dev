@@ -209,6 +209,9 @@
             },
             "form": {
                 "label": {
+                    "source": "Source",
+                    "reference_number": "Reference Number",
+                    "linked_with_order": "Linked with Order",
                     "type": "Client Type",
                     "client": "Client",
                     "customer": "Customer",
@@ -227,6 +230,8 @@
                     "amount": "Amount"
                 },
                 "errorMsg": {
+                    "source": "*Please select a source",
+                    "reference_number": "*Please enter a reference number",
                     "customer": "*Please select a customer or add a new one",
                     "client": "*Please select a client or add a new one",
                     "vendor": "*Please select a vendor or add a new one",
@@ -249,6 +254,15 @@
                     "invoice_created_successfully": "Success! Invoice Created"
                 },
                 "input": {
+                    "source": {
+                        "placeholder": "Select Source"
+                    },
+                    "reference_number": {
+                        "placeholder": "Enter Reference Number"
+                    },
+                    "linked_with_order": {
+                        "placeholder": "Enter Order Number"
+                    },
                     "clientType": {
                         "b2b": "B2B",
                         "b2c": "B2C"
