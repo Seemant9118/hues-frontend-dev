@@ -53,31 +53,42 @@
             }
         },
         "clientDetails": {
-            "title1":"Clients",
+            "title1": "Clients",
             "title2": "Client Details",
-            "tabs":{
+            "tabs": {
                 "tab1": {
-                    "title":"Overview",
-                    "content":{
-                        "overview_labels":{
-                            "name":"Name",
-                            "enterprise_type":"Enterprise Type",
-                            "email":"Email",
-                            "phone":"Phone Number",
+                    "title": "Overview",
+                    "content": {
+                        "overview_labels": {
+                            "name": "Name",
+                            "enterprise_type": "Enterprise Type",
+                            "email": "Email",
+                            "phone": "Phone Number",
                             "address": "Enterprise Address"
                         }
                     }
                 },
                 "tab2": {
-                    "title":"Document details",
-                    "content":{
-                        "overview_labels":{
-                            "director_name":"Director Name",
-                            "director_number":"Director Phone number",
-                            "pan":"Enterprise PAN",
-                            "gst":"GST IN",
+                    "title": "Document details",
+                    "content": {
+                        "overview_labels": {
+                            "director_name": "Director Name",
+                            "director_number": "Director Phone number",
+                            "pan": "Enterprise PAN",
+                            "gst": "GST IN",
                             "cin": "CIN",
                             "udyam": "UDYAM"
+                        }
+                    }
+                },
+                "tab3": {
+                    "title": "Authorized Persons",
+                    "content": {
+                        "overview_labels": {
+                            "name": "Name",
+                            "email": "Email",
+                            "phone": "Phone Number",
+                            "address": "Enterprise Address"
                         }
                     }
                 }

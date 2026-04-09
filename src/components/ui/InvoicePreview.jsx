@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { addressAPIs } from '@/api/addressApi/addressApis';
-import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
+import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { settingsAPI } from '@/api/settings/settingsApi';
 import {
   getEnterpriseId,
@@ -20,7 +20,7 @@ import { CalendarDays, Plus } from 'lucide-react';
 import moment from 'moment';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getAllAssociateMembers } from '@/services/Associate_Members_Services/AssociateMembersServices';
+import { getClient } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { toast } from 'sonner';
 import AddNewAddress from '../enterprise/AddNewAddress';
 import PINVerifyModal from '../invoices/PINVerifyModal';
@@ -93,7 +93,7 @@ const InvoicePreview = ({
       : 'false',
   );
   const [authorizedPerson, setAuthorizedPerson] = useState(
-    order?.authorizedPersonId ? String(order.authorizedPersonId) : undefined,
+    order?.authorizedPerson || null,
   );
   // State for social link input
   const [socialLink, setSocialLink] = useState('');
@@ -161,21 +161,30 @@ const InvoicePreview = ({
       !!selectedGst?.id,
   });
 
-  // api call to fetch authorized persons
-  const { data: authorizerdMembers, isLoading: isAuthorizedMembersLoading } =
-    useQuery({
-      queryKey: [
-        associateMemberApi.getAllAssociateMembers.endpointKey,
-        enterpriseId,
-      ],
-      queryFn: () => getAllAssociateMembers(enterpriseId),
-      onError: (error) => {
-        toast.error(
-          error.response?.data?.message || 'Failed to fetch members list',
-        );
-      },
-      select: (membersList) => membersList.data.data,
-    });
+  // api call to fetch authorized persons from buyer's client details
+  const { data: authorizedPersonsList } = useQuery({
+    queryKey: [
+      clientEnterprise.getClient.endpointKey,
+      getAddressRelatedData?.clientId,
+    ],
+    queryFn: () => getClient(getAddressRelatedData?.clientId),
+    select: (res) => {
+      const clientData = res?.data?.data;
+      let metaData = clientData?.metaData;
+      if (typeof metaData === 'string') {
+        try {
+          metaData = JSON.parse(metaData);
+        } catch (e) {
+          // ignore
+        }
+      }
+      return metaData?.authorizedPerson || [];
+    },
+    enabled:
+      order?.clientType === 'B2B' &&
+      order?.orderType === 'SALES' &&
+      !!getAddressRelatedData?.clientId,
+  });
 
   const validation = (order) => {
     const errors = {};
@@ -249,17 +258,27 @@ const InvoicePreview = ({
                 <div className="flex items-center gap-2">
                   <Select
                     onValueChange={(value) => {
-                      setAuthorizedPerson(value);
+                      const selected = authorizedPersonsList?.find(
+                        (p) => String(p.id) === value,
+                      );
+                      setAuthorizedPerson(selected || null);
                     }}
-                    value={authorizedPerson}
+                    value={
+                      authorizedPerson ? String(authorizedPerson.id) : undefined
+                    }
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select Authorized Person" />
                     </SelectTrigger>
                     <SelectContent>
-                      {authorizerdMembers?.map((person) => (
-                        <SelectItem key={person.id} value={person.id}>
-                          {person.invitation?.userDetails?.name}
+                      {authorizedPersonsList?.length === 0 && (
+                        <div className="px-3 py-2 text-xs text-muted-foreground">
+                          No authorized persons found for this client.
+                        </div>
+                      )}
+                      {authorizedPersonsList?.map((person) => (
+                        <SelectItem key={person.id} value={String(person.id)}>
+                          {person.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -662,8 +681,9 @@ const InvoicePreview = ({
                 saveAsGstDraft: saveAsGstDraft === 'true',
                 rcmClassification,
                 authorizedPersonId: authorizedPerson
-                  ? Number(authorizedPerson)
+                  ? Number(authorizedPerson.id)
                   : null,
+                authorizedPerson: authorizedPerson || null,
               };
 
               if (order?.clientType === 'B2B') {
@@ -728,8 +748,9 @@ const InvoicePreview = ({
                   saveAsGstDraft: saveAsGstDraft === 'true',
                   rcmClassification,
                   authorizedPersonId: authorizedPerson
-                    ? Number(authorizedPerson)
+                    ? Number(authorizedPerson.id)
                     : null,
+                  authorizedPerson: authorizedPerson || null,
                 };
 
                 if (order?.clientType === 'B2B') {
@@ -761,8 +782,9 @@ const InvoicePreview = ({
             saveAsGstDraft: saveAsGstDraft === 'true',
             rcmClassification,
             authorizedPersonId: authorizedPerson
-              ? Number(authorizedPerson)
+              ? Number(authorizedPerson.id)
               : null,
+            authorizedPerson: authorizedPerson || null,
           }}
           customerRemarks={remarks}
           socialLinks={socialLink}

@@ -5,8 +5,7 @@
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { invitation } from '@/api/invitation/Invitation';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
-import AddModal from '@/components/Modals/AddModal';
-import EditModal from '@/components/Modals/EditModal';
+import EnterpriseForm from '@/components/Form/EnterpriseForm';
 import Tooltips from '@/components/auth/Tooltips';
 import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -36,7 +35,7 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
-import { Download, Upload } from 'lucide-react';
+import { Download, PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -74,6 +73,7 @@ const ClientPage = () => {
 
   const { hasPermission } = usePermission();
   const queryClient = useQueryClient();
+  const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingClient, setEditingClient] = useState();
   const [isUploading, setIsUploading] = useState(false);
@@ -268,138 +268,129 @@ const ClientPage = () => {
         </>
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && (
-        <div>
-          <Wrapper className="h-screen">
-            {!isUploading && (
-              <>
-                <SubHeader name={translations('title')}>
-                  <div className="flex items-center justify-center gap-2">
-                    <DebouncedInput
-                      value={searchTerm}
-                      delay={400}
-                      onDebouncedChange={setSearchTerm}
-                      placeholder="Search Clients"
+        <Wrapper className="h-screen">
+          {isAdding || isEditing ? (
+            <EnterpriseForm
+              mode={isEditing ? 'edit' : 'add'}
+              initialData={isEditing ? editingClient : null}
+              id={isEditing ? editingClient?.id : undefined}
+              cta="client"
+              mutationFunc={isEditing ? updateClient : createClient}
+              onClose={() => {
+                setIsAdding(false);
+                setIsEditing(false);
+              }}
+            />
+          ) : isUploading ? (
+            <UploadItems
+              type="client"
+              uploadFile={uploadFile}
+              files={files}
+              setisUploading={setIsUploading}
+              setFiles={setFiles}
+            />
+          ) : (
+            <>
+              <SubHeader name={translations('title')}>
+                <div className="flex items-center justify-center gap-2">
+                  <DebouncedInput
+                    value={searchTerm}
+                    delay={400}
+                    onDebouncedChange={setSearchTerm}
+                    placeholder="Search Clients"
+                  />
+                  <ProtectedWrapper
+                    permissionCode={'permission:clients-download'}
+                  >
+                    <Tooltips
+                      trigger={
+                        <Button
+                          variant={clients?.length > 0 ? 'outline' : 'export'}
+                          size="sm"
+                          onClick={() =>
+                            exportTableToExcel('clients-table', 'clients_list')
+                          }
+                          className={
+                            clients?.length === 0
+                              ? 'cursor-not-allowed'
+                              : 'cursor-pointer'
+                          }
+                        >
+                          <Download size={14} />
+                        </Button>
+                      }
+                      content={translations('ctas.tooltips.export')}
                     />
-                    <ProtectedWrapper
-                      permissionCode={'permission:clients-download'}
-                    >
-                      <Tooltips
-                        trigger={
-                          <Button
-                            variant={clients?.length > 0 ? 'outline' : 'export'}
-                            size="sm"
-                            onClick={() =>
-                              exportTableToExcel(
-                                'clients-table',
-                                'clients_list',
-                              )
-                            }
-                            className={
-                              clients?.length === 0
-                                ? 'cursor-not-allowed'
-                                : 'cursor-pointer'
-                            }
-                          >
-                            <Download size={14} />
-                          </Button>
-                        }
-                        content={translations('ctas.tooltips.export')}
-                      />
-                    </ProtectedWrapper>
-                    <ProtectedWrapper
-                      permissionCode={'permission:clients-upload'}
-                    >
-                      <Tooltips
-                        trigger={
-                          <Button
-                            variant="blue_outline"
-                            size="sm"
-                            onClick={() => setIsUploading(true)}
-                          >
-                            <Upload size={14} />
-                            {translations('ctas.upload')}
-                          </Button>
-                        }
-                        content={translations('ctas.tooltips.upload')}
-                      />
-                    </ProtectedWrapper>
+                  </ProtectedWrapper>
+                  <ProtectedWrapper
+                    permissionCode={'permission:clients-upload'}
+                  >
+                    <Tooltips
+                      trigger={
+                        <Button
+                          variant="blue_outline"
+                          size="sm"
+                          onClick={() => setIsUploading(true)}
+                        >
+                          <Upload size={14} />
+                          {translations('ctas.upload')}
+                        </Button>
+                      }
+                      content={translations('ctas.tooltips.upload')}
+                    />
+                  </ProtectedWrapper>
 
-                    <ProtectedWrapper
-                      permissionCode={'permission:clients-create'}
-                    >
-                      <Tooltips
-                        trigger={
-                          <AddModal
-                            type={'Add'}
-                            cta="client"
-                            btnName={translations('ctas.add')}
-                            mutationFunc={createClient}
-                          />
-                        }
-                        content={translations('ctas.tooltips.add')}
-                      />
-                    </ProtectedWrapper>
-                  </div>
-                </SubHeader>
-                <div className="flex-grow overflow-hidden">
-                  {isClientQueryLoading || isSearchQueryLoading ? (
-                    <Loading />
-                  ) : (
-                    <>
-                      {/* Case 1: No search term, and no data → Empty stage */}
-                      {!searchTerm && clients?.length === 0 ? (
-                        <EmptyStageComponent
-                          heading={translations('emptyStateComponent.heading')}
-                          subItems={keys}
-                        />
-                      ) : (
-                        // Case 2: Either searchTerm is present, or data is available → Show Table
-                        <ClientTable
-                          id="clients-table"
-                          columns={ClientsColumns}
-                          data={clients || []}
-                          fetchNextPage={
-                            searchTerm
-                              ? searchFetchNextPage
-                              : clientFetchNextPage
-                          }
-                          isFetching={
-                            searchTerm
-                              ? isSearchQueryFetching
-                              : isClientQueryFetching
-                          }
-                          totalPages={paginationData?.totalPages}
-                          currFetchedPage={paginationData?.currFetchedPage}
-                          onRowClick={onRowClick}
-                        />
-                      )}
-                    </>
-                  )}
+                  <ProtectedWrapper
+                    permissionCode={'permission:clients-create'}
+                  >
+                    <Tooltips
+                      trigger={
+                        <Button size="sm" onClick={() => setIsAdding(true)}>
+                          <PlusCircle size={14} className="mr-1" />
+                          {translations('ctas.add')}
+                        </Button>
+                      }
+                      content={translations('ctas.tooltips.add')}
+                    />
+                  </ProtectedWrapper>
                 </div>
-              </>
-            )}
-            {isUploading && (
-              <UploadItems
-                type="client"
-                uploadFile={uploadFile}
-                files={files}
-                setisUploading={setIsUploading}
-                setFiles={setFiles}
-              />
-            )}
-
-            {isEditing && (
-              <EditModal
-                id={editingClient.id}
-                userData={editingClient}
-                cta="client"
-                mutationFunc={updateClient}
-                isEditing={isEditing}
-                setIsEditing={setIsEditing}
-              />
-            )}
-          </Wrapper>
-        </div>
+              </SubHeader>
+              <div className="flex-grow overflow-hidden">
+                {isClientQueryLoading || isSearchQueryLoading ? (
+                  <Loading />
+                ) : (
+                  <>
+                    {/* Case 1: No search term, and no data → Empty stage */}
+                    {!searchTerm && clients?.length === 0 ? (
+                      <EmptyStageComponent
+                        heading={translations('emptyStateComponent.heading')}
+                        subItems={keys}
+                      />
+                    ) : (
+                      // Case 2: Either searchTerm is present, or data is available → Show Table
+                      <ClientTable
+                        id="clients-table"
+                        columns={ClientsColumns}
+                        data={clients || []}
+                        fetchNextPage={
+                          searchTerm ? searchFetchNextPage : clientFetchNextPage
+                        }
+                        isFetching={
+                          searchTerm
+                            ? isSearchQueryFetching
+                            : isClientQueryFetching
+                        }
+                        totalPages={paginationData?.totalPages}
+                        currFetchedPage={paginationData?.currFetchedPage}
+                        onRowClick={onRowClick}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+            </>
+          )}
+        </Wrapper>
       )}
     </ProtectedWrapper>
   );

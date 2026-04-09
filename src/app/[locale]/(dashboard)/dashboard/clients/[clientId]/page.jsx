@@ -73,6 +73,11 @@ export default function ClientDetailsPage() {
             <TabsTrigger value="document">
               {translations('tabs.tab2.title')}
             </TabsTrigger>
+            <TabsTrigger value="authorized">
+              {translations('tabs.tab3.title', {
+                defaultValue: 'Authorized Persons',
+              })}
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="overview">
             <Overview
@@ -151,6 +156,35 @@ export default function ClientDetailsPage() {
                 udyam: translations('tabs.tab2.content.overview_labels.udyam'),
               }}
             />
+          </TabsContent>
+          <TabsContent value="authorized">
+            <div className="flex flex-col gap-4 pt-2">
+              {clientDetails?.metaData?.authorizedPerson &&
+              clientDetails.metaData.authorizedPerson.length > 0 ? (
+                clientDetails.metaData.authorizedPerson.map((person) => (
+                  <div key={person.id}>
+                    <Overview
+                      data={{
+                        id: person.id,
+                        name: formatValue(person.name),
+                        email: formatValue(person.email),
+                        mobileNumber: formatValue(person.mobileNumber),
+                      }}
+                      labelMap={{
+                        id: 'Person ID',
+                        name: 'Name',
+                        email: 'Email',
+                        mobileNumber: 'Mobile Number',
+                      }}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50/50 px-6 py-12 text-center text-sm text-gray-500">
+                  No authorized persons found for this client.
+                </div>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </Wrapper>

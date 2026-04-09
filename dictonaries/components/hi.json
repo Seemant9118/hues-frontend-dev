@@ -97,6 +97,7 @@
             },
             "client": {
                 "title": "ग्राहक",
+                "editTitle": "ग्राहक को संपादित करें",
                 "form": {
                     "ctas": {
                         "identifiers": {
@@ -112,6 +113,7 @@
             },
             "vendor": {
                 "title": "विक्रेता",
+                "editTitle": "विक्रेता को संपादित करें",
                 "form": {
                     "ctas": {
                         "identifiers": {

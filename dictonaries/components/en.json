@@ -59,7 +59,7 @@
                             "email": "Please provide a valid Email id",
                             "pan": {
                                 "required": "PAN cannot be empty",
-                                "valid": "Enter a valid PAN to continuer"
+                                "valid": "Enter a valid PAN to continue"
                             },
                             "pincode": {
                                 "required": "Pincode cannot be empty",
@@ -68,7 +68,7 @@
                         }
                     },
                     "infoMsg": {
-                        "toSearch": "Search by typing a name, PAN, or ID",
+                        "toSearch": "Search by typing a PAN or GST",
                         "enterprise_not_available": "This enterprise hasn’t joined Hues yet."
                     },
                     "ctas": {
@@ -97,6 +97,7 @@
             },
             "client": {
                 "title": "Client",
+                "editTitle": "Edit Client",
                 "form": {
                     "ctas": {
                         "identifiers": {
@@ -112,6 +113,7 @@
             },
             "vendor": {
                 "title": "Vendor",
+                "editTitle": "Edit Vendor",
                 "form": {
                     "ctas": {
                         "identifiers": {

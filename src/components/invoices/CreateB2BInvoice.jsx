@@ -111,6 +111,7 @@ const CreateB2BInvoice = ({
     selectedOrder: b2bInvoiceDraft?.selectedOrder || null,
     saveAsGstDraft: b2bInvoiceDraft?.saveAsGstDraft || false,
     authorizedPersonId: b2bInvoiceDraft?.authorizedPersonId || null,
+    authorizedPerson: b2bInvoiceDraft?.authorizedPerson || null,
     clientType: 'B2B',
     sellerEnterpriseId: enterpriseId,
     buyerId: b2bInvoiceDraft?.buyerId || null,

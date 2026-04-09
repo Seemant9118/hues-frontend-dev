@@ -3,8 +3,7 @@
 import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
 import { invitation } from '@/api/invitation/Invitation';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
-import AddModal from '@/components/Modals/AddModal';
-import EditModal from '@/components/Modals/EditModal';
+import EnterpriseForm from '@/components/Form/EnterpriseForm';
 import Tooltips from '@/components/auth/Tooltips';
 import DebouncedInput from '@/components/ui/DebouncedSearchInput';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -34,7 +33,7 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -73,6 +72,7 @@ const VendorsPage = () => {
 
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingVendor, setEditingVendor] = useState();
   const [files, setFiles] = useState([]);
@@ -294,7 +294,27 @@ const VendorsPage = () => {
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <div>
           <Wrapper className="h-screen">
-            {!isUploading && (
+            {isAdding || isEditing ? (
+              <EnterpriseForm
+                mode={isEditing ? 'edit' : 'add'}
+                initialData={isEditing ? editingVendor : null}
+                id={isEditing ? editingVendor?.id : undefined}
+                cta="vendor"
+                mutationFunc={isEditing ? updateVendor : createVendor}
+                onClose={() => {
+                  setIsAdding(false);
+                  setIsEditing(false);
+                }}
+              />
+            ) : isUploading ? (
+              <UploadItems
+                type="vendor"
+                uploadFile={uploadFile}
+                files={files}
+                setisUploading={setIsUploading}
+                setFiles={setFiles}
+              />
+            ) : (
               <>
                 <SubHeader name={translations('title')}>
                   <div className="flex items-center justify-center gap-2">
@@ -352,12 +372,14 @@ const VendorsPage = () => {
                     >
                       <Tooltips
                         trigger={
-                          <AddModal
-                            type={'Add'}
-                            cta="vendor"
-                            btnName={translations('ctas.add')}
-                            mutationFunc={createVendor}
-                          />
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => setIsAdding(true)}
+                          >
+                            <Plus size={14} className="mr-1" />
+                            {translations('ctas.add')}
+                          </Button>
                         }
                         content={translations('ctas.tooltips.add')}
                       />
@@ -400,27 +422,6 @@ const VendorsPage = () => {
                   )}
                 </div>
               </>
-            )}
-
-            {isUploading && (
-              <UploadItems
-                type="vendor"
-                uploadFile={uploadFile}
-                files={files}
-                setisUploading={setIsUploading}
-                setFiles={setFiles}
-              />
-            )}
-
-            {isEditing && (
-              <EditModal
-                id={editingVendor.id}
-                userData={editingVendor}
-                cta="vendor"
-                mutationFunc={updateVendor}
-                isEditing={isEditing}
-                setIsEditing={setIsEditing}
-              />
             )}
           </Wrapper>
         </div>
