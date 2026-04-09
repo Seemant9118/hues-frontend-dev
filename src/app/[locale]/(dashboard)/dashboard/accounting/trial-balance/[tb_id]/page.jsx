@@ -3,7 +3,7 @@
 import { FeatureFlagWrapper } from '@/components/wrappers/FeatureFlagWrapper';
 
 import ReviewCorrectEntry from '@/app/[locale]/(dashboard)/dashboard/accounting/trial-balance/ReviewCorrectEntry';
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -19,133 +19,121 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { useRouter } from '@/i18n/routing';
 import { ArrowLeft, Copy, FileText, Link2 } from 'lucide-react';
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { accountingAPIs } from '@/api/accounting/accountingAPIs';
+import { getJournalEntry } from '@/services/Accounting_Services/AccountingServices';
+import Loading from '@/components/ui/Loading';
+import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 
 const statusStyles = {
-  Posted: 'bg-emerald-100 text-emerald-700 border-none',
-  Closed: 'bg-gray-200 text-gray-700 border-none',
-  Awaiting: 'bg-purple-100 text-purple-700 border-none',
-  'Draft Bundle': 'bg-amber-100 text-amber-700 border-none',
+  POSTED: 'bg-emerald-100 text-emerald-700 border-none',
+  CLOSED: 'bg-gray-200 text-gray-700 border-none',
+  AWAITING: 'bg-purple-100 text-purple-700 border-none',
+  DRAFT: 'bg-amber-100 text-amber-700 border-none',
 };
 
-/* ─── mock entry lookup ──────────────────────────────────────── */
-const ALL_ENTRIES = [
-  {
-    eventId: 'E001',
-    transactionType: 'Sales Invoice',
-    documentId: 'INV-2026-001',
-    counterparty: 'Customer A',
-    debitLedger: 'Accounts Receivable',
-    creditLedger: 'Revenue',
-    amount: '₹1,50,000',
-    status: 'Posted',
-    source: 'Sales',
-  },
-  {
-    eventId: 'E001B',
-    transactionType: 'Sales Invoice',
-    documentId: 'INV-2026-002',
-    counterparty: 'Customer B',
-    debitLedger: 'Accounts Receivable',
-    creditLedger: 'Revenue',
-    amount: '₹2,00,000',
-    status: 'Posted',
-    source: 'Sales',
-  },
-  {
-    eventId: 'E001C',
-    transactionType: 'Sales Invoice',
-    documentId: 'INV-2026-008',
-    counterparty: 'Customer C',
-    debitLedger: 'Accounts Receivable',
-    creditLedger: 'Revenue',
-    amount: '₹3,20,000',
-    status: 'Posted',
-    source: 'Sales',
-  },
-  {
-    eventId: 'E001D',
-    transactionType: 'Sales Invoice',
-    documentId: 'ORD-000150',
-    counterparty: 'Customer E',
-    debitLedger: 'Accounts Receivable',
-    creditLedger: 'Revenue',
-    amount: '₹60,000',
-    status: 'Closed',
-    source: 'Sales',
-  },
-  {
-    eventId: 'E001E',
-    transactionType: 'Sales Invoice',
-    documentId: 'ORD-000160',
-    counterparty: 'Customer F',
-    debitLedger: 'Accounts Receivable',
-    creditLedger: 'Revenue',
-    amount: '₹1,80,000',
-    status: 'Closed',
-    source: 'Sales',
-  },
-];
+const buildEntryData = (rawData) => {
+  const entry = rawData?.entry || rawData || {}; // fallback
+  const lines = rawData?.lines || entry?.lines || [];
 
-const buildEntryData = (row) => ({
-  ...row,
-  ruleId: 'R001',
-  period: 'FY2025-26-Q4',
-  lines: [
-    {
-      id: 1,
-      type: 'Debit',
-      ledger: row.debitLedger,
-      subLedger: row.counterparty,
-      amount: 150000,
-    },
-    {
-      id: 2,
-      type: 'Credit',
-      ledger: row.creditLedger,
-      subLedger: 'Sales Revenue',
-      amount: 150000,
-    },
-  ],
-  linkedDocuments: [row.documentId],
-  tAccount: {
-    debit: [
-      {
-        id: 1,
-        account: row.debitLedger,
-        sub: row.counterparty,
-        amount: 150000,
-      },
+  const mappedLines =
+    lines.length > 0
+      ? lines.map((l, index) => ({
+          id: l.id || index + 1,
+          type: l.credit ? 'Credit' : 'Debit',
+          ledger: l.accountName || l.ledger || 'Unknown Ledger',
+          subLedger: l.subLedger || entry.counterparty || 'Unknown',
+          amount: parseInt(l.credit || l.debit || l.amount, 10) || 0,
+        }))
+      : [
+          {
+            id: 1,
+            type: 'Debit',
+            ledger: entry.debitLedger || 'Unknown Ledger',
+            subLedger: entry.counterparty || 'Unknown Subledger',
+            amount: parseInt(entry.amount, 10) || 150000,
+          },
+          {
+            id: 2,
+            type: 'Credit',
+            ledger: entry.creditLedger || 'Unknown Ledger',
+            subLedger: 'Sales Revenue',
+            amount: parseInt(entry.amount, 10) || 150000,
+          },
+        ];
+
+  return {
+    ...entry,
+    documentId:
+      entry.entryNumber || entry.publicId || entry.documentId || 'Unknown',
+    transactionType: entry.journalType || entry.transactionType || 'Unknown',
+    counterparty: entry.sellerType || entry.counterparty || 'System',
+    status: entry.status || 'Unknown',
+    amount: mappedLines
+      .filter((l) => l.type === 'Debit')
+      .reduce((s, l) => s + l.amount, 0),
+    sourceModule: entry.sourceModule || 'N/A',
+    sourceRef: entry.sourceRef || entry.id || 'N/A',
+    period: entry.fiscalPeriodId || entry.period || 'N/A',
+    description: entry.description || 'No description provided.',
+    entryDate: entry.entryDate || 'N/A',
+    lines: mappedLines,
+    linkedDocuments: entry.linkedDocuments || [
+      entry.entryNumber || entry.publicId || 'No Docs',
     ],
-    credit: [{ id: 2, account: `${row.creditLedger} · Sales`, amount: 150000 }],
-  },
-  ledgerImpact: [
-    {
-      id: 1,
-      ledger: row.debitLedger,
-      subLedger: row.counterparty,
-      side: 'Debit',
-      jeAmount: 150000,
-      preJeState: 473000,
+    tAccount: entry.tAccount || {
+      debit: mappedLines
+        .filter((l) => l.type === 'Debit')
+        .map((l) => ({
+          id: l.id,
+          account: l.ledger,
+          sub: l.subLedger,
+          amount: l.amount,
+        })),
+      credit: mappedLines
+        .filter((l) => l.type === 'Credit')
+        .map((l) => ({
+          id: l.id,
+          account: l.ledger,
+          sub: l.subLedger,
+          amount: l.amount,
+        })),
     },
-    {
-      id: 2,
-      ledger: row.creditLedger,
-      subLedger: 'Sales',
-      side: 'Credit',
-      jeAmount: 150000,
-      preJeState: 65000,
-    },
-  ],
-});
+    ledgerImpact:
+      entry.ledgerImpact ||
+      mappedLines.map((l) => ({
+        id: l.id,
+        ledger: l.ledger,
+        subLedger: l.subLedger,
+        side: l.type,
+        jeAmount: l.amount,
+        preJeState: 0,
+      })),
+  };
+};
 
 const TrialBalanceEntryPage = ({ params }) => {
   const router = useRouter();
   const [isReviewing, setIsReviewing] = React.useState(false);
 
-  /* look up entry by documentId (tb_id param) */
-  const rawRow = ALL_ENTRIES.find(
-    (e) => e.documentId === decodeURIComponent(params.tb_id),
-  );
+  const entryId = decodeURIComponent(params.tb_id);
+
+  // fetch journal entry
+  const { data: entryRes, isLoading } = useQuery({
+    queryKey: [accountingAPIs.getJournalEntry.endpointKey, entryId],
+    queryFn: () => getJournalEntry({ id: entryId }),
+    enabled: !!entryId,
+  });
+
+  const rawRow = entryRes?.data?.data || entryRes?.data || null;
+
+  if (isLoading) {
+    return (
+      <Wrapper className="flex h-screen flex-col items-center justify-center gap-4 py-24 text-center">
+        <Loading />
+      </Wrapper>
+    );
+  }
 
   /* fallback if not found */
   if (!rawRow) {
@@ -182,36 +170,32 @@ const TrialBalanceEntryPage = ({ params }) => {
 
   return (
     <Wrapper className="flex min-h-screen flex-col gap-5 py-6">
-      {/* ── breadcrumb row ───────────────────────────────────── */}
-      <div className="flex items-center gap-2 text-sm">
-        <button
-          type="button"
-          onClick={() => router.push('/dashboard/accounting/trial-balance')}
-          className="font-semibold text-blue-600 hover:underline"
-        >
-          Trial Balance
-        </button>
-        <span className="text-gray-400">/</span>
-        {isReviewing ? (
-          <>
-            <button
-              type="button"
-              onClick={() => setIsReviewing(false)}
-              className="font-semibold text-blue-600 hover:underline"
-            >
-              {entry.documentId}
-            </button>
-            <span className="text-gray-400">/</span>
-            <span className="font-semibold text-gray-900">
-              Review / Correct
-            </span>
-          </>
-        ) : (
-          <span className="font-semibold text-gray-900">
-            {entry.documentId}
-          </span>
-        )}
-      </div>
+      {/* headers */}
+      <OrderBreadCrumbs
+        possiblePagesBreadcrumbs={[
+          {
+            id: 'tb-root',
+            name: 'Trial Balance',
+            path: '/dashboard/accounting/trial-balance',
+            show: true,
+          },
+          {
+            id: 'tb-[id]',
+            name: `Entry No. ${entry.documentId}`,
+            path: `/dashboard/accounting/trial-balance/${params.tb_id}`,
+            onClick: () => {
+              if (isReviewing) setIsReviewing(false);
+            },
+            show: true,
+          },
+          {
+            id: 'tb-review',
+            name: 'Review / Correct',
+            path: `/dashboard/accounting/trial-balance/${params.tb_id}`,
+            show: isReviewing,
+          },
+        ]}
+      />
 
       {/* ── Review/Correct mode ──────────────────────────────── */}
       {isReviewing ? (
@@ -221,29 +205,28 @@ const TrialBalanceEntryPage = ({ params }) => {
         />
       ) : (
         <>
-          {/* ── header ──────────────────────────────────────── */}
-          <h2 className="text-xl font-bold text-zinc-900">
-            Entry: {entry.documentId}
-          </h2>
-
           {/* ── status + action bar ──────────────────────────── */}
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-100 bg-gray-50/60 px-4 py-3">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-6">
               <Badge
-                className={`px-2.5 py-1 text-xs font-semibold ${statusStyles[entry.status] || 'bg-gray-100 text-gray-700'}`}
+                className={`px-2.5 py-1 text-xs font-semibold uppercase ${statusStyles[entry.status] || statusStyles[entry.status?.toUpperCase()] || 'border-none bg-gray-100 text-gray-700'}`}
               >
                 {entry.status}
               </Badge>
               <span className="font-semibold text-gray-900">
-                {entry.transactionType}
+                {capitalize(entry.transactionType)}
               </span>
               <span className="text-gray-400">·</span>
               <span className="text-gray-600">
-                {entry.counterparty} · {entry.amount}
+                {capitalize(entry.counterparty)}
+              </span>
+              <span className="text-gray-400">·</span>
+              <span className="text-gray-600">
+                {formattedAmount(entry.amount)}
               </span>
             </div>
             <div className="flex items-center gap-2">
-              {entry.status === 'Posted' && (
+              {/* {entry.status?.toUpperCase() !== 'POSTED' && (
                 <Button
                   size="sm"
                   className="gap-2 bg-[#163b7d] text-white hover:bg-[#0f2f63]"
@@ -251,7 +234,7 @@ const TrialBalanceEntryPage = ({ params }) => {
                 >
                   Review / Correct
                 </Button>
-              )}
+              )} */}
               <Button
                 variant="outline"
                 size="sm"
@@ -271,7 +254,7 @@ const TrialBalanceEntryPage = ({ params }) => {
             {/* LEFT — 3 cols */}
             <div className="flex flex-col gap-5 lg:col-span-3">
               {/* Journal Details */}
-              <Card className="border border-gray-200 shadow-sm">
+              <Card className="rounded-sm border border-gray-200 shadow-sm">
                 <CardContent className="p-0">
                   <div className="flex items-center gap-2 border-b px-5 py-3">
                     <FileText className="h-4 w-4 text-gray-500" />
@@ -336,29 +319,46 @@ const TrialBalanceEntryPage = ({ params }) => {
               </Card>
 
               {/* Meta row */}
-              <div className="flex flex-wrap items-center gap-8 px-1 text-sm text-gray-600">
-                <div>
+              <div className="flex flex-wrap items-start gap-8 px-1 text-sm text-gray-600">
+                <div className="flex flex-col gap-1.5">
                   <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
-                    Event ID
+                    Source
                   </span>
-                  <p className="font-semibold text-gray-800">{entry.eventId}</p>
+                  <p className="font-semibold text-gray-800">
+                    {entry.sourceModule} ({entry.sourceRef})
+                  </p>
                 </div>
-                <div>
+                <div className="flex flex-col gap-1.5">
                   <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
-                    Rule ID
+                    Date
                   </span>
-                  <p className="font-semibold text-blue-700">{entry.ruleId}</p>
+                  <p className="font-semibold text-blue-700">
+                    {entry.entryDate}
+                  </p>
                 </div>
-                <div>
+                <div className="flex flex-col gap-1.5">
                   <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
-                    Period
+                    Fiscal Period
                   </span>
-                  <p className="font-semibold text-gray-800">{entry.period}</p>
+                  <p
+                    className="max-w-[200px] truncate font-semibold text-gray-800"
+                    title={entry.period}
+                  >
+                    {entry.period}
+                  </p>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
+                    Description
+                  </span>
+                  <p className="max-w-[300px] italic text-gray-800">
+                    {entry.description}
+                  </p>
                 </div>
               </div>
 
               {/* Linked Documents */}
-              <Card className="border border-gray-200 shadow-sm">
+              <Card className="rounded-sm border border-gray-200 shadow-sm">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 pb-3">
                     <Link2 className="h-4 w-4 text-gray-500" />
@@ -384,7 +384,7 @@ const TrialBalanceEntryPage = ({ params }) => {
             {/* RIGHT — 2 cols */}
             <div className="flex flex-col gap-5 lg:col-span-2">
               {/* T-Account */}
-              <Card className="border border-gray-200 shadow-sm">
+              <Card className="rounded-sm border border-gray-200 shadow-sm">
                 <CardContent className="p-0">
                   <div className="flex items-center justify-between border-b px-5 py-3">
                     <span className="text-sm font-bold text-gray-900">
@@ -466,7 +466,7 @@ const TrialBalanceEntryPage = ({ params }) => {
               </Card>
 
               {/* Ledger Impact */}
-              <Card className="border border-gray-200 shadow-sm">
+              <Card className="rounded-sm border border-gray-200 shadow-sm">
                 <CardContent className="p-0">
                   <div className="border-b px-5 py-3">
                     <span className="text-xs font-bold uppercase tracking-wider text-gray-500">

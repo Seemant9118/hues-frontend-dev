@@ -19,6 +19,12 @@ import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import TimelineItem from '@/components/ui/TimelineItem';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -35,11 +41,22 @@ import {
   bulkNegotiateAcceptOrReject,
   OrderDetails,
   remindOrder,
+  updateOrderForUnrepliedSales,
   viewOrderinNewTab,
 } from '@/services/Orders_Services/Orders_Services';
 import { stockOut } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Eye } from 'lucide-react';
+import {
+  Check,
+  Eye,
+  FileText,
+  Handshake,
+  IndianRupee,
+  MoreVertical,
+  Package,
+  Pencil,
+  X,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -297,6 +314,7 @@ const ViewOrder = () => {
     },
   });
 
+  // for order withdraw
   const withdrawOrderMutation = useMutation({
     mutationKey: [invoiceApi.withDrawOrder.endpointKey],
     mutationFn: withDrawOrder,
@@ -338,6 +356,27 @@ const ViewOrder = () => {
     },
   });
 
+  // for making invoice of unrreplied order
+  const unRepliedInvoiceMutation = useMutation({
+    mutationFn: updateOrderForUnrepliedSales,
+    onSuccess: (res) => {
+      toast.success(translations('successMsg.invoice_generate_success'));
+      setModalData((prev) => ({
+        ...prev,
+        isOpen: false,
+      }));
+      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+      router.push(
+        `/dashboard/sales/sales-orders/${res?.data?.data?.newOrderId}?state=generateInvoice`,
+      );
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.message || translations('errorMsg.common'),
+      );
+    },
+  });
+
   const OrderColumns = useSalesOrderColumns(orderDetails?.negotiationStatus);
 
   // multiStatus components
@@ -357,6 +396,211 @@ const ViewOrder = () => {
       />
     </div>
   );
+
+  // maintain ctas in sales order
+  const ctaList = [];
+  if (orderDetails) {
+    // negotiation ctas
+    if (
+      !isGenerateInvoice &&
+      !isNegotiation &&
+      !isRecordingPayment &&
+      !viewNegotiationHistory
+    ) {
+      if (hasPermission('permission:sales-negotiation')) {
+        if (
+          tab === 'overview' &&
+          orderDetails?.negotiationStatus === 'NEW' &&
+          orderDetails?.sellerEnterpriseId === enterpriseId
+        ) {
+          if (orderDetails?.orderType === 'PURCHASE' && !isNegotiation) {
+            ctaList.push({
+              icon: <Handshake size={14} />,
+              label: translations('ctas.footer_ctas.negotiate'),
+              onClick: () => setIsNegotiation(true),
+              variant: 'blue_outline',
+            });
+            ctaList.push({
+              icon: <Check size={14} />,
+              label: acceptMutation.isPending ? (
+                <Loading size={14} />
+              ) : (
+                translations('ctas.footer_ctas.accept')
+              ),
+              onClick: handleAccept,
+              disabled: acceptMutation.isPending,
+              variant: 'default',
+            });
+          }
+        }
+        if (
+          tab === 'overview' &&
+          orderDetails?.negotiationStatus === 'NEGOTIATION' &&
+          orderDetails?.sellerEnterpriseId === enterpriseId &&
+          !viewNegotiationHistory
+        ) {
+          if (orderDetails?.orderStatus === 'BID_SUBMITTED' && !isNegotiation) {
+            ctaList.push({
+              icon: <Handshake size={14} />,
+              label: translations('ctas.footer_ctas.negotiate'),
+              onClick: () => setIsNegotiation(true),
+              variant: 'blue_outline',
+            });
+            ctaList.push({
+              icon: <Check size={14} />,
+              label: translations('ctas.footer_ctas.accept'),
+              onClick: handleAccept,
+              variant: 'default',
+            });
+          }
+        }
+      }
+    }
+
+    // record payment CTA
+    if (
+      !isGenerateInvoice &&
+      !isRecordingPayment &&
+      (orderDetails.negotiationStatus === 'INVOICED' ||
+        orderDetails?.negotiationStatus === 'PARTIAL_INVOICED') &&
+      orderDetails?.metaData?.payment?.status !== 'PAID' &&
+      !viewNegotiationHistory
+    ) {
+      if (hasPermission('permission:sales-create-payment')) {
+        ctaList.push({
+          icon: <IndianRupee size={14} />,
+          label: translations('ctas.record_payment'),
+          onClick: () => setIsRecordingPayment(true),
+          variant: 'blue_outline',
+        });
+      }
+    }
+
+    // revise CTA
+    if (
+      !isGenerateInvoice &&
+      !isRecordingPayment &&
+      !isNegotiation &&
+      orderDetails.orderType === 'SALES' &&
+      enterpriseId.toString() === orderDetails.sellerEnterpriseId.toString() &&
+      orderDetails.negotiationStatus !== 'WITHDRAWN' &&
+      orderDetails.negotiationStatus !== 'ACCEPTED' &&
+      orderDetails.negotiationStatus !== 'INVOICED' &&
+      orderDetails.negotiationStatus !== 'PARTIAL_INVOICED' &&
+      !viewNegotiationHistory
+    ) {
+      if (hasPermission('permission:sales-edit')) {
+        ctaList.push({
+          icon: <Pencil size={14} />,
+          label: translations('ctas.more.revise'),
+          onClick: () => {
+            if (orderDetails?.invoiceType === 'GOODS') {
+              setIsEditingOrder(true);
+            } else {
+              setIsEditingServiceOrder(true);
+            }
+          },
+          variant: 'blue_outline',
+        });
+      }
+    }
+
+    // generateInvoice CTA
+    if (
+      !isGenerateInvoice &&
+      !isRecordingPayment &&
+      !orderDetails?.invoiceGenerationCompleted &&
+      (orderDetails?.negotiationStatus === 'ACCEPTED' ||
+        orderDetails?.negotiationStatus === 'PARTIAL_INVOICED' ||
+        (orderDetails.negotiationStatus === 'NEW' &&
+          orderDetails?.orderType === 'SALES')) &&
+      !viewNegotiationHistory
+    ) {
+      if (hasPermission('permission:sales-invoice-create')) {
+        ctaList.push({
+          icon: <FileText size={14} />,
+          label: translations('ctas.generate_invoice'),
+          onClick: () => {
+            if (
+              orderDetails?.buyerType === 'UNINVITED-ENTERPRISE' &&
+              orderDetails?.metaData?.sellerData?.orderStatus === 'OFFER_SENT'
+            ) {
+              acceptOrderMutation.mutate({ orderId: Number(params.order_id) });
+            } else if (
+              orderDetails?.buyerType === 'ENTERPRISE' &&
+              orderDetails?.metaData?.sellerData?.orderStatus === 'OFFER_SENT'
+            ) {
+              setModalData({
+                isOpen: true,
+                title: 'Enterprise Offer Pending',
+                description:
+                  'Your client hasn’t replied to this order yet. Proceeding will accept the order and allow you to create an invoice. Would you like to proceed?',
+                buttons: [
+                  {
+                    label: 'Remind',
+                    variant: 'outline',
+                    onClick: () => remindOrderMutation.mutate(),
+                  },
+                  {
+                    label: 'Proceed, anyway',
+                    onClick: () => {
+                      unRepliedInvoiceMutation.mutate({
+                        orderId: Number(params.order_id),
+                        amount: orderDetails?.amount,
+                        gstAmount: orderDetails?.gstAmount,
+                        orderItems: orderDetails?.orderItems,
+                      });
+                    },
+                  },
+                ],
+              });
+            } else {
+              setIsGenerateInvoice(true);
+            }
+          },
+          variant: 'blue_outline',
+        });
+      }
+    }
+
+    // stock-out CTA
+    if (
+      !isGenerateInvoice &&
+      !isRecordingPayment &&
+      !orderDetails?.invoiceGenerationCompleted &&
+      orderDetails?.negotiationStatus === 'ACCEPTED' &&
+      orderDetails?.metaData?.sellerData?.stockOut === 'STOCK_OUT' &&
+      !viewNegotiationHistory
+    ) {
+      if (hasPermission('permission:sales-stock-out')) {
+        ctaList.push({
+          icon: <Package size={14} />,
+          label: translations('ctas.stock-out'),
+          onClick: () =>
+            stockOutMutation.mutate({
+              enterpriseId: Number(enterpriseId),
+              orderId: Number(params.order_id),
+            }),
+          variant: 'blue_outline',
+        });
+      }
+    }
+
+    // withdraw cta
+    if (
+      orderDetails?.negotiationStatus === 'NEW' &&
+      orderDetails?.metaData?.sellerData?.orderStatus === 'OFFER_SENT'
+    ) {
+      if (hasPermission('permission:sales-edit')) {
+        ctaList.push({
+          icon: <X size={14} />,
+          label: translations('ctas.withdraw.cta'),
+          onClick: () => setWithdrawModalOpen(true),
+          variant: 'blue_outline',
+        });
+      }
+    }
+  }
 
   return (
     <ProtectedWrapper permissionCode={'permission:sales-view'}>
@@ -435,271 +679,50 @@ const ViewOrder = () => {
                       />
                     )}
 
-                  {/* negotiation ctas */}
-                  {!isGenerateInvoice &&
-                    !isNegotiation &&
-                    !isRecordingPayment &&
-                    !viewNegotiationHistory && (
-                      <ProtectedWrapper
-                        permissionCode={'permission:sales-negotiation'}
+                  {/* Dynamic CTAs */}
+                  {ctaList.length <= 2 ? (
+                    ctaList.map((cta) => (
+                      <Button
+                        key={cta.label}
+                        size="sm"
+                        variant={cta.variant || 'default'}
+                        onClick={cta.onClick}
+                        disabled={cta.disabled}
+                        className={cta.className || 'item-center flex gap-1'}
                       >
-                        <section className="flex gap-2">
-                          {/* status NEW */}
-                          {tab === 'overview' &&
-                            !isGenerateInvoice &&
-                            !isRecordingPayment &&
-                            orderDetails?.negotiationStatus === 'NEW' &&
-                            orderDetails?.sellerEnterpriseId ===
-                              enterpriseId && (
-                              <>
-                                {orderDetails?.orderType === 'PURCHASE' && (
-                                  <div className="flex w-full justify-end gap-2">
-                                    {!isNegotiation && (
-                                      <>
-                                        <Button
-                                          size="sm"
-                                          variant="blue_outline"
-                                          onClick={() => setIsNegotiation(true)}
-                                        >
-                                          {translations(
-                                            'ctas.footer_ctas.negotiate',
-                                          )}
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          onClick={handleAccept}
-                                          disabled={acceptMutation.isPending}
-                                        >
-                                          {acceptMutation.isPending ? (
-                                            <Loading size={14} />
-                                          ) : (
-                                            translations(
-                                              'ctas.footer_ctas.accept',
-                                            )
-                                          )}
-                                        </Button>
-                                      </>
-                                    )}
-                                  </div>
-                                )}
-                              </>
-                            )}
-                          {/* status NEGOTIATION */}
-                          {tab === 'overview' &&
-                            !isGenerateInvoice &&
-                            !isRecordingPayment &&
-                            orderDetails?.negotiationStatus === 'NEGOTIATION' &&
-                            orderDetails?.sellerEnterpriseId === enterpriseId &&
-                            !viewNegotiationHistory && (
-                              <>
-                                {orderDetails?.orderStatus ===
-                                  'BID_SUBMITTED' && (
-                                  <div className="flex w-full justify-end gap-2">
-                                    {!isNegotiation && (
-                                      <>
-                                        <Button
-                                          size="sm"
-                                          variant="blue_outline"
-                                          onClick={() => setIsNegotiation(true)}
-                                        >
-                                          {translations(
-                                            'ctas.footer_ctas.negotiate',
-                                          )}
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          onClick={handleAccept}
-                                        >
-                                          {translations(
-                                            'ctas.footer_ctas.accept',
-                                          )}
-                                        </Button>
-                                      </>
-                                    )}
-                                  </div>
-                                )}
-                                {/* {orderDetails?.orderStatus === 'OFFER_SUBMITTED' && (
-                        <span className="flex items-center gap-1 rounded-sm border border-[#A5ABBD24] bg-[#F5F6F8] px-4 py-2 text-sm font-semibold">
-                          <Clock size={12} />{' '}
-                          {translations('ctas.footer_ctas.wait_response')}
-                        </span>
-                      )} */}
-                              </>
-                            )}
-                        </section>
-                      </ProtectedWrapper>
-                    )}
-
-                  {/* record payment CTA */}
-                  {!isGenerateInvoice &&
-                    !isRecordingPayment &&
-                    (orderDetails.negotiationStatus === 'INVOICED' ||
-                      orderDetails?.negotiationStatus === 'PARTIAL_INVOICED') &&
-                    orderDetails?.metaData?.payment?.status !== 'PAID' &&
-                    !viewNegotiationHistory && (
-                      <ProtectedWrapper
-                        permissionCode={'permission:sales-create-payment'}
-                      >
+                        {cta.icon}
+                        {cta.label}
+                      </Button>
+                    ))
+                  ) : (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
                         <Button
-                          variant="blue_outline"
                           size="sm"
-                          onClick={() => setIsRecordingPayment(true)}
-                          className="font-bold"
+                          variant="outline"
+                          className="px-2 font-bold"
                         >
-                          {translations('ctas.record_payment')}
+                          <MoreVertical className="h-4 w-4" />
                         </Button>
-                      </ProtectedWrapper>
-                    )}
-                  {/* revise CTA */}
-                  {!isGenerateInvoice &&
-                    !isRecordingPayment &&
-                    !isNegotiation &&
-                    orderDetails.orderType === 'SALES' &&
-                    enterpriseId.toString() ===
-                      orderDetails.sellerEnterpriseId.toString() &&
-                    orderDetails.negotiationStatus !== 'WITHDRAWN' &&
-                    orderDetails.negotiationStatus !== 'ACCEPTED' &&
-                    orderDetails.negotiationStatus !== 'INVOICED' &&
-                    orderDetails.negotiationStatus !== 'PARTIAL_INVOICED' &&
-                    !viewNegotiationHistory && (
-                      <ProtectedWrapper permissionCode="permission:sales-edit">
-                        <Button
-                          variant="blue_outline"
-                          size="sm"
-                          onClick={() => {
-                            if (orderDetails?.invoiceType === 'GOODS') {
-                              setIsEditingOrder(true);
-                            } else {
-                              setIsEditingServiceOrder(true);
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {ctaList.map((cta) => (
+                          <DropdownMenuItem
+                            key={cta.label}
+                            onClick={cta.onClick}
+                            disabled={cta.disabled}
+                            className={
+                              cta.className ||
+                              'item-center flex cursor-pointer gap-2 font-medium'
                             }
-                          }}
-                          className="font-bold"
-                        >
-                          {translations('ctas.more.revise')}
-                        </Button>
-                      </ProtectedWrapper>
-                    )}
-
-                  {/* generateInvoice CTA */}
-                  {!isGenerateInvoice &&
-                    !isRecordingPayment &&
-                    !orderDetails?.invoiceGenerationCompleted &&
-                    (orderDetails?.negotiationStatus === 'ACCEPTED' ||
-                      orderDetails?.negotiationStatus === 'PARTIAL_INVOICED' ||
-                      (orderDetails.negotiationStatus === 'NEW' &&
-                        orderDetails?.orderType === 'SALES')) &&
-                    !viewNegotiationHistory && (
-                      <ProtectedWrapper
-                        permissionCode={'permission:sales-invoice-create'}
-                      >
-                        <Button
-                          variant="blue_outline"
-                          size="sm"
-                          onClick={() => {
-                            // Case 1: Uninvited enterprise
-                            // Directly accept the order without showing a modal.
-                            if (
-                              orderDetails?.buyerType ===
-                                'UNINVITED-ENTERPRISE' &&
-                              orderDetails?.metaData?.sellerData
-                                ?.orderStatus === 'OFFER_SENT'
-                            ) {
-                              acceptOrderMutation.mutate({
-                                orderId: Number(params.order_id),
-                              });
-                            }
-
-                            // Case 2: Confirmed enterprise but no reply
-                            else if (
-                              orderDetails?.buyerType === 'ENTERPRISE' &&
-                              orderDetails?.metaData?.sellerData
-                                ?.orderStatus === 'OFFER_SENT'
-                            ) {
-                              setModalData({
-                                isOpen: true,
-                                title: 'Enterprise Offer Pending',
-                                description:
-                                  'Your client hasn’t replied to this order yet. Proceeding will accept the order and allow you to create an invoice. Would you like to proceed?',
-                                buttons: [
-                                  {
-                                    label: 'Remind',
-                                    variant: 'outline',
-                                    className: 'w-36',
-                                    onClick: () => remindOrderMutation.mutate(),
-                                  },
-                                  {
-                                    label: 'Proceed, anyway',
-                                    className:
-                                      'w-36 bg-blue-600 text-white hover:bg-blue-700',
-                                    onClick: () => {
-                                      // Withdraw (create invoice for NEW order flow) and proceed
-                                      withdrawOrderMutation.mutate({
-                                        orderId: Number(params.order_id),
-                                        amount: orderDetails?.amount,
-                                        gstAmount: orderDetails?.gstAmount,
-                                        orderItems: orderDetails?.orderItems,
-                                      });
-                                    },
-                                  },
-                                ],
-                              });
-                            }
-
-                            // Case 3: Direct invoice generation
-                            else {
-                              setIsGenerateInvoice(true);
-                            }
-                          }}
-                          className="font-bold"
-                        >
-                          {translations('ctas.generate_invoice')}
-                        </Button>
-                      </ProtectedWrapper>
-                    )}
-
-                  {/* stock-out CTA */}
-                  {!isGenerateInvoice &&
-                    !isRecordingPayment &&
-                    !orderDetails?.invoiceGenerationCompleted &&
-                    orderDetails?.negotiationStatus === 'ACCEPTED' &&
-                    orderDetails?.metaData?.sellerData?.stockOut ===
-                      'STOCK_OUT' &&
-                    !viewNegotiationHistory && (
-                      <ProtectedWrapper
-                        permissionCode={'permission:sales-stock-out'}
-                      >
-                        <Button
-                          variant="blue_outline"
-                          size="sm"
-                          onClick={() =>
-                            stockOutMutation.mutate({
-                              enterpriseId: Number(enterpriseId),
-                              orderId: Number(params.order_id),
-                            })
-                          }
-                          className="font-bold"
-                        >
-                          {translations('ctas.stock-out')}
-                        </Button>
-                      </ProtectedWrapper>
-                    )}
-
-                  {/* withdraw cta */}
-                  {orderDetails?.negotiationStatus === 'NEW' &&
-                    orderDetails?.metaData?.sellerData?.orderStatus ===
-                      'OFFER_SENT' && (
-                      <ProtectedWrapper
-                        permissionCode={'permission:sales-edit'}
-                      >
-                        <Button
-                          variant="blue_outline"
-                          size="sm"
-                          onClick={() => setWithdrawModalOpen(true)}
-                        >
-                          {translations('ctas.withdraw.cta')}
-                        </Button>
-                      </ProtectedWrapper>
-                    )}
+                          >
+                            {cta.icon}
+                            {cta.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
               </section>
 
