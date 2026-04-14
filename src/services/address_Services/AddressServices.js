@@ -25,7 +25,7 @@ export const getDataFromPinCode = (pincode) => {
   );
 };
 
-export const addClientAddress = (data) => {
+export const addClientAddress = ({ data }) => {
   return APIinstance.post(`${addressAPIs.addAddressClient.endpoint}`, data);
 };
 

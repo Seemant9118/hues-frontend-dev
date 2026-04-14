@@ -11,6 +11,7 @@ import {
   addClientAddress,
   getGstAddressesList,
 } from '@/services/address_Services/AddressServices';
+import { getClient } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import {
   addUpdateAddress,
   getInvoicePreviewConfig,
@@ -20,8 +21,6 @@ import { CalendarDays, Plus } from 'lucide-react';
 import moment from 'moment';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getClient } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
-import { toast } from 'sonner';
 import AddNewAddress from '../enterprise/AddNewAddress';
 import PINVerifyModal from '../invoices/PINVerifyModal';
 import ViewPdf from '../pdf/ViewPdf';
@@ -397,6 +396,7 @@ const InvoicePreview = ({
                 {/* address */}
                 {isBiilingAddressAdding && (
                   <AddNewAddress
+                    clientId={getAddressRelatedData?.clientId}
                     isAddressAdding={isBiilingAddressAdding}
                     setIsAddressAdding={setIsBillingAddressAdding}
                     mutationKey={

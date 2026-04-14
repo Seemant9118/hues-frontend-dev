@@ -34,6 +34,7 @@ const ProfileInfoPopUp = ({
   addAnotherCta,
   logoutCta,
   accessDeniedCta,
+  collapsed = false,
 }) => {
   const translations = useTranslations();
   const pathName = usePathname();
@@ -139,7 +140,7 @@ const ProfileInfoPopUp = ({
       LocalStorageService.remove('switchedEnterpriseId');
       LocalStorageService.remove('switchedEnterpriseName');
 
-      // ✅ store success flag for after reload
+      // store success flag for after reload
       LocalStorageService.set(
         'switchSuccessMessage',
         'Enterprise reverted to admin view',
@@ -191,8 +192,13 @@ const ProfileInfoPopUp = ({
         <Button
           debounceTime={0}
           variant="ghost"
+          aria-label={translations(ctaName)}
+          aria-expanded={open}
           className={cn(
-            'flex w-full justify-start gap-2.5 rounded-sm border px-3 py-5 text-sm font-normal transition',
+            'flex rounded-sm border text-sm font-normal transition',
+            collapsed
+              ? 'h-10 w-full items-center justify-center px-2 py-2'
+              : 'w-full justify-start gap-2.5 px-3 py-5',
             open
               ? 'border-black bg-gray-100 text-gray-900 hover:bg-gray-100'
               : pathName.includes('enterprise-profile')
@@ -202,10 +208,15 @@ const ProfileInfoPopUp = ({
           size="sm"
         >
           <Building2 size={14} />
-          {translations(ctaName)}
+          {!collapsed && translations(ctaName)}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="absolute bottom-2 left-28 flex max-h-[400px] w-[350px] flex-col gap-5">
+      <PopoverContent
+        side="right"
+        align="end"
+        sideOffset={14}
+        className="flex max-h-[400px] w-[350px] flex-col gap-5"
+      >
         {/* enterprise information */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

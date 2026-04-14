@@ -7,7 +7,7 @@ import {
 
 export default function Tooltips({ trigger, content }) {
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="inline-block cursor-pointer">{trigger}</span>

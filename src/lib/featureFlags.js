@@ -1,6 +1,6 @@
 export const FEATURE_FLAGS = {
   ACCOUNTING: {
-    enabled: false, // Disable entire module if needed
+    enabled: process.env.NEXT_PUBLIC_NODE_ENV === 'dev', // only visible in dev
     label: 'Accounting Module',
     routePrefixes: ['/dashboard/accounting'],
     subModules: {
