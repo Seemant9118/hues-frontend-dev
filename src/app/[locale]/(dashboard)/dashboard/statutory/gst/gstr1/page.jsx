@@ -9,6 +9,7 @@ import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
 import AuthenticationExpired from '@/components/gst/AuthenticationExpired';
 import GSTOTPDialog from '@/components/gst/GSTOTPDialog';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import GSTR1SummaryModal from '@/components/statutory/GSTR1SummaryModal';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,8 +24,10 @@ import { LocalStorageService } from '@/lib/utils';
 import {
   checkGSTAuth,
   filingGSTR1,
-  finalizeGSTR1,
+  filingOTPGenrate,
+  finalizedGSTR1,
   getInvoicesByPeriod,
+  getSummaryBeforeFiling,
   requestGSTOTP,
   saveDraftGSTR1,
   verifyGSTOTP,
@@ -63,6 +66,11 @@ const GSTR1 = () => {
   const [paginationData, setPaginationData] = useState({});
   const [selectedInvoicesToFile, setSelectedInvoicesToFile] = useState([]);
   const [authExpiredModalOpen, setAuthExpiredModalOpen] = useState(false);
+  /* eslint-disable-next-line no-unused-vars */
+  const [isFinalized, setIsFinalized] = useState(false);
+  const [summaryModalOpen, setSummaryModalOpen] = useState(false);
+  const [filingOTPDialogOpen, setFilingOTPDialogOpen] = useState(false);
+  const [summaryData, setSummaryData] = useState(null);
   const isFirstLoad = useRef(true);
 
   // Handle tab change
@@ -235,7 +243,7 @@ const GSTR1 = () => {
       setAuthExpiredModalOpen(true);
     }
   };
-
+  // delete draft mutation
   const handleDeleteDraft = async () => {
     try {
       const res = await refetchGstAuth();
@@ -263,7 +271,7 @@ const GSTR1 = () => {
 
   // finalize mutation
   const finalizeMutation = useMutation({
-    mutationFn: finalizeGSTR1,
+    mutationFn: finalizedGSTR1,
     onSuccess: () => {
       toast.success('GSTR-1 finalized successfully!');
       // Refetch invoices for GST filing
@@ -297,7 +305,50 @@ const GSTR1 = () => {
     }
   };
 
-  // filing mutation
+  // get summary mutation
+  const getSummaryMutation = useMutation({
+    mutationFn: getSummaryBeforeFiling,
+    onSuccess: (res) => {
+      setSummaryData(res?.data?.data);
+      setSummaryModalOpen(true);
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || 'Failed to fetch summary.');
+    },
+  });
+  const handleFile = async () => {
+    try {
+      const res = await refetchGstAuth();
+      const authData = res?.data;
+      if (authData?.isAuthenticated !== true) {
+        setAuthExpiredModalOpen(true);
+        return;
+      }
+      getSummaryMutation.mutate({ period });
+    } catch (error) {
+      setAuthExpiredModalOpen(true);
+    }
+  };
+
+  // generate filing otp mutation
+  const generateFilingOTPMutation = useMutation({
+    mutationFn: filingOTPGenrate,
+    onSuccess: () => {
+      toast.success('OTP sent successfully for filing');
+      setSummaryModalOpen(false);
+      setFilingOTPDialogOpen(true);
+    },
+    onError: (error) => {
+      toast.error(
+        error?.response?.data?.message || 'Failed to generate filing OTP.',
+      );
+    },
+  });
+
+  const handleConfirmSummary = () => {
+    generateFilingOTPMutation.mutate({ period });
+  };
+
   const filingMutation = useMutation({
     mutationFn: filingGSTR1,
     onSuccess: () => {
@@ -315,26 +366,17 @@ const GSTR1 = () => {
       );
     },
   });
-  const handleFile = async () => {
-    try {
-      const res = await refetchGstAuth();
-      const authData = res?.data;
 
-      const isAuthenticated = authData?.isAuthenticated === true;
-
-      if (!isAuthenticated) {
-        setAuthExpiredModalOpen(true);
-        return;
-      }
-
-      filingMutation.mutate({
-        period,
-        data: b2bInvoices,
-      });
-    } catch (error) {
-      setAuthExpiredModalOpen(true);
-    }
+  const handleFilingOTPVerify = (otp) => {
+    filingMutation.mutate({
+      period,
+      data: { otp, invoices: b2bInvoices },
+    });
   };
+
+  const isAllDraft =
+    b2bInvoices?.length > 0 &&
+    b2bInvoices.every((inv) => inv.gstr1Filed?.isDraft === true);
 
   const gstColumns = useInvoicesForGSTFilingColumns({
     setSelectedInvoicesToFile,
@@ -412,16 +454,31 @@ const GSTR1 = () => {
 
               <Button
                 size="sm"
-                disabled={selectedInvoicesToFile.length === 0}
+                disabled={selectedInvoicesToFile.length === 0 || isFinalized}
                 onClick={handleSaveDraft}
               >
                 Save Draft {`(${selectedInvoicesToFile.length})`}
               </Button>
 
-              <Button size="sm" variant="secondary" onClick={handleFinalize}>
-                Finalize
-              </Button>
-              <Button size="sm" onClick={handleFile}>
+              {!isFinalized ? (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={!isAllDraft}
+                  onClick={handleFinalize}
+                >
+                  Finalize
+                </Button>
+              ) : (
+                <Badge
+                  variant="success"
+                  className="bg-green-100 text-green-700 hover:bg-green-100"
+                >
+                  ✅ Finalized
+                </Badge>
+              )}
+
+              <Button size="sm" onClick={handleFile} disabled={!isFinalized}>
                 File
               </Button>
             </div>
@@ -534,6 +591,21 @@ const GSTR1 = () => {
             onClose={setAuthExpiredModalOpen}
             handleGenerateOTP={handleGenerateOTP}
             requestOTPMutation={requestOTPMutation}
+          />
+
+          <GSTR1SummaryModal
+            isOpen={summaryModalOpen}
+            onClose={() => setSummaryModalOpen(false)}
+            data={summaryData}
+            onConfirm={handleConfirmSummary}
+            isLoading={generateFilingOTPMutation.isPending}
+          />
+
+          <GSTOTPDialog
+            open={filingOTPDialogOpen}
+            onOpenChange={setFilingOTPDialogOpen}
+            onVerify={handleFilingOTPVerify}
+            isVerifying={filingMutation.isPending}
           />
         </Wrapper>
       )}

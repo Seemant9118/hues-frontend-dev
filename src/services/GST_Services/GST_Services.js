@@ -29,9 +29,21 @@ export const saveDraftGSTR1 = (data) => {
   return APIinstance.post(gstAPIs.saveDraftGSTR1.endpoint, data);
 };
 
-export const finalizeGSTR1 = ({ period }) => {
+export const finalizedGSTR1 = ({ period }) => {
   return APIinstance.get(
-    `${gstAPIs.finalizeGSTR1.endpoint}?retPeriod=${period}`,
+    `${gstAPIs.finalizedGSTR1.endpoint}?retPeriod=${period}`,
+  );
+};
+
+export const filingOTPGenrate = ({ period }) => {
+  return APIinstance.get(
+    `${gstAPIs.filingOTPGenrate.endpoint}?retPeriod=${period}`,
+  );
+};
+
+export const getSummaryBeforeFiling = ({ period }) => {
+  return APIinstance.get(
+    `${gstAPIs.getSummaryBeforeFiling.endpoint}?retPeriod=${period}`,
   );
 };
 
@@ -41,6 +53,13 @@ export const filingGSTR1 = ({ period, data }) => {
     data,
   );
 };
+
+export const getStatusOfFiling = ({ period }) => {
+  return APIinstance.get(
+    `${gstAPIs.getStatusOfFiling.endpoint}?retPeriod=${period}`,
+  );
+};
+
 export const syncInvoicesWithGSTR1 = (period) => {
   return APIinstance.get(
     `${gstAPIs.syncInvoicesWithGSTR1.endpoint}?retPeriod=${period}`,
