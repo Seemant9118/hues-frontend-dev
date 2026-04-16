@@ -35,7 +35,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
@@ -236,6 +236,31 @@ const GSTR1 = () => {
     }
   };
 
+  const handleDeleteDraft = async () => {
+    try {
+      const res = await refetchGstAuth();
+      const authData = res?.data;
+      const isAuthenticated = authData?.isAuthenticated === true;
+
+      if (!isAuthenticated) {
+        setAuthExpiredModalOpen(true);
+        return;
+      }
+
+      const payload = {
+        retPeriod: period,
+        invoiceIds: [],
+        removedInvoiceIds: selectedInvoicesToFile?.map(
+          (item) => item.invoiceId,
+        ),
+      };
+
+      saveDraftMutation.mutate(payload);
+    } catch (error) {
+      setAuthExpiredModalOpen(true);
+    }
+  };
+
   // finalize mutation
   const finalizeMutation = useMutation({
     mutationFn: finalizeGSTR1,
@@ -408,14 +433,27 @@ const GSTR1 = () => {
             onValueChange={onTabChange}
             defaultValue={'b2b'}
           >
-            <TabsList className="w-fit border">
-              <TabsTrigger value="b2b">
-                {translations('tabs.tab1.label')}
-              </TabsTrigger>
-              <TabsTrigger value="crn">
-                {translations('tabs.tab2.label')}
-              </TabsTrigger>
-            </TabsList>
+            <section className="flex items-center justify-between gap-1">
+              <TabsList className="w-fit border">
+                <TabsTrigger value="b2b">
+                  {translations('tabs.tab1.label')}
+                </TabsTrigger>
+                <TabsTrigger value="crn">
+                  {translations('tabs.tab2.label')}
+                </TabsTrigger>
+              </TabsList>
+
+              {selectedInvoicesToFile.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={handleDeleteDraft}
+                  disabled={saveDraftMutation.isPending}
+                >
+                  <Trash2 size={16} /> Delete
+                </Button>
+              )}
+            </section>
 
             <TabsContent value="b2b">
               {/* body - content */}

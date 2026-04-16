@@ -124,7 +124,7 @@ const defaultStatusResolver = ({ status, isPayment, isSellerPage, t }) => {
             ? t('PENDING.isPayment_seller')
             : t('PENDING.isPayment_buyer')
           : t('PENDING.default'),
-        ...STATUS_UI.WARNING,
+        ...STATUS_UI.NEUTRAL,
       };
 
     case 'NEW':
@@ -141,6 +141,8 @@ const defaultStatusResolver = ({ status, isPayment, isSellerPage, t }) => {
     case 'NOT_RAISED':
     case 'DRAFT':
       return { text: t(status), ...STATUS_UI.WARNING };
+    case 'FILED':
+      return { text: t(status), ...STATUS_UI.SUCCESS };
     case 'SENT':
     case 'RAISED':
       return { text: t(status), ...STATUS_UI.INFO };

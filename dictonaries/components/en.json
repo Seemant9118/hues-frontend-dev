@@ -1181,6 +1181,7 @@
             "STOCK_OUT": "Stock Out",
             "STOCK_IN": "Stock In",
             "DRAFT": "Draft",
+            "FILED": "Filed",
             "DEBIT": "Debit",
             "CREDIT": "Credit",
             "FULLFILLED": "Fullfilled",

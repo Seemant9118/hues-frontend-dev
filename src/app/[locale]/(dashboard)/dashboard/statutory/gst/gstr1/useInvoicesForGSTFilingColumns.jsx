@@ -124,7 +124,8 @@ export const useInvoicesForGSTFilingColumns = ({
         <DataTableColumnHeader column={column} title="Status" />
       ),
       cell: ({ row }) => {
-        const status = row.original?.status;
+        const { isDraft, isFiled } = row.original?.gstr1Filed || {};
+        const status = isFiled ? 'FILED' : isDraft ? 'DRAFT' : 'PENDING';
         return status ? <ConditionalRenderingStatus status={status} /> : '--';
       },
     },
