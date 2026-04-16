@@ -41,3 +41,8 @@ export const filingGSTR1 = ({ period, data }) => {
     data,
   );
 };
+export const syncInvoicesWithGSTR1 = (period) => {
+  return APIinstance.get(
+    `${gstAPIs.syncInvoicesWithGSTR1.endpoint}?retPeriod=${period}`,
+  );
+};

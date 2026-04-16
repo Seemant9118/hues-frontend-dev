@@ -37,4 +37,8 @@ export const gstAPIs = {
     endpoint: '/gstr1/file-return',
     endpointKey: 'FILING_GSTR1',
   },
+  syncInvoicesWithGSTR1: {
+    endpoint: '/gstr1/b2b',
+    endpointKey: 'SYNC_INVOICES_GSTR1',
+  },
 };
