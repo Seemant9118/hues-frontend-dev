@@ -7,6 +7,7 @@ import {
   formattedAmount,
   getQCDefectStatuses,
 } from '@/appUtils/helperFunctions';
+import AccessDenied from '@/components/shared/AccessDenied';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import EditDebitNoteItem from '@/components/debitNote/EditDebitNoteItem';
@@ -108,7 +109,8 @@ const ViewDebitNote = () => {
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
     refetchOnWindowFocus: false,
-    enabled: tabs === 'creditNotes' && hasPermission('permission:sales-view'),
+    enabled:
+      tabs === 'creditNotes' && hasPermission('permission:purchase-view'),
     placeholderData: keepPreviousData,
   });
 
@@ -147,11 +149,20 @@ const ViewDebitNote = () => {
   };
 
   // get debitNote
-  const { data: debitNoteDetails } = useQuery({
+  const {
+    data: debitNoteDetails,
+    error: debitNoteError,
+    isLoading: isDebitNoteLoadingDetails,
+  } = useQuery({
     queryKey: [DebitNoteApi.getDebitNote.endpointKey, debitNoteId],
     queryFn: () => getDebitNote(debitNoteId),
     select: (debitNote) => debitNote.data.data,
     enabled: hasPermission('permission:purchase-view'),
+    retry: (failureCount, error) => {
+      // Don't retry if it's a 403 error
+      if (error?.response?.status === 403) return false;
+      return failureCount < 3;
+    },
   });
 
   const overviewData = {
@@ -394,49 +405,63 @@ const ViewDebitNote = () => {
     onEditLine: handleEditLine,
     isDebitNotePosted: debitNoteDetails?.status === 'SENT',
   });
+  if (!hasPermission('permission:purchase-view')) {
+    router.replace('/dashboard/unauthorized');
+    return null;
+  }
 
   return (
-    <ProtectedWrapper permissionCode={'permission:purchase-view'}>
+    <ProtectedWrapper permissionCode="permission:purchase-view">
       <Wrapper className="h-full py-2">
-        {/* Header */}
-        <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
-          {/* breadcrumbs */}
-          <OrderBreadCrumbs possiblePagesBreadcrumbs={debitNoteBreadCrumbs} />
+        {isDebitNoteLoadingDetails && !debitNoteDetails && <Loading />}
 
-          {/* preview */}
-          <Tooltips
-            trigger={
-              <Button
-                onClick={handlePreview}
-                size="sm"
-                variant="outline"
-                className="font-bold"
-              >
-                <Eye size={14} />
-              </Button>
-            }
-            content={translations('preview.tootips-content')}
-          />
-        </section>
+        {/* 403 Access Denied */}
+        {!isDebitNoteLoadingDetails &&
+          debitNoteError?.response?.status === 403 && <AccessDenied />}
 
-        <Tabs
-          value={tabs}
-          onValueChange={onTabChange}
-          defaultValue={'overview'}
-        >
-          <section className="flex items-center justify-between gap-2">
-            <TabsList className="border">
-              <TabsTrigger value="overview">
-                {translations('tabs.tab1.title')}
-              </TabsTrigger>
-              <TabsTrigger value="creditNotes">
-                {translations('tabs.tab2.title')}
-              </TabsTrigger>
-            </TabsList>
+        {debitNoteDetails && (
+          <>
+            {/* Header */}
+            <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
+              {/* breadcrumbs */}
+              <OrderBreadCrumbs
+                possiblePagesBreadcrumbs={debitNoteBreadCrumbs}
+              />
 
-            {debitNoteDetails?.status === 'DRAFT' && (
-              <div className="flex items-center gap-2">
-                {/* <Button
+              {/* preview */}
+              <Tooltips
+                trigger={
+                  <Button
+                    onClick={handlePreview}
+                    size="sm"
+                    variant="outline"
+                    className="font-bold"
+                  >
+                    <Eye size={14} />
+                  </Button>
+                }
+                content={translations('preview.tootips-content')}
+              />
+            </section>
+
+            <Tabs
+              value={tabs}
+              onValueChange={onTabChange}
+              defaultValue={'overview'}
+            >
+              <section className="flex items-center justify-between gap-2">
+                <TabsList className="border">
+                  <TabsTrigger value="overview">
+                    {translations('tabs.tab1.title')}
+                  </TabsTrigger>
+                  <TabsTrigger value="creditNotes">
+                    {translations('tabs.tab2.title')}
+                  </TabsTrigger>
+                </TabsList>
+
+                {debitNoteDetails?.status === 'DRAFT' && (
+                  <div className="flex items-center gap-2">
+                    {/* <Button
                   variant="outline"
                   size="sm"
                   disabled={updateDebitNoteMutation?.isPending}
@@ -444,72 +469,74 @@ const ViewDebitNote = () => {
                 >
                   <Save size={14} /> Save as Draft
                 </Button> */}
-                <Button
-                  disabled={updateDebitNoteMutation?.isPending}
-                  size="sm"
-                  onClick={() => handleSubmit('SENT')}
-                >
-                  <BookOpen size={14} /> Finalize & Post Debit Note
-                </Button>
-              </div>
-            )}
-          </section>
+                    <Button
+                      disabled={updateDebitNoteMutation?.isPending}
+                      size="sm"
+                      onClick={() => handleSubmit('SENT')}
+                    >
+                      <BookOpen size={14} /> Finalize & Post Debit Note
+                    </Button>
+                  </div>
+                )}
+              </section>
 
-          <TabsContent value="overview">
-            <div className="flex flex-col gap-4">
-              {/* OVERVIEW SECTION */}
-              <Overview
-                collapsible={false}
-                data={overviewData}
-                labelMap={overviewLabels}
-                customRender={customRender}
-              />
+              <TabsContent value="overview">
+                <div className="flex flex-col gap-4">
+                  {/* OVERVIEW SECTION */}
+                  <Overview
+                    collapsible={false}
+                    data={overviewData}
+                    labelMap={overviewLabels}
+                    customRender={customRender}
+                  />
 
-              {/* comment */}
-              <CommentBox contextId={debitNoteId} context={'DEBIT_NOTE'} />
+                  {/* comment */}
+                  <CommentBox contextId={debitNoteId} context={'DEBIT_NOTE'} />
 
-              <DataTable
-                id="grns"
-                columns={debitNoteColumns}
-                data={debitNoteDetails?.debitNoteItems || []}
-              />
+                  <DataTable
+                    id="grns"
+                    columns={debitNoteColumns}
+                    data={debitNoteDetails?.debitNoteItems || []}
+                  />
 
-              {/* Edit Item */}
-              <EditDebitNoteItem
-                open={editOpen}
-                onOpenChange={setEditOpen}
-                item={selectedItem}
-                debitNoteId={debitNoteId}
-              />
-            </div>
-          </TabsContent>
+                  {/* Edit Item */}
+                  <EditDebitNoteItem
+                    open={editOpen}
+                    onOpenChange={setEditOpen}
+                    item={selectedItem}
+                    debitNoteId={debitNoteId}
+                  />
+                </div>
+              </TabsContent>
 
-          <TabsContent
-            value="creditNotes"
-            className="flex-grow overflow-hidden"
-          >
-            {isCreditNotesLoading && <Loading />}
-            {!isCreditNotesLoading && creditNotesListing?.length > 0 && (
-              <PurchaseTable
-                id={'purchase-debits-credits'}
-                columns={creditNotesColumns}
-                data={creditNotesListing}
-                fetchNextPage={fetchNextPage}
-                isFetching={isFetching}
-                totalPages={paginationData?.totalPages}
-                currFetchedPage={paginationData?.currFetchedPage}
-                onRowClick={onRowClick}
-              />
-            )}
+              <TabsContent
+                value="creditNotes"
+                className="flex-grow overflow-hidden"
+              >
+                {isCreditNotesLoading && <Loading />}
+                {!isCreditNotesLoading && creditNotesListing?.length > 0 && (
+                  <PurchaseTable
+                    id={'purchase-debits-credits'}
+                    columns={creditNotesColumns}
+                    data={creditNotesListing}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                )}
 
-            {!isCreditNotesLoading && creditNotesListing?.length === 0 && (
-              <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                <Image src={emptyImg} alt="emptyIcon" />
-                <p>{translations('emtpyStateComponent.heading')}</p>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+                {!isCreditNotesLoading && creditNotesListing?.length === 0 && (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p>{translations('emtpyStateComponent.heading')}</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </>
+        )}
       </Wrapper>
     </ProtectedWrapper>
   );
