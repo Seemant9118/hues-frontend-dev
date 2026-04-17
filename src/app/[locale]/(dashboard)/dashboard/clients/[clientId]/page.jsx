@@ -3,6 +3,7 @@
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { capitalize, formatValue } from '@/appUtils/helperFunctions';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import AccessDenied from '@/components/shared/AccessDenied';
 import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
@@ -42,152 +43,174 @@ export default function ClientDetailsPage() {
   ];
 
   // api calling for clientDetails
-  const { isLoading, data: clientDetails } = useQuery({
-    queryKey: [clientEnterprise.getClient.endpointKey],
+  const {
+    isLoading,
+    data: clientDetails,
+    error,
+  } = useQuery({
+    queryKey: [clientEnterprise.getClient.endpointKey, clientId],
     queryFn: () => getClient(clientId),
     select: (data) => data.data.data,
     enabled: hasPermission('permission:clients-view'),
+    retry: (failureCount, error) => {
+      if (error?.response?.status === 403) return false;
+      return failureCount < 3;
+    },
   });
 
-  if (!clientDetails || isLoading) {
+  if (isLoading || (!clientDetails && error?.response?.status !== 403)) {
     return <p className="p-6 text-gray-500">Loading enterprise details...</p>;
   }
 
   return (
     <ProtectedWrapper permissionCode={'permission:clients-view'}>
-      <Wrapper className="h-full py-2">
-        {/* headers */}
-        <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
-          <div className="flex gap-2">
-            {/* breadcrumbs */}
-            <OrderBreadCrumbs possiblePagesBreadcrumbs={clientBreadCrumbs} />
-          </div>
-          <div className="flex gap-2"></div>
-        </section>
-
-        <Tabs value={tab} onValueChange={onTabChange} defaultValue={'overview'}>
-          <TabsList className="border">
-            <TabsTrigger value="overview">
-              {translations('tabs.tab1.title')}
-            </TabsTrigger>
-            <TabsTrigger value="document">
-              {translations('tabs.tab2.title')}
-            </TabsTrigger>
-            <TabsTrigger value="authorized">
-              {translations('tabs.tab3.title', {
-                defaultValue: 'Authorized Persons',
-              })}
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="overview">
-            <Overview
-              data={{
-                name: formatValue(
-                  clientDetails?.client?.name ||
-                    clientDetails?.invitation?.userDetails?.name,
-                ),
-                enterpriseType: capitalize(
-                  clientDetails?.client?.type ||
-                    clientDetails?.invitation?.userDetails?.type,
-                ),
-                email: formatValue(
-                  clientDetails?.client?.email ||
-                    clientDetails?.invitation?.userDetails?.email,
-                ),
-                phone: formatValue(
-                  `+91 ${
-                    clientDetails?.client?.mobileNumber ||
-                    clientDetails?.invitation?.userDetails?.mobileNumber
-                  }`,
-                ),
-                address: formatValue(clientDetails?.address?.address),
-              }}
-              labelMap={{
-                name: translations('tabs.tab1.content.overview_labels.name'),
-                enterpriseType: translations(
-                  'tabs.tab1.content.overview_labels.enterprise_type',
-                ),
-                email: translations('tabs.tab1.content.overview_labels.email'),
-                phone: translations('tabs.tab1.content.overview_labels.phone'),
-                address: translations(
-                  'tabs.tab1.content.overview_labels.address',
-                ),
-              }}
-            />
-          </TabsContent>
-          <TabsContent value="document">
-            <Overview
-              data={{
-                directorName: formatValue(
-                  clientDetails?.client?.type === 'proprietorship'
-                    ? clientDetails?.client?.name ||
-                        clientDetails?.invitation?.userDetails?.name
-                    : clientDetails?.client?.director?.name,
-                ),
-                directorNumber: formatValue(
-                  clientDetails?.client?.type === 'proprietorship'
-                    ? clientDetails?.client?.mobileNumber ||
-                        clientDetails?.invitation?.userDetails?.mobileNumber
-                    : clientDetails?.client?.director?.mobileNumber,
-                ),
-                pan:
-                  clientDetails?.client?.panNumber ||
-                  clientDetails?.invitation?.userDetails?.panNumber,
-                gst:
-                  clientDetails?.client?.gstNumber ||
-                  clientDetails?.invitation?.userDetails?.gstNumber,
-                cin:
-                  clientDetails?.client?.cin ||
-                  clientDetails?.invitation?.userDetails?.cin,
-                udyam:
-                  clientDetails?.client?.udyam ||
-                  clientDetails?.invitation?.userDetails?.udyam,
-              }}
-              labelMap={{
-                directorName: translations(
-                  'tabs.tab2.content.overview_labels.director_name',
-                ),
-                directorNumber: translations(
-                  'tabs.tab2.content.overview_labels.director_number',
-                ),
-                pan: translations('tabs.tab2.content.overview_labels.pan'),
-                gst: translations('tabs.tab2.content.overview_labels.gst'),
-                cin: translations('tabs.tab2.content.overview_labels.cin'),
-                udyam: translations('tabs.tab2.content.overview_labels.udyam'),
-              }}
-            />
-          </TabsContent>
-          <TabsContent value="authorized">
-            <div className="flex flex-col gap-4 pt-2">
-              {clientDetails?.metaData?.authorizedPerson &&
-              clientDetails.metaData.authorizedPerson.length > 0 ? (
-                clientDetails.metaData.authorizedPerson.map((person) => (
-                  <div key={person.id}>
-                    <Overview
-                      data={{
-                        id: person.id,
-                        name: formatValue(person.name),
-                        email: formatValue(person.email),
-                        mobileNumber: formatValue(person.mobileNumber),
-                      }}
-                      labelMap={{
-                        id: 'Person ID',
-                        name: 'Name',
-                        email: 'Email',
-                        mobileNumber: 'Mobile Number',
-                      }}
-                    />
-                  </div>
-                ))
-              ) : (
-                <div className="flex items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50/50 px-6 py-12 text-center text-sm text-gray-500">
-                  No authorized persons found for this client.
-                </div>
-              )}
+      {error?.response?.status === 403 ? (
+        <AccessDenied />
+      ) : (
+        <Wrapper className="h-full py-2">
+          {/* headers */}
+          <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
+            <div className="flex gap-2">
+              {/* breadcrumbs */}
+              <OrderBreadCrumbs possiblePagesBreadcrumbs={clientBreadCrumbs} />
             </div>
-          </TabsContent>
-        </Tabs>
-      </Wrapper>
+            <div className="flex gap-2"></div>
+          </section>
+
+          <Tabs
+            value={tab}
+            onValueChange={onTabChange}
+            defaultValue={'overview'}
+          >
+            <TabsList className="border">
+              <TabsTrigger value="overview">
+                {translations('tabs.tab1.title')}
+              </TabsTrigger>
+              <TabsTrigger value="document">
+                {translations('tabs.tab2.title')}
+              </TabsTrigger>
+              <TabsTrigger value="authorized">
+                {translations('tabs.tab3.title', {
+                  defaultValue: 'Authorized Persons',
+                })}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="overview">
+              <Overview
+                data={{
+                  name: formatValue(
+                    clientDetails?.client?.name ||
+                      clientDetails?.invitation?.userDetails?.name,
+                  ),
+                  enterpriseType: capitalize(
+                    clientDetails?.client?.type ||
+                      clientDetails?.invitation?.userDetails?.type,
+                  ),
+                  email: formatValue(
+                    clientDetails?.client?.email ||
+                      clientDetails?.invitation?.userDetails?.email,
+                  ),
+                  phone: formatValue(
+                    `+91 ${
+                      clientDetails?.client?.mobileNumber ||
+                      clientDetails?.invitation?.userDetails?.mobileNumber
+                    }`,
+                  ),
+                  address: formatValue(clientDetails?.address?.address),
+                }}
+                labelMap={{
+                  name: translations('tabs.tab1.content.overview_labels.name'),
+                  enterpriseType: translations(
+                    'tabs.tab1.content.overview_labels.enterprise_type',
+                  ),
+                  email: translations(
+                    'tabs.tab1.content.overview_labels.email',
+                  ),
+                  phone: translations(
+                    'tabs.tab1.content.overview_labels.phone',
+                  ),
+                  address: translations(
+                    'tabs.tab1.content.overview_labels.address',
+                  ),
+                }}
+              />
+            </TabsContent>
+            <TabsContent value="document">
+              <Overview
+                data={{
+                  directorName: formatValue(
+                    clientDetails?.client?.type === 'proprietorship'
+                      ? clientDetails?.client?.name ||
+                          clientDetails?.invitation?.userDetails?.name
+                      : clientDetails?.client?.director?.name,
+                  ),
+                  directorNumber: formatValue(
+                    clientDetails?.client?.type === 'proprietorship'
+                      ? clientDetails?.client?.mobileNumber ||
+                          clientDetails?.invitation?.userDetails?.mobileNumber
+                      : clientDetails?.client?.director?.mobileNumber,
+                  ),
+                  pan:
+                    clientDetails?.client?.panNumber ||
+                    clientDetails?.invitation?.userDetails?.panNumber,
+                  gst:
+                    clientDetails?.client?.gstNumber ||
+                    clientDetails?.invitation?.userDetails?.gstNumber,
+                  cin:
+                    clientDetails?.client?.cin ||
+                    clientDetails?.invitation?.userDetails?.cin,
+                  udyam:
+                    clientDetails?.client?.udyam ||
+                    clientDetails?.invitation?.userDetails?.udyam,
+                }}
+                labelMap={{
+                  directorName: translations(
+                    'tabs.tab2.content.overview_labels.director_name',
+                  ),
+                  directorNumber: translations(
+                    'tabs.tab2.content.overview_labels.director_number',
+                  ),
+                  pan: translations('tabs.tab2.content.overview_labels.pan'),
+                  gst: translations('tabs.tab2.content.overview_labels.gst'),
+                  cin: translations('tabs.tab2.content.overview_labels.cin'),
+                  udyam: translations(
+                    'tabs.tab2.content.overview_labels.udyam',
+                  ),
+                }}
+              />
+            </TabsContent>
+            <TabsContent value="authorized">
+              <div className="flex flex-col gap-4 pt-2">
+                {clientDetails?.metaData?.authorizedPerson &&
+                clientDetails.metaData.authorizedPerson.length > 0 ? (
+                  clientDetails.metaData.authorizedPerson.map((person) => (
+                    <div key={person.id}>
+                      <Overview
+                        data={{
+                          id: person.id,
+                          name: formatValue(person.name),
+                          email: formatValue(person.email),
+                          mobileNumber: formatValue(person.mobileNumber),
+                        }}
+                        labelMap={{
+                          id: 'Person ID',
+                          name: 'Name',
+                          email: 'Email',
+                          mobileNumber: 'Mobile Number',
+                        }}
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50/50 px-6 py-12 text-center text-sm text-gray-500">
+                    No authorized persons found for this client.
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </Wrapper>
+      )}
     </ProtectedWrapper>
   );
 }

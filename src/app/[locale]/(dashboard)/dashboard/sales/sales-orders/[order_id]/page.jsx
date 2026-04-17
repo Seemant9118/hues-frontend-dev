@@ -7,6 +7,7 @@ import { orderApi } from '@/api/order_api/order_api';
 import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import DynamicModal from '@/components/Modals/DynamicModal';
+import AccessDenied from '@/components/shared/AccessDenied';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import PINVerifyModal from '@/components/invoices/PINVerifyModal';
@@ -239,11 +240,20 @@ const ViewOrder = () => {
   });
 
   // api calling for orderDEtails
-  const { isLoading, data: orderDetails } = useQuery({
+  const {
+    isLoading,
+    data: orderDetails,
+    error,
+  } = useQuery({
     queryKey: [orderApi.getOrderDetails.endpointKey],
     queryFn: () => OrderDetails(params.order_id),
     select: (data) => data.data.data,
     enabled: hasPermission('permission:sales-view'),
+    retry: (failureCount, error) => {
+      // Don't retry if it's a 403 error
+      if (error?.response?.status === 403) return false;
+      return failureCount < 3;
+    },
   });
 
   const { data: invitationData } = useQuery({
@@ -606,6 +616,9 @@ const ViewOrder = () => {
     <ProtectedWrapper permissionCode={'permission:sales-view'}>
       <Wrapper className="h-full py-2">
         {isLoading && !orderDetails && <Loading />}
+
+        {/* 403 Access Denied */}
+        {!isLoading && error?.response?.status === 403 && <AccessDenied />}
 
         {/* modal */}
         {modalData.isOpen && (

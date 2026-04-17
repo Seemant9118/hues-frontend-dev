@@ -1,7 +1,7 @@
 'use client';
 
-import { PlayCircleOutlined } from '@ant-design/icons';
 import { ruleEngineAPI } from '@/api/rule-engine-apis/ruleEngineAPI';
+import { PlayCircle } from 'lucide-react';
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -271,7 +271,7 @@ function JdmEditorClient({ queryClient, onCancel, existingRuleData }) {
             {
               id: 'simulator',
               title: 'Simulator',
-              icon: <PlayCircleOutlined />,
+              icon: <PlayCircle size={16} />,
               renderPanel: () => (
                 <GraphSimulator
                   onClear={() => setSimulation(undefined)}

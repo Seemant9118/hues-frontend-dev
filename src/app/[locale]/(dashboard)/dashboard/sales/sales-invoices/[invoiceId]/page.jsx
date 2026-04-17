@@ -6,6 +6,7 @@ import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
 import { getQCDefectStatuses } from '@/appUtils/helperFunctions';
+import AccessDenied from '@/components/shared/AccessDenied';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import CreateDispatchNote from '@/components/dispatchNote/CreateDispatchNote';
@@ -110,11 +111,19 @@ const ViewInvoice = () => {
   };
 
   // fetch invoice details
-  const { isLoading, data: invoiceDetails } = useQuery({
+  const {
+    isLoading,
+    data: invoiceDetails,
+    error,
+  } = useQuery({
     queryKey: [invoiceApi.getInvoice.endpointKey, params.invoiceId],
     queryFn: () => getInvoice(params.invoiceId),
     select: (data) => data.data.data,
     enabled: tab === 'overview' && hasPermission('permission:sales-view'),
+    retry: (failureCount, error) => {
+      if (error?.response?.status === 403) return false;
+      return failureCount < 3;
+    },
   });
 
   // conversion pvt url to public url to download
@@ -209,269 +218,278 @@ const ViewInvoice = () => {
 
   return (
     <ProtectedWrapper permissionCode={'permission:sales-view'}>
-      <Wrapper className="h-full py-2">
-        {/* headers */}
-        <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
-          <div className="flex gap-2 pt-2">
-            {/* breadcrumbs */}
-            <OrderBreadCrumbs
-              possiblePagesBreadcrumbs={invoiceOrdersBreadCrumbs}
-            />
-          </div>
-          <div className="flex gap-2">
-            {/* recording payment cta */}
-            {!isRecordingPayment &&
-              !isCreatingDispatchNote &&
-              (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
-                ?.status === 'NOT_PAID' ||
-                invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
-                  ?.status === 'PARTIAL_PAID') && (
-                <ProtectedWrapper
-                  permissionCode={'permission:sales-create-payment'}
-                >
-                  <Button
-                    variant="blue_outline"
-                    size="sm"
-                    onClick={() => setIsRecordingPayment(true)}
-                    className="font-bold"
-                  >
-                    {translations('ctas.record_payment')}
-                  </Button>
-                </ProtectedWrapper>
-              )}
-
-            {/* Create dispatch note cta */}
-            <ProtectedWrapper
-              permissionCode={'permission:sales-create-payment'}
-            >
+      {error?.response?.status === 403 ? (
+        <AccessDenied />
+      ) : (
+        <Wrapper className="h-full py-2">
+          {/* headers */}
+          <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
+            <div className="flex gap-2 pt-2">
+              {/* breadcrumbs */}
+              <OrderBreadCrumbs
+                possiblePagesBreadcrumbs={invoiceOrdersBreadCrumbs}
+              />
+            </div>
+            <div className="flex gap-2">
+              {/* recording payment cta */}
               {!isRecordingPayment &&
                 !isCreatingDispatchNote &&
-                !invoiceDetails?.invoiceDetails?.isFullyDispatched && (
-                  <Button
-                    variant="blue_outline"
-                    size="sm"
-                    onClick={() => setIsCreatingDispatchNote(true)}
-                    className="font-bold"
-                  >
-                    {translations('ctas.create_dispatch_note')}
-                  </Button>
-                )}
-            </ProtectedWrapper>
-
-            {/* View CTA modal */}
-            <ProtectedWrapper permissionCode={'permission:sales-document'}>
-              {!isRecordingPayment && (
-                <Tooltips
-                  trigger={
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => viewPdfInNewTab(pvtUrl)}
-                    >
-                      <Eye size={14} />
-                    </Button>
-                  }
-                  content={translations('ctas.view.placeholder')}
-                />
-              )}
-
-              {/* download CTA */}
-              {!isRecordingPayment && !isCreatingDispatchNote && (
-                <Tooltips
-                  trigger={
-                    <Button
-                      size="sm"
-                      asChild
-                      variant="outline"
-                      className="w-full"
-                    >
-                      <a download={pdfDoc?.publicUrl} href={pdfDoc?.publicUrl}>
-                        <Download size={14} />
-                      </a>
-                    </Button>
-                  }
-                  content={translations('ctas.download.placeholder')}
-                />
-              )}
-            </ProtectedWrapper>
-          </div>
-        </section>
-        {!isRecordingPayment && !isCreatingDispatchNote && (
-          <Tabs
-            value={tab}
-            onValueChange={onTabChange}
-            defaultValue={'overview'}
-          >
-            <TabsList className="border">
-              <TabsTrigger value="overview">
-                {translations('tabs.label.tab1')}
-              </TabsTrigger>
-              <TabsTrigger value="payment">
-                {translations('tabs.label.tab2')}
-              </TabsTrigger>
-              <TabsTrigger value="debitNotes">
-                {translations('tabs.label.tab3')}
-              </TabsTrigger>
-              <TabsTrigger value="dispatchNote">
-                {translations('tabs.label.tab4')}
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="overview">
-              {isLoading && <Loading />}
-              {/* orders overview */}
-              {!isLoading && invoiceDetails?.invoiceDetails && (
-                <div className="flex flex-col gap-4">
-                  <InvoiceOverview
-                    isCollapsableOverview={false}
-                    invoiceDetails={invoiceDetails.invoiceDetails}
-                    invoiceId={
-                      invoiceDetails?.invoiceDetails?.invoiceReferenceNumber
-                    }
-                    orderId={invoiceDetails?.invoiceDetails?.orderId}
-                    orderRefId={
-                      invoiceDetails?.invoiceDetails?.orderReferenceNumber
-                    }
-                    paymentStatus={paymentStatus}
-                    {...(debitNoteStatus && { debitNoteStatus })}
-                    Name={`${invoiceDetails?.invoiceDetails?.customerName} (${invoiceDetails?.invoiceDetails?.clientType})`}
-                    type={invoiceDetails?.invoiceDetails?.invoiceType}
-                    date={invoiceDetails?.invoiceDetails?.invoiceDate}
-                    defectsStatus={defectsStatus()}
-                    amount={invoiceDetails?.invoiceDetails?.totalAmount}
-                    amountPaid={invoiceDetails?.invoiceDetails?.amountPaid}
-                  />
-
-                  <CommentBox
-                    contextId={params.invoiceId}
-                    context={'INVOICE'}
-                  />
-
-                  <DataTable
-                    data={invoiceItems}
-                    columns={invoiceItemsColumns}
-                  />
-                </div>
-              )}
-            </TabsContent>
-            <TabsContent value="payment">
-              {isPaymentsLoading && <Loading />}
-              {!isPaymentsLoading && paymentsListing?.length > 0 && (
-                <DataTable
-                  onRowClick={onRowClick}
-                  data={paymentsListing}
-                  columns={paymentsColumns}
-                />
-              )}
-              {!isPaymentsLoading && paymentsListing?.length === 0 && (
-                <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
-                  <Image src={emptyImg} alt="emptyIcon" />
-                  <p className="font-bold">
-                    {translations(
-                      'tabs.content.tab2.emtpyStateComponent.title',
-                    )}
-                  </p>
+                (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
+                  ?.status === 'NOT_PAID' ||
+                  invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
+                    ?.status === 'PARTIAL_PAID') && (
                   <ProtectedWrapper
                     permissionCode={'permission:sales-create-payment'}
                   >
-                    <p className="max-w-96 text-center">
+                    <Button
+                      variant="blue_outline"
+                      size="sm"
+                      onClick={() => setIsRecordingPayment(true)}
+                      className="font-bold"
+                    >
+                      {translations('ctas.record_payment')}
+                    </Button>
+                  </ProtectedWrapper>
+                )}
+
+              {/* Create dispatch note cta */}
+              <ProtectedWrapper
+                permissionCode={'permission:sales-create-payment'}
+              >
+                {!isRecordingPayment &&
+                  !isCreatingDispatchNote &&
+                  !invoiceDetails?.invoiceDetails?.isFullyDispatched && (
+                    <Button
+                      variant="blue_outline"
+                      size="sm"
+                      onClick={() => setIsCreatingDispatchNote(true)}
+                      className="font-bold"
+                    >
+                      {translations('ctas.create_dispatch_note')}
+                    </Button>
+                  )}
+              </ProtectedWrapper>
+
+              {/* View CTA modal */}
+              <ProtectedWrapper permissionCode={'permission:sales-document'}>
+                {!isRecordingPayment && (
+                  <Tooltips
+                    trigger={
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => viewPdfInNewTab(pvtUrl)}
+                      >
+                        <Eye size={14} />
+                      </Button>
+                    }
+                    content={translations('ctas.view.placeholder')}
+                  />
+                )}
+
+                {/* download CTA */}
+                {!isRecordingPayment && !isCreatingDispatchNote && (
+                  <Tooltips
+                    trigger={
+                      <Button
+                        size="sm"
+                        asChild
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <a
+                          download={pdfDoc?.publicUrl}
+                          href={pdfDoc?.publicUrl}
+                        >
+                          <Download size={14} />
+                        </a>
+                      </Button>
+                    }
+                    content={translations('ctas.download.placeholder')}
+                  />
+                )}
+              </ProtectedWrapper>
+            </div>
+          </section>
+          {!isRecordingPayment && !isCreatingDispatchNote && (
+            <Tabs
+              value={tab}
+              onValueChange={onTabChange}
+              defaultValue={'overview'}
+            >
+              <TabsList className="border">
+                <TabsTrigger value="overview">
+                  {translations('tabs.label.tab1')}
+                </TabsTrigger>
+                <TabsTrigger value="payment">
+                  {translations('tabs.label.tab2')}
+                </TabsTrigger>
+                <TabsTrigger value="debitNotes">
+                  {translations('tabs.label.tab3')}
+                </TabsTrigger>
+                <TabsTrigger value="dispatchNote">
+                  {translations('tabs.label.tab4')}
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="overview">
+                {isLoading && <Loading />}
+                {/* orders overview */}
+                {!isLoading && invoiceDetails?.invoiceDetails && (
+                  <div className="flex flex-col gap-4">
+                    <InvoiceOverview
+                      isCollapsableOverview={false}
+                      invoiceDetails={invoiceDetails.invoiceDetails}
+                      invoiceId={
+                        invoiceDetails?.invoiceDetails?.invoiceReferenceNumber
+                      }
+                      orderId={invoiceDetails?.invoiceDetails?.orderId}
+                      orderRefId={
+                        invoiceDetails?.invoiceDetails?.orderReferenceNumber
+                      }
+                      paymentStatus={paymentStatus}
+                      {...(debitNoteStatus && { debitNoteStatus })}
+                      Name={`${invoiceDetails?.invoiceDetails?.customerName} (${invoiceDetails?.invoiceDetails?.clientType})`}
+                      type={invoiceDetails?.invoiceDetails?.invoiceType}
+                      date={invoiceDetails?.invoiceDetails?.invoiceDate}
+                      defectsStatus={defectsStatus()}
+                      amount={invoiceDetails?.invoiceDetails?.totalAmount}
+                      amountPaid={invoiceDetails?.invoiceDetails?.amountPaid}
+                    />
+
+                    <CommentBox
+                      contextId={params.invoiceId}
+                      context={'INVOICE'}
+                    />
+
+                    <DataTable
+                      data={invoiceItems}
+                      columns={invoiceItemsColumns}
+                    />
+                  </div>
+                )}
+              </TabsContent>
+              <TabsContent value="payment">
+                {isPaymentsLoading && <Loading />}
+                {!isPaymentsLoading && paymentsListing?.length > 0 && (
+                  <DataTable
+                    onRowClick={onRowClick}
+                    data={paymentsListing}
+                    columns={paymentsColumns}
+                  />
+                )}
+                {!isPaymentsLoading && paymentsListing?.length === 0 && (
+                  <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p className="font-bold">
                       {translations(
-                        'tabs.content.tab2.emtpyStateComponent.para',
+                        'tabs.content.tab2.emtpyStateComponent.title',
                       )}
                     </p>
-                    {!isRecordingPayment &&
-                      (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
-                        ?.status === 'NOT_PAID' ||
-                        invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
-                          ?.status === 'PARTIAL_PAID') && (
-                        <Button
-                          variant="blue_outline"
-                          size="sm"
-                          onClick={() => setIsRecordingPayment(true)}
-                          className="font-bold"
-                        >
-                          {translations('ctas.record_payment')}
-                        </Button>
-                      )}
-                  </ProtectedWrapper>
-                </div>
-              )}
-            </TabsContent>
-            <TabsContent value="debitNotes">
-              <div className="scrollBarStyles flex flex-col gap-4 overflow-auto">
-                {isDebitNoteLoading && <Loading />}
-                {!isDebitNoteLoading && debitNotes?.length > 0 && (
-                  <DataTable
-                    columns={debitNColumns}
-                    data={debitNotes || []}
-                    onRowClick={onDebitNoteClick}
-                  />
+                    <ProtectedWrapper
+                      permissionCode={'permission:sales-create-payment'}
+                    >
+                      <p className="max-w-96 text-center">
+                        {translations(
+                          'tabs.content.tab2.emtpyStateComponent.para',
+                        )}
+                      </p>
+                      {!isRecordingPayment &&
+                        (invoiceDetails?.invoiceDetails?.invoiceMetaData
+                          ?.payment?.status === 'NOT_PAID' ||
+                          invoiceDetails?.invoiceDetails?.invoiceMetaData
+                            ?.payment?.status === 'PARTIAL_PAID') && (
+                          <Button
+                            variant="blue_outline"
+                            size="sm"
+                            onClick={() => setIsRecordingPayment(true)}
+                            className="font-bold"
+                          >
+                            {translations('ctas.record_payment')}
+                          </Button>
+                        )}
+                    </ProtectedWrapper>
+                  </div>
                 )}
-              </div>
-              {!isDebitNoteLoading && debitNotes?.length === 0 && (
-                <div className="flex h-[55vh] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                  <Image src={emptyImg} alt="emptyIcon" />
-                  <p className="font-bold">
-                    {translations(
-                      'tabs.content.tab4.emtpyStateComponent.title',
-                    )}
-                  </p>
-                  <p className="max-w-96 text-center">
-                    {translations('tabs.content.tab4.emtpyStateComponent.para')}
-                  </p>
+              </TabsContent>
+              <TabsContent value="debitNotes">
+                <div className="scrollBarStyles flex flex-col gap-4 overflow-auto">
+                  {isDebitNoteLoading && <Loading />}
+                  {!isDebitNoteLoading && debitNotes?.length > 0 && (
+                    <DataTable
+                      columns={debitNColumns}
+                      data={debitNotes || []}
+                      onRowClick={onDebitNoteClick}
+                    />
+                  )}
                 </div>
-              )}
-            </TabsContent>
-            <TabsContent value="dispatchNote">
-              {isDispatchNotesLoading && <Loading />}
-              {!isDispatchNotesLoading && dispatchNotes?.length > 0 && (
-                <DataTable
-                  onRowClick={onDispatchedNoteRowClick}
-                  data={dispatchNotes}
-                  columns={dispatchNoteColumns}
-                />
-              )}
-              {!isDispatchNotesLoading && dispatchNotes?.length === 0 && (
-                <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
-                  <Image src={emptyImg} alt="emptyIcon" />
-                  <p className="font-bold">
-                    {translations(
-                      'tabs.content.tab4.emtpyStateComponent.title',
-                    )}
-                  </p>
-                  <ProtectedWrapper
-                    permissionCode={'permission:sales-create-payment'}
-                  >
+                {!isDebitNoteLoading && debitNotes?.length === 0 && (
+                  <div className="flex h-[55vh] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p className="font-bold">
+                      {translations(
+                        'tabs.content.tab4.emtpyStateComponent.title',
+                      )}
+                    </p>
                     <p className="max-w-96 text-center">
                       {translations(
                         'tabs.content.tab4.emtpyStateComponent.para',
                       )}
                     </p>
-                  </ProtectedWrapper>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        )}
+                  </div>
+                )}
+              </TabsContent>
+              <TabsContent value="dispatchNote">
+                {isDispatchNotesLoading && <Loading />}
+                {!isDispatchNotesLoading && dispatchNotes?.length > 0 && (
+                  <DataTable
+                    onRowClick={onDispatchedNoteRowClick}
+                    data={dispatchNotes}
+                    columns={dispatchNoteColumns}
+                  />
+                )}
+                {!isDispatchNotesLoading && dispatchNotes?.length === 0 && (
+                  <div className="flex flex-col items-center justify-center gap-2 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p className="font-bold">
+                      {translations(
+                        'tabs.content.tab4.emtpyStateComponent.title',
+                      )}
+                    </p>
+                    <ProtectedWrapper
+                      permissionCode={'permission:sales-create-payment'}
+                    >
+                      <p className="max-w-96 text-center">
+                        {translations(
+                          'tabs.content.tab4.emtpyStateComponent.para',
+                        )}
+                      </p>
+                    </ProtectedWrapper>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          )}
 
-        {/* recordPayment component */}
-        {isRecordingPayment && !isCreatingDispatchNote && (
-          <MakePaymentNewInvoice
-            paymentStatus={paymentStatus}
-            debitNoteStatus={debitNoteStatus}
-            invoiceDetails={invoiceDetails?.invoiceDetails}
-            setIsRecordingPayment={setIsRecordingPayment}
-            contextType={'PAYMENT'}
-          />
-        )}
+          {/* recordPayment component */}
+          {isRecordingPayment && !isCreatingDispatchNote && (
+            <MakePaymentNewInvoice
+              paymentStatus={paymentStatus}
+              debitNoteStatus={debitNoteStatus}
+              invoiceDetails={invoiceDetails?.invoiceDetails}
+              setIsRecordingPayment={setIsRecordingPayment}
+              contextType={'PAYMENT'}
+            />
+          )}
 
-        {isCreatingDispatchNote && (
-          <CreateDispatchNote
-            invoiceDetails={invoiceDetails}
-            isCreatingDispatchNote={isCreatingDispatchNote}
-            setIsCreatingDispatchNote={setIsCreatingDispatchNote}
-          />
-        )}
-      </Wrapper>
+          {isCreatingDispatchNote && (
+            <CreateDispatchNote
+              invoiceDetails={invoiceDetails}
+              isCreatingDispatchNote={isCreatingDispatchNote}
+              setIsCreatingDispatchNote={setIsCreatingDispatchNote}
+            />
+          )}
+        </Wrapper>
+      )}
     </ProtectedWrapper>
   );
 };

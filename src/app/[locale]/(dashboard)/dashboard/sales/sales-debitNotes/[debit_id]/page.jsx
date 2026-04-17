@@ -5,6 +5,7 @@ import {
   formattedAmount,
   getQCDefectStatuses,
 } from '@/appUtils/helperFunctions';
+import AccessDenied from '@/components/shared/AccessDenied';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import CreateCreditNote from '@/components/credtiNote/CreateCreditNote';
@@ -181,11 +182,15 @@ const ViewDebitNote = () => {
   }, [isAddingResponse]);
 
   // get debitNote
-  const { data: debitNoteDetails } = useQuery({
+  const { data: debitNoteDetails, error } = useQuery({
     queryKey: [DebitNoteApi.getDebitNote.endpointKey, debitNoteId],
     queryFn: () => getDebitNote(debitNoteId),
     select: (debitNote) => debitNote.data.data,
     enabled: hasPermission('permission:sales-view'),
+    retry: (failureCount, error) => {
+      if (error?.response?.status === 403) return false;
+      return failureCount < 3;
+    },
   });
 
   // overviw component data
@@ -586,145 +591,149 @@ const ViewDebitNote = () => {
 
   return (
     <ProtectedWrapper permissionCode="permission:sales-view">
-      <Wrapper className="h-full py-2">
-        {/* Header */}
-        <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
-          {/* breadcrumbs */}
-          <OrderBreadCrumbs possiblePagesBreadcrumbs={debitNoteBreadCrumbs} />
+      {error?.response?.status === 403 ? (
+        <AccessDenied />
+      ) : (
+        <Wrapper className="h-full py-2">
+          {/* Header */}
+          <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
+            {/* breadcrumbs */}
+            <OrderBreadCrumbs possiblePagesBreadcrumbs={debitNoteBreadCrumbs} />
 
-          {/* preview */}
-          <Tooltips
-            trigger={
-              <Button
-                onClick={handlePreview}
-                size="sm"
-                variant="outline"
-                className="font-bold"
-              >
-                <Eye size={14} />
-              </Button>
-            }
-            content={translations('preview.tootips-content')}
-          />
-        </section>
+            {/* preview */}
+            <Tooltips
+              trigger={
+                <Button
+                  onClick={handlePreview}
+                  size="sm"
+                  variant="outline"
+                  className="font-bold"
+                >
+                  <Eye size={14} />
+                </Button>
+              }
+              content={translations('preview.tootips-content')}
+            />
+          </section>
 
-        {!isAddingResponse && !isCreatingCreditNote && !isEditingResponse && (
-          <Tabs
-            value={tabs}
-            onValueChange={onTabChange}
-            defaultValue={'overview'}
-          >
-            <section className="flex items-center justify-between gap-2">
-              <TabsList className="border">
-                <TabsTrigger value="overview">
-                  {translations('tabs.tab1.title')}
-                </TabsTrigger>
-                <TabsTrigger value="creditNotes">
-                  {translations('tabs.tab2.title')}
-                </TabsTrigger>
-              </TabsList>
+          {!isAddingResponse && !isCreatingCreditNote && !isEditingResponse && (
+            <Tabs
+              value={tabs}
+              onValueChange={onTabChange}
+              defaultValue={'overview'}
+            >
+              <section className="flex items-center justify-between gap-2">
+                <TabsList className="border">
+                  <TabsTrigger value="overview">
+                    {translations('tabs.tab1.title')}
+                  </TabsTrigger>
+                  <TabsTrigger value="creditNotes">
+                    {translations('tabs.tab2.title')}
+                  </TabsTrigger>
+                </TabsList>
 
-              <div className="flex items-center gap-2">
-                {/* if all items response added then hide it */}
-                {itemsToCreateResponse?.length > 0 && (
-                  <Button size="sm" onClick={() => setIsAddingResponse(true)}>
-                    <PlusCircle size={14} /> Add Response
-                  </Button>
-                )}
-
-                {itemsToCreateResponse?.length === 0 &&
-                  !debitNoteDetails?.creditNoteCompletedForAllItems && (
-                    <Button
-                      size="sm"
-                      onClick={() => setIsCreatingCreditNote(true)}
-                    >
-                      <BookOpen size={14} /> Finalize & Post Credit Note
+                <div className="flex items-center gap-2">
+                  {/* if all items response added then hide it */}
+                  {itemsToCreateResponse?.length > 0 && (
+                    <Button size="sm" onClick={() => setIsAddingResponse(true)}>
+                      <PlusCircle size={14} /> Add Response
                     </Button>
                   )}
-              </div>
-            </section>
 
-            <TabsContent value="overview">
-              <div className="flex flex-col gap-4">
-                {/* OVERVIEW SECTION */}
-                <Overview
-                  collapsible={false}
-                  data={overviewData}
-                  labelMap={overviewLabels}
-                  customRender={customRender}
-                />
-
-                {/* comment */}
-                <CommentBox contextId={debitNoteId} context={'DEBIT_NOTE'} />
-
-                <MergerDataTable
-                  id="buyer-seller-table"
-                  columns={buyerSellerColumns}
-                  data={mergedRows}
-                />
-              </div>
-            </TabsContent>
-
-            <TabsContent
-              value="creditNotes"
-              className="flex-grow overflow-hidden"
-            >
-              {isCreditNotesLoading && <Loading />}
-              {!isCreditNotesLoading && creditNotesListing?.length > 0 && (
-                <SalesTable
-                  id={'purchase-debits-credits'}
-                  columns={creditNotesColumns}
-                  data={creditNotesListing}
-                  fetchNextPage={fetchNextPage}
-                  isFetching={isFetching}
-                  totalPages={paginationData?.totalPages}
-                  currFetchedPage={paginationData?.currFetchedPage}
-                  onRowClick={onRowClick}
-                />
-              )}
-
-              {!isCreditNotesLoading && creditNotesListing?.length === 0 && (
-                <div className="flex h-[80dvh] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                  <Image src={emptyImg} alt="emptyIcon" />
-                  <p>No credit notes found for this debit note.</p>
+                  {itemsToCreateResponse?.length === 0 &&
+                    !debitNoteDetails?.creditNoteCompletedForAllItems && (
+                      <Button
+                        size="sm"
+                        onClick={() => setIsCreatingCreditNote(true)}
+                      >
+                        <BookOpen size={14} /> Finalize & Post Credit Note
+                      </Button>
+                    )}
                 </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        )}
+              </section>
 
-        {/* add response */}
-        {isAddingResponse && !isCreatingCreditNote && !isEditingResponse && (
-          <CreateResponseD
-            items={itemsToCreateResponse || []}
-            debitNoteId={debitNoteId}
-            onClose={() => setIsAddingResponse(false)}
-          />
-        )}
+              <TabsContent value="overview">
+                <div className="flex flex-col gap-4">
+                  {/* OVERVIEW SECTION */}
+                  <Overview
+                    collapsible={false}
+                    data={overviewData}
+                    labelMap={overviewLabels}
+                    customRender={customRender}
+                  />
 
-        {/* edit a response */}
-        {isEditingResponse &&
-          !isCreatingCreditNote &&
-          !isAddingResponse &&
-          selectedItemToEdit && (
-            <EditResponse
-              item={selectedItemToEdit}
+                  {/* comment */}
+                  <CommentBox contextId={debitNoteId} context={'DEBIT_NOTE'} />
+
+                  <MergerDataTable
+                    id="buyer-seller-table"
+                    columns={buyerSellerColumns}
+                    data={mergedRows}
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent
+                value="creditNotes"
+                className="flex-grow overflow-hidden"
+              >
+                {isCreditNotesLoading && <Loading />}
+                {!isCreditNotesLoading && creditNotesListing?.length > 0 && (
+                  <SalesTable
+                    id={'purchase-debits-credits'}
+                    columns={creditNotesColumns}
+                    data={creditNotesListing}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                  />
+                )}
+
+                {!isCreditNotesLoading && creditNotesListing?.length === 0 && (
+                  <div className="flex h-[80dvh] flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p>No credit notes found for this debit note.</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          )}
+
+          {/* add response */}
+          {isAddingResponse && !isCreatingCreditNote && !isEditingResponse && (
+            <CreateResponseD
+              items={itemsToCreateResponse || []}
               debitNoteId={debitNoteId}
-              onClose={() => setIsEditingRespoonse(false)}
+              onClose={() => setIsAddingResponse(false)}
             />
           )}
 
-        {/* create a credit note */}
-        {isCreatingCreditNote && !isAddingResponse && !isEditingResponse && (
-          <CreateCreditNote
-            isCreatingCreditNote={isCreatingCreditNote}
-            setIsCreatingCreditNote={setIsCreatingCreditNote}
-            data={filteredDataToCreateCreditNotes}
-            id={debitNoteId}
-            onClose={() => setIsCreatingCreditNote(false)}
-          />
-        )}
-      </Wrapper>
+          {/* edit a response */}
+          {isEditingResponse &&
+            !isCreatingCreditNote &&
+            !isAddingResponse &&
+            selectedItemToEdit && (
+              <EditResponse
+                item={selectedItemToEdit}
+                debitNoteId={debitNoteId}
+                onClose={() => setIsEditingRespoonse(false)}
+              />
+            )}
+
+          {/* create a credit note */}
+          {isCreatingCreditNote && !isAddingResponse && !isEditingResponse && (
+            <CreateCreditNote
+              isCreatingCreditNote={isCreatingCreditNote}
+              setIsCreatingCreditNote={setIsCreatingCreditNote}
+              data={filteredDataToCreateCreditNotes}
+              id={debitNoteId}
+              onClose={() => setIsCreatingCreditNote(false)}
+            />
+          )}
+        </Wrapper>
+      )}
     </ProtectedWrapper>
   );
 };

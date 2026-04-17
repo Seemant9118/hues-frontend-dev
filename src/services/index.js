@@ -58,8 +58,8 @@ APIinstance.interceptors.response.use(
     const originalRequest = error.config;
     const statusCode = error?.response?.status;
 
-    // Only handle 401 / 403
-    if (statusCode !== 401 && statusCode !== 403) {
+    // Only handle 401 (Unauthorized) for token refresh
+    if (statusCode !== 401) {
       return Promise.reject(error);
     }
 
