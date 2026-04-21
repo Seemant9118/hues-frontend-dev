@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# HUES ~ Redefining ERP for Digital Bharat
 
-## Getting Started
+![HUES Logo](https://hues-frontend.vercel.app/hues_logo.png)
 
-First, run the development server:
+HUES is an AI-powered ERP (Enterprise Resource Planning) platform designed to be the "command center" for modern businesses. Built by IIT alumni, HUES focuses on verifiable compliance, seamless collaboration, and smarter business decisions.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+HUES isn’t just another ERP. It leverages India’s Digital Public Infrastructure (DPI) and is hardened by blockchain technology to ensure "peace of mind" through transparent and tamper-proof logs.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 🚀 Key Features
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- **Verified Onboarding**: Aadhaar and PAN-based KYC with live compliance checks.
+- **Always Audit-Ready**: MCA/GSTN trails, digital signatures, and tamper-proof logs out of the box.
+- **AI at Every Step**: Auto-conversion of invoices, SKU population, fraud detection, and automated reconciliation.
+- **One Platform**: Comprehensive tools for Vendor Management, Sales/Purchase Automation, and Tax/Legal Compliance (DPDP, PMLA, GST, MCA).
+- **Data That Works**: Transform static Excel/PDF files into structured, verifiable data.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠️ Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+HUES is built using a modern, scalable, and robust technical foundation:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- **Frontend**: [Next.js 14](https://nextjs.org/) (App Router) & [React 18](https://react.dev/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) & [Radix UI](https://www.radix-ui.com/)
+- **Data Management**: [TanStack Query v5](https://tanstack.com/query) & [TanStack Table v8](https://tanstack.com/table)
+- **Rules Engine**: [GoRules Zen Engine](https://gorules.io/) (Decision Graphs & JDM Editor)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Monitoring**: [Sentry](https://sentry.io/)
+- **Localisation**: [next-intl](https://next-intl-docs.vercel.app/)
+- **Authentication**: Firebase Auth
+- **Testing**: [Vitest](https://vitest.dev/) (Unit) & [Playwright](https://playwright.dev/) (E2E)
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🌐 Environments
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+| Environment | URL |
+| :--- | :--- |
+| **Production** | [hues.paratech.ai](https://hues.paratech.ai) |
+| **Staging** | [hues-frontend-dev.vercel.app](https://hues-frontend-dev.vercel.app) |
+
+---
+
+## 💻 Local Development
+
+### Prerequisites
+- Node.js (Latest LTS recommended)
+- npm / yarn / pnpm
+
+### Getting Started
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd hues-frontend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   ```
+
+3. **Run the development server**
+   Choose your preferred package manager to start the local server:
+
+   ```bash
+   # Using npm
+   npm run dev
+
+   # Using yarn
+   yarn dev
+
+   # Using pnpm
+   pnpm dev
+
+   # Using bun
+   bun dev
+   ```
+
+4. **Access the application**
+   Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+---
+
+For support or business inquiries, reach out at [support@paraphernalia.in](mailto:support@paraphernalia.in).
+
+---
+*✦ Built by IIT alumni. Powered by AI. Trusted by India’s backbone — its businesses.*
