@@ -128,31 +128,25 @@
     },
 
     {
-      // CONFIGURATION FOR JEST
-      "files": ["**/__tests__/**/*.jsx", "**/__tests__/**/*.js"],
-      // Set Jest environment to recognize Jest globals
-      "env": {
-        "jest": true
-      },
+      // CONFIGURATION FOR UNIT TESTS (Vitest)
+      "files": [
+        "**/__tests__/unit_tests/**/*.jsx",
+        "**/__tests__/unit_tests/**/*.js",
+        "src/tests/**"
+      ],
       "plugins": [
-        // Use Jest plugin for Jest-specific linting rules
-        "jest",
         // Use Testing Library plugin for React Testing Library specific linting rules
         "testing-library"
       ],
       "extends": [
-        // Apply recommended rules for Jest
-        "plugin:jest/recommended",
         // Apply recommended rules for Testing Library
         "plugin:testing-library/react"
       ],
       "rules": {
         // Allow unused expressions in tests for better readability
         "no-unused-expressions": "off",
-        // Disable undefined variable rule for Jest globals
+        // Disable undefined variable rule for Test globals (Vitest/Jest compatibility)
         "no-undef": "off",
-        // Disable explicit any rule for TypeScript in tests. Can remove after review
-        "@typescript-eslint/no-explicit-any": "off",
         // Allow dev dependencies to be imported in test files
         "import/no-extraneous-dependencies": [
           "error",

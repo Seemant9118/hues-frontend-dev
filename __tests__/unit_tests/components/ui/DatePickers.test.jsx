@@ -1,13 +1,14 @@
+import { render, screen, fireEvent } from '@/tests/test-utils';
 import DatePickers from '@/components/ui/DatePickers';
-import { render, screen, fireEvent } from '@testing-library/react';
 
 describe('DatePickers', () => {
-  const mockOnChange = jest.fn();
+  const mockOnChange = vi.fn();
   const selectedDate = new Date('2023-06-15');
   const dateFormat = 'dd/MM/yyyy';
   const popperPlacement = 'bottom';
 
   beforeEach(() => {
+    vi.clearAllMocks();
     render(
       <DatePickers
         selected={selectedDate}
@@ -37,23 +38,23 @@ describe('DatePickers', () => {
     // Test changing the year
     const yearSelect = screen.getByDisplayValue('2023');
     fireEvent.change(yearSelect, { target: { value: '2022' } });
-    expect(yearSelect.value).toBe('2022');
+    expect(yearSelect).toHaveValue('2022');
 
     // Test changing the month
     const monthSelect = screen.getByDisplayValue('June');
     fireEvent.change(monthSelect, { target: { value: 'July' } });
-    expect(monthSelect.value).toBe('July');
+    expect(monthSelect).toHaveValue('July');
 
     // Test decreasing the month
     const decreaseMonthButton = screen.getByText('<');
     fireEvent.click(decreaseMonthButton);
-    const newMonthSelect = screen.getByDisplayValue('June');
-    expect(newMonthSelect).toBeInTheDocument();
+    // After decrease July -> June
+    expect(screen.getByDisplayValue('June')).toBeInTheDocument();
 
     // Test increasing the month
     const increaseMonthButton = screen.getByText('>');
     fireEvent.click(increaseMonthButton);
-    const newerMonthSelect = screen.getByDisplayValue('July');
-    expect(newerMonthSelect).toBeInTheDocument();
+    // After increase June -> July
+    expect(screen.getByDisplayValue('July')).toBeInTheDocument();
   });
 });

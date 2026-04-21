@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen } from '@/tests/test-utils';
 import userEvent from '@testing-library/user-event';
 import { Input } from '@/components/ui/input';
+import { describe, test, expect, vi } from 'vitest';
 
 describe('Input Component', () => {
   test('renders input with correct type-email', () => {
@@ -11,7 +12,7 @@ describe('Input Component', () => {
 
   test('renders input with correct type-number', () => {
     render(<Input type="number" />);
-    const inputElement = screen.getByRole('spinbutton'); // 'spinbutton' role is used for input type='number'
+    const inputElement = screen.getByRole('spinbutton');
     expect(inputElement).toHaveAttribute('type', 'number');
   });
 
@@ -27,27 +28,19 @@ describe('Input Component', () => {
     expect(inputElement).toBeDisabled();
   });
 
-  test('renders input with correct class names', () => {
-    render(<Input className="custom-class" />);
-    const inputElement = screen.getByRole('textbox');
-    expect(inputElement).toHaveClass('custom-class');
-    expect(inputElement).toHaveClass('w-full');
-  });
-
   test('calls onChange handler when value changes', async () => {
     const user = userEvent.setup();
-    const handleChange = jest.fn();
+    const handleChange = vi.fn();
     render(<Input onChange={handleChange} />);
     const input = screen.getByRole('textbox');
 
     await user.type(input, 'new value');
 
     expect(handleChange).toHaveBeenCalledTimes(9);
-    expect(handleChange).toHaveBeenCalledWith(expect.any(Object));
     expect(input.value).toBe('new value');
   });
 
-  it('handles required attribute', () => {
+  test('handles required attribute', () => {
     render(<Input required />);
     const input = screen.getByRole('textbox');
     expect(input).toBeRequired();

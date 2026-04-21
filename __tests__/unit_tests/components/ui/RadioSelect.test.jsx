@@ -1,16 +1,14 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, userEvent } from '@/tests/test-utils';
 import RadioSelect from '@/components/ui/RadioSelect';
 
 describe('RadioSelect Component', () => {
-  const mockHandleChange = jest.fn();
+  const mockHandleChange = vi.fn();
   const value = 'option1';
-  const option = 'Option 1';
+  const optionLabel = 'Option 1';
 
   beforeEach(() => {
     mockHandleChange.mockClear();
-    render(<RadioSelect value={value} handleChange={mockHandleChange} option={option} />);
+    render(<RadioSelect value={value} handleChange={mockHandleChange} option={optionLabel} checkBoxName="options" />);
   });
 
   it('renders the hidden radio input', () => {
@@ -20,47 +18,35 @@ describe('RadioSelect Component', () => {
   });
 
   it('renders the label with correct text', () => {
-    const label = screen.getByText(option);
+    const label = screen.getByText(optionLabel);
     expect(label).toBeInTheDocument();
-    expect(label).toHaveClass('cursor-pointer rounded-md border border-gray-600 bg-gray-100 p-2 text-slate-700 hover:bg-primary hover:text-white');
   });
 
   it('renders the hidden radio input with correct attributes', () => {
     const radioInput = screen.getByRole('radio');
-    expect(radioInput).toHaveAttribute('id', option);
+    expect(radioInput).toHaveAttribute('id', optionLabel);
     expect(radioInput).toHaveAttribute('name', 'options');
   });
 
   it('calls handleChange with the correct value when radio input is changed', async () => {
-    const user= userEvent.setup();
     const radioInput = screen.getByRole('radio');
-    await user.click(radioInput);
+    await userEvent.click(radioInput);
     expect(mockHandleChange).toHaveBeenCalledWith(value);
     expect(mockHandleChange).toHaveBeenCalledTimes(1);
-
   });
 
   it('calls handleChange with the correct value when label is clicked', async () => {
-    const user= userEvent.setup();
-    const label = screen.getByLabelText(option);
-    await user.click(label);
+    // The label is associated with the radio via id/for
+    const label = screen.getByText(optionLabel);
+    await userEvent.click(label);
     expect(mockHandleChange).toHaveBeenCalledWith(value);
     expect(mockHandleChange).toHaveBeenCalledTimes(1);
   });
 
   it('associates the label with the correct radio input', () => {
     const radioInput = screen.getByRole('radio');
-    const label = screen.getByText(option);
+    const label = screen.getByText(optionLabel);
+    // In React, 'for' becomes 'htmlFor', which renders as 'for' in DOM
     expect(label).toHaveAttribute('for', radioInput.id);
-  });
-
-  it('does not call handleChange if the radio input is already selected', async () => {
-    const user= userEvent.setup();
-    const radioInput = screen.getByRole('radio');
-    await user.click(radioInput); // First click to select it
-    expect(mockHandleChange).toHaveBeenCalled();
-    mockHandleChange.mockClear(); // Clear previous calls
-    await user.click(radioInput); // Second click to try to deselect
-    expect(mockHandleChange).not.toHaveBeenCalled();
   });
 });

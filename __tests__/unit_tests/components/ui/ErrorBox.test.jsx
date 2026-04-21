@@ -1,5 +1,5 @@
+import { render, screen } from '@/tests/test-utils';
 import ErrorBox from '@/components/ui/ErrorBox';
-import { render, screen } from '@testing-library/react';
 
 describe('ErrorBox', () => {
   test('renders error message correctly', () => {
@@ -15,10 +15,9 @@ describe('ErrorBox', () => {
     render(<ErrorBox msg={errorMessage} />);
 
     const errorElement = screen.getByText(errorMessage);
-    expect(errorElement).toHaveClass(
-      'text-xs',
-      'font-semibold',
-      'text-red-600',
-    );
+    // Checking individual classes as per original test
+    expect(errorElement).toHaveClass('text-xs');
+    expect(errorElement).toHaveClass('font-semibold');
+    expect(errorElement).toHaveClass('text-red-600');
   });
 });
