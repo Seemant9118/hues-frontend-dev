@@ -9,6 +9,7 @@ import { useFeatureFlags } from '@/context/FeatureFlagContext';
 import { useSidebarLayout } from '@/context/SidebarLayoutContext';
 import { usePermission } from '@/hooks/usePermissions';
 import { Link } from '@/i18n/routing';
+import { LocalStorageService } from '@/lib/utils';
 import {
   ArchiveRestore,
   ArrowRightLeft,
@@ -32,6 +33,8 @@ import {
   NotebookTabs,
   NotepadText,
   Package,
+  PanelLeftClose,
+  PanelLeftOpen,
   PencilRuler,
   ReceiptIndianRupee,
   ReceiptText,
@@ -45,8 +48,6 @@ import {
   UserRound,
   Users,
   Warehouse,
-  PanelLeftClose,
-  PanelLeftOpen,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -81,7 +82,7 @@ const Sidebar = () => {
 
   const isEnterpriseSwitched = Boolean(
     typeof window !== 'undefined' &&
-      localStorage.getItem('switchedEnterpriseId'),
+    LocalStorageService.get('switchedEnterpriseId'),
   );
 
   const adminLinks = useMemo(() => {
