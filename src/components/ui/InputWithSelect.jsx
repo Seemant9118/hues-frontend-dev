@@ -39,7 +39,7 @@ function InputWithSelect({
   }, [unit, units, onUnitChange]);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       {name && (
         <Label htmlFor={id}>
           {name} {required && <span className="text-red-600">*</span>}

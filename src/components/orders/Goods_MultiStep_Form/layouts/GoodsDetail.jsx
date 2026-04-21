@@ -33,7 +33,7 @@ import { OrderDetails } from '@/services/Orders_Services/Orders_Services';
 import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { CreditCard, List, Package, Plus, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -453,18 +453,25 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
   }
 
   return (
-    <div className="relative flex h-full flex-col py-2">
-      <section className="flex flex-col gap-4">
-        {/* offer type */}
-        {/* client/vendor */}
-        {isOfferType === 'GOODS' && (
-          // goods : client/vendor details
-          <div className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 p-4">
-            {cta === 'offer' && (
-              <div className="flex w-1/2 flex-col gap-2">
-                <Label className="flex gap-1">
-                  {translations('form.label.client')}
-                  <span className="text-red-600">*</span>
+    <div className="flex h-full flex-col gap-8 py-6">
+      {/* 1. Section: Client/Vendor Information */}
+      {isOfferType === 'GOODS' && (
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
+            <User className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold text-neutral-800">
+              {cta === 'offer'
+                ? translations('form.label.client')
+                : translations('form.label.vendor')}
+            </h3>
+          </div>
+
+          <div className="flex flex-col gap-4 px-1">
+            {cta === 'offer' ? (
+              <div className="flex max-w-md flex-col gap-2">
+                <Label className="text-sm font-medium">
+                  {translations('form.label.client')}{' '}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <div className="flex w-full flex-col gap-1">
                   <Select
@@ -472,7 +479,7 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
                     placeholder={translations('form.input.client.placeholder')}
                     options={clientOptions}
                     styles={getStylesForSelectComponent()}
-                    className="max-w-xs text-sm"
+                    className="text-sm"
                     classNamePrefix="select"
                     value={
                       clientOptions?.find(
@@ -480,7 +487,7 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
                       ) || null
                     }
                     onChange={(selectedOption) => {
-                      if (!selectedOption) return; // Guard clause
+                      if (!selectedOption) return;
 
                       setSelectedItem({
                         productName: '',
@@ -522,8 +529,6 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
                       }
                     }}
                   />
-
-                  {/* Conditionally render the AddModal when "Add New Client" is selected */}
                   {isModalOpen && (
                     <AddModal
                       type="Add"
@@ -537,12 +542,11 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
                   {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
                 </div>
               </div>
-            )}
-            {cta !== 'offer' && (
-              <div className="flex w-1/2 flex-col gap-2">
-                <Label className="flex gap-1">
-                  {translations('form.label.vendor')}
-                  <span className="text-red-600">*</span>
+            ) : (
+              <div className="flex max-w-md flex-col gap-2">
+                <Label className="text-sm font-medium">
+                  {translations('form.label.vendor')}{' '}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <div className="flex w-full flex-col gap-1">
                   <Select
@@ -550,16 +554,16 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
                     placeholder={translations('form.input.vendor.placeholder')}
                     options={vendorOptions}
                     styles={getStylesForSelectComponent()}
-                    className="max-w-xs text-sm"
+                    className="text-sm"
                     classNamePrefix="select"
                     value={
                       vendorOptions?.find(
                         (option) =>
                           option.value === order?.selectedValue?.value,
                       ) || null
-                    } // Match selected value
+                    }
                     onChange={(selectedOption) => {
-                      if (!selectedOption) return; // Guard clause for no selection
+                      if (!selectedOption) return;
 
                       setSelectedItem({
                         productName: '',
@@ -570,26 +574,25 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
                         gstPerUnit: null,
                         totalAmount: null,
                         totalGstAmount: null,
-                      }); // Reset selected item
+                      });
 
-                      const { value: id, gstNumber } = selectedOption; // Extract id and isAccepted from the selected option
+                      const { value: id, gstNumber } = selectedOption;
 
-                      // Check if "Add New vendor" is selected
                       if (selectedOption.value === 'add-new-vendor') {
-                        setIsModalOpen(true); // Open the modal when "Add New Vendor" is selected
+                        setIsModalOpen(true);
                       } else {
-                        setIsGstApplicableForPurchaseOrders(!!gstNumber); // setting gstNumber for check gst/non-gst vendor
+                        setIsGstApplicableForPurchaseOrders(!!gstNumber);
 
                         const updatedOrder = {
                           ...order,
                           sellerEnterpriseId: id,
-                          orderItems: [], // Clear existing order items
+                          orderItems: [],
                         };
 
                         setOrder({
                           ...updatedOrder,
                           selectedValue: selectedOption,
-                        }); // Update selected value
+                        });
 
                         saveDraftToSession({
                           cta,
@@ -601,8 +604,6 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
                       }
                     }}
                   />
-
-                  {/* Conditionally render the AddModal when "Add New Client" is selected */}
                   {isModalOpen && (
                     <AddModal
                       type="Add"
@@ -620,78 +621,76 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
               </div>
             )}
           </div>
-        )}
+        </section>
+      )}
 
-        {/* Items/Service */}
-        <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
-          <div className="grid grid-cols-4 gap-2">
-            {/* Items/Service */}
-            <div className="flex w-full max-w-xs flex-col gap-2">
-              <Label className="flex gap-1">
-                {translations('form.label.item')}
-                <span className="text-red-600">*</span>
+      {/* 2. Section: Items/Services Related Fields */}
+      <section className="flex flex-col gap-4">
+        <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
+          <Package className="h-5 w-5 text-primary" />
+          <h3 className="text-lg font-semibold text-neutral-800">
+            {translations('title.sub_titles.add_item')}
+          </h3>
+        </div>
+
+        <div className="flex flex-col gap-6 px-1">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-5">
+            {/* Item Selection */}
+            <div className="flex flex-col gap-2">
+              <Label className="text-sm font-medium">
+                {translations('form.label.item')}{' '}
+                <span className="text-red-500">*</span>
               </Label>
-              <div className="flex flex-col gap-1">
-                <Select
-                  name="items"
-                  value={selectedOption}
-                  placeholder={translations('form.input.item.placeholder')}
-                  options={itemOptions}
-                  styles={getStylesForSelectComponent()}
-                  isOptionDisabled={(option) => option.disabled}
-                  isDisabled={
-                    (cta === 'offer' && order.buyerId == null) ||
-                    (cta === 'bid' && order.sellerEnterpriseId == null) ||
-                    order.invoiceType === ''
-                  }
-                  onChange={(selectedOption) => {
-                    const selectedItemData = selectedOption?.value;
-                    if (!selectedItemData) return;
+              <Select
+                name="items"
+                value={selectedOption}
+                placeholder={translations('form.input.item.placeholder')}
+                options={itemOptions}
+                styles={getStylesForSelectComponent()}
+                isOptionDisabled={(option) => option.disabled}
+                isDisabled={
+                  (cta === 'offer' && order.buyerId == null) ||
+                  (cta === 'bid' && order.sellerEnterpriseId == null) ||
+                  order.invoiceType === ''
+                }
+                onChange={(selectedOption) => {
+                  const selectedItemData = selectedOption?.value;
+                  if (!selectedItemData) return;
 
-                    const isGstApplicableForPage = isPurchasePage
-                      ? isGstApplicable(isGstApplicableForPurchaseOrders)
-                      : isGstApplicable(isGstApplicableForSalesOrders);
+                  const isGstApplicableForPage = isPurchasePage
+                    ? isGstApplicable(isGstApplicableForPurchaseOrders)
+                    : isGstApplicable(isGstApplicableForSalesOrders);
 
-                    const gstPerUnit = isGstApplicableForPage
-                      ? Number(selectedItemData.gstPercentage) || 0
-                      : 0;
+                  const gstPerUnit = isGstApplicableForPage
+                    ? Number(selectedItemData.gstPercentage) || 0
+                    : 0;
 
-                    // GOODS specific logic
-                    const updatedItem = {
-                      ...selectedItem,
-                      productId: selectedItemData.id,
-                      productType: 'GOODS',
-                      unitPrice:
-                        selectedItemData.salesPrice ??
-                        selectedItemData.rate ??
-                        selectedItemData.cataloguePrice ??
-                        0, // auto fallback
+                  const updatedItem = {
+                    ...selectedItem,
+                    productId: selectedItemData.id,
+                    productType: 'GOODS',
+                    unitPrice:
+                      selectedItemData.salesPrice ??
+                      selectedItemData.rate ??
+                      selectedItemData.cataloguePrice ??
+                      0,
+                    gstPerUnit,
+                    productName: selectedItemData.name,
+                    hsnCode: selectedItemData.hsnCode,
+                  };
 
-                      gstPerUnit,
-                      productName: selectedItemData.name,
-                      hsnCode: selectedItemData.hsnCode,
-                    };
-
-                    // Persist local state
-                    setSelectedItem(updatedItem);
-
-                    // Save in session draft
-                    saveDraftToSession({
-                      cta,
-                      data: {
-                        ...order,
-                        itemDraft: updatedItem,
-                      },
-                    });
-                  }}
-                />
-
-                {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
-              </div>
+                  setSelectedItem(updatedItem);
+                  saveDraftToSession({
+                    cta,
+                    data: { ...order, itemDraft: updatedItem },
+                  });
+                }}
+              />
+              {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
             </div>
 
-            {/* Items/Service Quantity */}
-            <div className="flex flex-col gap-1">
+            {/* Quantity */}
+            <div className="flex flex-col gap-2">
               <InputWithSelect
                 id="quantity"
                 name={translations('form.label.quantity')}
@@ -712,146 +711,122 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
                     const updated = { ...prev, unitId: Number(val) };
                     saveDraftToSession({
                       cta,
-                      data: {
-                        ...order,
-                        itemDraft: updated,
-                      },
+                      data: { ...order, itemDraft: updated },
                     });
                     return updated;
                   });
                 }}
                 units={units?.quantity}
-                unitPlaceholder="Select unit"
+                unitPlaceholder="Unit"
                 min={0}
                 step="any"
               />
-
               {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
             </div>
 
-            {/* Items/Service Price */}
+            {/* Price */}
             <div className="flex flex-col gap-2">
-              <Label className="flex gap-1">
-                {translations('form.label.price')}
-                <span className="text-red-600">*</span>
+              <Label className="text-sm font-medium">
+                {translations('form.label.price')}{' '}
+                <span className="text-red-500">*</span>
               </Label>
-              <div className="flex flex-col gap-1">
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  min={1}
-                  disabled={
-                    (cta === 'offer' && order.buyerId == null) ||
-                    order.sellerEnterpriseId == null
-                  }
-                  value={
-                    selectedItem.unitPrice == null ||
-                    selectedItem.unitPrice === 0
-                      ? ''
-                      : selectedItem.unitPrice
-                  }
-                  className="max-w-30"
-                  onChange={handlePriceChange}
-                />
-
-                {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
-              </div>
+              <Input
+                type="number"
+                placeholder="0.00"
+                min={1}
+                disabled={
+                  (cta === 'offer' && order.buyerId == null) ||
+                  order.sellerEnterpriseId == null
+                }
+                value={
+                  selectedItem.unitPrice == null || selectedItem.unitPrice === 0
+                    ? ''
+                    : selectedItem.unitPrice
+                }
+                className="border-neutral-200 bg-white"
+                onChange={handlePriceChange}
+              />
+              {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
             </div>
 
-            {/* Items/Service GST% */}
+            {/* Taxable Value */}
+            <div className="flex flex-col gap-2">
+              <Label className="text-sm font-medium">
+                {isOrder === 'invoice'
+                  ? translations('form.label.invoice_value')
+                  : translations('form.label.value')}
+                <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                disabled
+                value={selectedItem.totalAmount || '0.00'}
+                className="border-neutral-100 bg-neutral-50"
+              />
+              {errorMsg.totalAmount && <ErrorBox msg={errorMsg.totalAmount} />}
+            </div>
+
+            {/* GST% & Tax Amount (Conditional) */}
             {isGstApplicable(
               isPurchasePage
                 ? isGstApplicableForPurchaseOrders
                 : isGstApplicableForSalesOrders,
             ) && (
-              <div className="flex flex-col gap-2">
-                <Label className="flex">
-                  {translations('form.label.gst')}
-                  <span className="text-xs"> (%)</span>
-                  <span className="text-red-600">*</span>
-                </Label>
-                <div className="flex flex-col gap-1">
-                  <Input disabled value={selectedItem.gstPerUnit || ''} />
+              <>
+                <div className="flex flex-col gap-2">
+                  <Label className="flex items-center text-sm font-medium">
+                    {translations('form.label.gst')}
+                    <span className="ml-1 text-xs text-neutral-400">(%)</span>
+                    <span className="ml-1 text-red-500">*</span>
+                  </Label>
+                  <Input
+                    disabled
+                    value={selectedItem.gstPerUnit || '0'}
+                    className="border-neutral-100 bg-neutral-50"
+                  />
                   {errorMsg.gstPerUnit && (
                     <ErrorBox msg={errorMsg.gstPerUnit} />
                   )}
                 </div>
-              </div>
-            )}
-            {/* Items/Service Value */}
-            <div className="flex flex-col gap-2">
-              <Label className="flex gap-1">
-                {isOrder === 'invoice'
-                  ? translations('form.label.invoice_value')
-                  : translations('form.label.value')}
-                <span className="text-red-600">*</span>
-              </Label>
-              <div className="flex flex-col gap-1">
-                <Input
-                  disabled
-                  value={selectedItem.totalAmount || ''}
-                  className="max-w-30"
-                />
-                {errorMsg.totalAmount && (
-                  <ErrorBox msg={errorMsg.totalAmount} />
-                )}
-              </div>
-            </div>
 
-            {/* Items/Service Tax amount */}
-            {isGstApplicable(
-              isPurchasePage
-                ? isGstApplicableForPurchaseOrders
-                : isGstApplicableForSalesOrders,
-            ) && (
-              <div className="flex flex-col gap-2">
-                <Label className="flex gap-1">
-                  {translations('form.label.tax_amount')}
-                  <span className="text-red-600">*</span>
-                </Label>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-2">
+                  <Label className="text-sm font-medium">
+                    {translations('form.label.tax_amount')}{' '}
+                    <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     disabled
-                    value={selectedItem.totalGstAmount || ''}
-                    className="max-w-30"
+                    value={selectedItem.totalGstAmount || '0.00'}
+                    className="border-neutral-100 bg-neutral-50"
                   />
                   {errorMsg.totalGstAmount && (
                     <ErrorBox msg={errorMsg.totalGstAmount} />
                   )}
                 </div>
-              </div>
-            )}
 
-            {/* Items/Service Amount */}
-            {isGstApplicable(
-              isPurchasePage
-                ? isGstApplicableForPurchaseOrders
-                : isGstApplicableForSalesOrders,
-            ) && (
-              <div className="flex flex-col gap-2">
-                <Label className="flex gap-1">
-                  {translations('form.label.amount')}
-                  <span className="text-red-600">*</span>
-                </Label>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-2">
+                  <Label className="text-sm font-medium">
+                    {translations('form.label.amount')}{' '}
+                    <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     disabled
-                    value={selectedItem?.finalAmount}
-                    className="max-w-30"
+                    value={selectedItem?.finalAmount || '0.00'}
+                    className="border-blue-100 bg-blue-50/30 font-semibold text-blue-800"
                   />
                   {errorMsg.finalAmount && (
                     <ErrorBox msg={errorMsg.finalAmount} />
                   )}
                 </div>
-              </div>
+              </>
             )}
           </div>
-          <div className="flex items-center justify-end gap-4">
+
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-3">
             <Button
-              size="sm"
               variant="outline"
+              size="sm"
               onClick={() => {
-                // Reset selected item
                 const updatedItem = {
                   productName: '',
                   productType: 'GOODS',
@@ -864,15 +839,10 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
                   totalGstAmount: null,
                   finalAmount: '',
                 };
-
                 setSelectedItem(updatedItem);
-
                 saveDraftToSession({
                   cta,
-                  data: {
-                    ...order,
-                    itemDraft: updatedItem,
-                  },
+                  data: { ...order, itemDraft: updatedItem },
                 });
               }}
             >
@@ -880,6 +850,7 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
             </Button>
             <Button
               size="sm"
+              className="max-w-[125px]"
               disabled={
                 !selectedItem.productId ||
                 !selectedItem.quantity ||
@@ -896,15 +867,12 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
                     gstPerUnit: selectedItem.gstPerUnit ?? 0,
                   },
                 ];
-
                 const updatedOrder = {
                   ...order,
                   orderItems: updatedOrderItems,
                 };
-
                 setOrder(updatedOrder);
 
-                // Clear the selected item (itemDraft in UI)
                 const clearedItem = {
                   productName: '',
                   productType: 'GOODS',
@@ -919,69 +887,80 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
                 };
                 setSelectedItem(clearedItem);
 
-                // Maintain updated session storage without itemDraft
                 const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
                 const { itemDraft, ...rest } =
                   SessionStorageService.get(key) || {};
                 saveDraftToSession({
                   cta,
-                  data: {
-                    ...rest,
-                    ...updatedOrder,
-                  },
+                  data: { ...rest, ...updatedOrder },
                 });
-
                 setErrorMsg({});
               }}
-              variant="blue_outline"
             >
               {translations('form.ctas.add')}
             </Button>
           </div>
         </div>
-        {/* selected item table */}
-        <DataTable data={order.orderItems} columns={createSalesColumns} />
+      </section>
 
-        <div className="mt-auto h-[1px] bg-neutral-300"></div>
+      {/* 3. Section: DataTable */}
+      <section className="flex flex-col gap-4">
+        <div className="flex items-center gap-2 border-b border-neutral-100 pb-1">
+          <List className="h-5 w-5 text-primary" />
+          <h3 className="text-lg font-semibold text-neutral-800">
+            Items Added
+          </h3>
+        </div>
+        <div className="overflow-hidden rounded-lg border border-neutral-100 shadow-sm">
+          <DataTable data={order.orderItems} columns={createSalesColumns} />
+        </div>
+      </section>
 
-        {/* Footers : with info and ctas */}
-        <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4 bg-white">
-          <div className="flex items-center gap-2">
+      {/* 4. Section: Footers / Summary */}
+      <footer className="sticky bottom-0 z-20 mt-auto border-t border-neutral-200 bg-white/80 px-1 py-4 backdrop-blur-md">
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div className="flex items-center gap-2 text-primary">
+            <CreditCard className="h-4 w-4" />
+            <span className="text-sm font-bold tracking-tight">Summary</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-10">
             {isGstApplicable(
               isPurchasePage
                 ? isGstApplicableForPurchaseOrders
                 : isGstApplicableForSalesOrders,
             ) && (
               <>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold">
-                    {translations('form.footer.gross_amount')} :{' '}
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                    {translations('form.footer.gross_amount')}
                   </span>
-                  <span className="rounded-sm border bg-slate-100 p-2">
-                    {grossAmount.toFixed(2)}
+                  <span className="text-sm font-bold text-neutral-800">
+                    ₹ {grossAmount.toFixed(2)}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold">
-                    {translations('form.footer.tax_amount')} :{' '}
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                    {translations('form.footer.tax_amount')}
                   </span>
-                  <span className="rounded-sm border bg-slate-100 p-2">
-                    {totalGstAmount.toFixed(2)}
+                  <span className="text-sm font-bold text-orange-600">
+                    ₹ {totalGstAmount.toFixed(2)}
+                  </span>
+                </div>
+
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                    {translations('form.footer.total_amount')}
+                  </span>
+                  <span className="text-sm font-bold text-green-600">
+                    ₹ {finalAmount.toFixed(2)}
                   </span>
                 </div>
               </>
             )}
-            <div className="flex items-center gap-2">
-              <span className="font-bold">
-                {translations('form.footer.total_amount')} :{' '}
-              </span>
-              <span className="rounded-sm border bg-slate-100 p-2">
-                {finalAmount.toFixed(2)}
-              </span>
-            </div>
           </div>
         </div>
-      </section>
+      </footer>
     </div>
   );
 };

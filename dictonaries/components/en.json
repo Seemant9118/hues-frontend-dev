@@ -203,7 +203,7 @@
             "title": {
                 "offer": "Offer",
                 "bid": "Bid",
-                "revise": "Revise bid",
+                "revise": "Revise",
                 "sub_titles": {
                     "add_item": "Add Items/Entries",
                     "edit_item": "Edit Items/Entries"
