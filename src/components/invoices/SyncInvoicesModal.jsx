@@ -51,18 +51,68 @@ const SyncInvoicesModal = ({
     mutationFn:
       type === 'SALES' ? syncInvoicesWithGSTR1 : syncInvoicesWithGSTR2A,
     onSuccess: (res) => {
-      const data = res?.data?.data || {};
+      const responseData = res?.data || {};
+      const innerData = responseData.data || {};
+      const b2bData = innerData.data?.b2b || [];
+      const matchedInvoices = innerData.matchedInvoices || [];
+
+      const processedInvoices = [];
+      let totalFetchedCount = 0;
+
+      // Map portal invoices and cross-reference with matches
+      b2bData.forEach((b2bItem) => {
+        const { ctin } = b2bItem;
+        b2bItem.inv?.forEach((inv) => {
+          totalFetchedCount++;
+          const match = matchedInvoices.find(
+            (m) => m.portalInvoiceNumber === inv.inum && m.ctin === ctin,
+          );
+
+          processedInvoices.push({
+            id: match?.result?.systemReferenceNumber || inv.inum, // Fallback to inum if no system ref
+            portalNo: inv.inum,
+            booksNo: match?.result?.systemReferenceNumber || 'Not in Books',
+            entity: ctin,
+            status:
+              match?.result?.status === 'MATCHED' ? 'Matched' : 'Portal Only',
+          });
+        });
+      });
+
+      // Add invoices that might be in matchedInvoices (Books Only) but not in portal feed
+      matchedInvoices.forEach((m) => {
+        const alreadyAdded = processedInvoices.some(
+          (p) => p.portalNo === m.portalInvoiceNumber && p.entity === m.ctin,
+        );
+        if (!alreadyAdded) {
+          processedInvoices.push({
+            id: m.result?.systemReferenceNumber || m.portalInvoiceNumber,
+            portalNo: m.portalInvoiceNumber || 'N/A',
+            booksNo: m.result?.systemReferenceNumber || 'N/A',
+            entity: m.ctin,
+            status: 'Books Only',
+          });
+        }
+      });
+
       setSyncResults({
-        totalFetched: data.totalFetched || 0,
-        matchesFound: data.matchesFound || 0,
-        breakdown: data.breakdown || { gst: 0, tally: 0 },
-        stats: data.stats || {
-          matched: 0,
-          partial: 0,
-          portalOnly: 0,
-          booksOnly: 0,
+        totalFetched: totalFetchedCount,
+        matchesFound: matchedInvoices.filter(
+          (m) => m.result?.status === 'MATCHED',
+        ).length,
+        breakdown: { gst: totalFetchedCount, tally: 0 },
+        stats: {
+          matched: processedInvoices.filter((i) => i.status === 'Matched')
+            .length,
+          partial: processedInvoices.filter((i) => i.status === 'Partial')
+            .length,
+          portalOnly: processedInvoices.filter(
+            (i) => i.status === 'Portal Only',
+          ).length,
+          booksOnly: processedInvoices.filter((i) => i.status === 'Books Only')
+            .length,
         },
-        invoices: data.invoices || [],
+        invoices: processedInvoices,
       });
       setStep('results');
     },
@@ -246,7 +296,7 @@ const SyncInvoicesModal = ({
               <h4 className="px-1 text-[10px] font-bold uppercase tracking-widest">
                 Affected Invoices
               </h4>
-              <div className="scrollBarStyles h-[220px] overflow-y-auto overflow-x-hidden rounded-sm border border-neutral-200 bg-white">
+              <div className="scrollBarStyles max-h-[220px] overflow-y-auto overflow-x-hidden rounded-sm border border-neutral-200 bg-white">
                 <div className="divide-y divide-neutral-100">
                   {syncResults?.invoices.map((inv) => (
                     <div
@@ -274,7 +324,7 @@ const SyncInvoicesModal = ({
                         <div className="flex flex-col items-end gap-3">
                           <div className="flex items-center gap-2">
                             <Badge
-                              className={`border-none px-2 py-0.5 text-[10px] ${inv.status === 'Partial' ? 'bg-amber-100 text-amber-700' : ''} ${inv.status === 'Portal Only' ? 'bg-sky-100 text-sky-700' : ''} ${inv.status === 'Matched' ? 'bg-emerald-100 text-emerald-700' : ''} `}
+                              className={`border-none px-2 py-0.5 text-[10px] ${inv.status === 'Partial' ? 'bg-amber-100 text-amber-700' : ''} ${inv.status === 'Portal Only' ? 'bg-sky-100 text-sky-700' : ''} ${inv.status === 'Matched' ? 'bg-emerald-100 text-emerald-700' : ''} ${inv.status === 'Books Only' ? 'bg-slate-100 text-slate-700' : ''}`}
                             >
                               {inv.status}
                             </Badge>

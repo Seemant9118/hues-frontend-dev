@@ -71,11 +71,18 @@ const GSTR1 = () => {
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
   const [filingOTPDialogOpen, setFilingOTPDialogOpen] = useState(false);
   const [summaryData, setSummaryData] = useState(null);
+  const [rowSelection, setRowSelection] = useState({});
   const isFirstLoad = useRef(true);
+
+  const handleResetSelection = () => {
+    setSelectedInvoicesToFile([]);
+    setRowSelection({});
+  };
 
   // Handle tab change
   const onTabChange = (value) => {
     setTab(value);
+    handleResetSelection();
   };
 
   const gstBreadCrumbs = [
@@ -210,6 +217,7 @@ const GSTR1 = () => {
         gstAPIs.getInvoicesByPeriod.endpointKey,
         period,
       ]);
+      handleResetSelection();
     },
     onError: (error) => {
       toast.error(
@@ -255,12 +263,14 @@ const GSTR1 = () => {
         return;
       }
 
+      const draftInvoices = selectedInvoicesToFile?.filter(
+        (item) => item.gstr1Filed?.isDraft === true,
+      );
+
       const payload = {
         retPeriod: period,
         invoiceIds: [],
-        removedInvoiceIds: selectedInvoicesToFile?.map(
-          (item) => item.invoiceId,
-        ),
+        removedInvoiceIds: draftInvoices?.map((item) => item.invoiceId),
       };
 
       saveDraftMutation.mutate(payload);
@@ -279,6 +289,7 @@ const GSTR1 = () => {
         gstAPIs.getInvoicesByPeriod.endpointKey,
         period,
       ]);
+      handleResetSelection();
     },
     onError: (error) => {
       toast.error(
@@ -358,6 +369,7 @@ const GSTR1 = () => {
         gstAPIs.getInvoicesByPeriod.endpointKey,
         period,
       ]);
+      handleResetSelection();
     },
     onError: (error) => {
       toast.error(
@@ -433,6 +445,7 @@ const GSTR1 = () => {
                     label: 'B2B Invoices',
                     onClick: async () => {
                       await invoicesForGstFilingQuery.refetch();
+                      handleResetSelection();
                     },
                   },
                   {
@@ -500,7 +513,9 @@ const GSTR1 = () => {
                 </TabsTrigger>
               </TabsList>
 
-              {selectedInvoicesToFile.length > 0 && (
+              {selectedInvoicesToFile.some(
+                (inv) => inv.gstr1Filed?.isDraft === true,
+              ) && (
                 <Button
                   size="sm"
                   variant="destructive"
@@ -537,6 +552,7 @@ const GSTR1 = () => {
                                 label: 'B2B Invoices',
                                 onClick: async () => {
                                   await invoicesForGstFilingQuery.refetch();
+                                  handleResetSelection();
                                 },
                               },
                               {
@@ -568,6 +584,8 @@ const GSTR1 = () => {
                         totalPages={paginationData?.totalPages}
                         currFetchedPage={paginationData?.currFetchedPage}
                         // onRowClick={onRowClick}
+                        rowSelection={rowSelection}
+                        onRowSelectionChange={setRowSelection}
                       />
                     )}
                   </>

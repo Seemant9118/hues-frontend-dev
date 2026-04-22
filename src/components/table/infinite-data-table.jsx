@@ -29,6 +29,8 @@ export default function InfiniteDataTable({
   totalPages,
   currFetchedPage,
   onRowClick,
+  rowSelection,
+  onRowSelectionChange,
 }) {
   const tableContainerRef = useRef(null);
   const [sorting, setSorting] = useState([]);
@@ -46,9 +48,14 @@ export default function InfiniteDataTable({
   const table = useReactTable({
     data: data || [],
     columns,
-    state: { sorting, columnFilters },
+    state: {
+      sorting,
+      columnFilters,
+      ...(rowSelection !== undefined && { rowSelection }),
+    },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    ...(onRowSelectionChange !== undefined && { onRowSelectionChange }),
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),

@@ -209,7 +209,7 @@ export default function GstRegistrations({ enterpriseId, translations }) {
 
   return (
     <>
-      <div className="w-full">
+      <div className="flex w-full flex-col gap-4">
         {/* GSTIN main block */}
         {gstList.length === 0 ? (
           <Card className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed bg-muted/20 p-10 text-center shadow-none">
@@ -704,7 +704,7 @@ export default function GstRegistrations({ enterpriseId, translations }) {
           })
         )}
         {/* RCM supplier markers Markers */}
-        <Card className="mt-2 flex flex-col gap-2 rounded-2xl border bg-white p-6">
+        <Card className="flex flex-col gap-2 rounded-2xl border bg-white p-6">
           <div className="flex flex-col items-start gap-2">
             <p className="text-sm font-semibold tracking-wide text-primary">
               {translations('tabs.content.tab2.rcmMarkers.title')}
