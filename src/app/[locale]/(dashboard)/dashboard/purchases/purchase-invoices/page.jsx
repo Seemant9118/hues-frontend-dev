@@ -8,6 +8,14 @@ import Tooltips from '@/components/auth/Tooltips';
 import CreatePurchaseInvoice from '@/components/invoices/CreatePurchaseInvoice';
 import FilterInvoices from '@/components/invoices/FilterInvoices';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import AuthenticationExpired from '@/components/gst/AuthenticationExpired';
+import GSTOTPDialog from '@/components/gst/GSTOTPDialog';
+import SyncInvoicesModal from '@/components/invoices/SyncInvoicesModal';
+import {
+  requestGSTOTP,
+  verifyGSTOTP,
+} from '@/services/GST_Services/GST_Services';
+import { gstAPIs } from '@/api/gstAPI/gstApi';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
@@ -32,8 +40,9 @@ import {
   useInfiniteQuery,
   useMutation,
   useQuery,
+  useQueryClient,
 } from '@tanstack/react-query';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, RefreshCw } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -73,6 +82,12 @@ const PurchaseInvoices = () => {
   const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
   const [filterData, setFilterData] = useState(null);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+  const [authExpiredModalOpen, setAuthExpiredModalOpen] = useState(false);
+  const [showOTPDialog, setShowOTPDialog] = useState(false);
+  const [triggerSyncPeriod, setTriggerSyncPeriod] = useState(null);
+
+  const queryClient = useQueryClient();
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -342,6 +357,60 @@ const PurchaseInvoices = () => {
     }
   };
 
+  // [RE-AUTHENTICATION_FLOW]
+  const requestOTPMutation = useMutation({
+    mutationFn: requestGSTOTP,
+    onSuccess: () => {
+      toast.success('OTP sent successfully to your registered contact');
+      setAuthExpiredModalOpen(false);
+      setShowOTPDialog(true);
+    },
+    onError: (error) => {
+      toast.error(
+        error?.response?.data?.message ||
+          'Failed to send OTP. Please try again.',
+      );
+    },
+  });
+
+  const handleGenerateOTP = () => {
+    requestOTPMutation.mutate();
+  };
+
+  const verifyOTPMutation = useMutation({
+    mutationFn: verifyGSTOTP,
+    onSuccess: () => {
+      toast.success('Authentication successful!');
+      setShowOTPDialog(false);
+      // Invalidate auth status
+      queryClient.invalidateQueries({
+        queryKey: [gstAPIs.checkAuth.endpointKey],
+      });
+      // Re-open sync modal and trigger sync
+      setIsSyncModalOpen(true);
+    },
+    onError: (error) => {
+      toast.error(
+        error?.response?.data?.message || 'Invalid OTP. Please try again.',
+      );
+    },
+  });
+
+  const handleVerifyOTP = (otp) => {
+    verifyOTPMutation.mutate({ otp });
+  };
+
+  const handleSyncError = (period) => {
+    setIsSyncModalOpen(false);
+    setTriggerSyncPeriod(period);
+    setAuthExpiredModalOpen(true);
+  };
+
+  const handleCloseSyncModal = () => {
+    setIsSyncModalOpen(false);
+    setTriggerSyncPeriod(null);
+  };
+
   // Assuming useinvoiceColumns is a valid hook or function to generate the table columns
   const invoiceColumns = usePurchaseInvoicesColumns(setSelectedInvoices);
 
@@ -363,6 +432,19 @@ const PurchaseInvoices = () => {
                 className="sticky top-0 z-10 flex items-center justify-between bg-white"
               >
                 <div className="flex items-center justify-center gap-3">
+                  <Tooltips
+                    trigger={
+                      <Button
+                        onClick={() => setIsSyncModalOpen(true)}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <RefreshCw size={16} />
+                        Sync Invoices
+                      </Button>
+                    }
+                    content={'Sync Invoices from external sources'}
+                  />
                   <Tooltips
                     trigger={
                       <Button
@@ -540,6 +622,27 @@ const PurchaseInvoices = () => {
           )}
         </>
       )}
+      <SyncInvoicesModal
+        type="PURCHASES"
+        isOpen={isSyncModalOpen}
+        onClose={handleCloseSyncModal}
+        onSyncError={handleSyncError}
+        triggerSyncPeriod={triggerSyncPeriod}
+      />
+
+      <AuthenticationExpired
+        open={authExpiredModalOpen}
+        onClose={() => setAuthExpiredModalOpen(false)}
+        handleGenerateOTP={handleGenerateOTP}
+        requestOTPMutation={requestOTPMutation}
+      />
+
+      <GSTOTPDialog
+        open={showOTPDialog}
+        onOpenChange={setShowOTPDialog}
+        onVerify={handleVerifyOTP}
+        isVerifying={verifyOTPMutation.isPending}
+      />
     </ProtectedWrapper>
   );
 };

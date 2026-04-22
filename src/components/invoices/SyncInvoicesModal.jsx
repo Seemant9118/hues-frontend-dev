@@ -17,7 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { syncInvoicesWithGSTR1 } from '@/services/GST_Services/GST_Services';
+import {
+  syncInvoicesWithGSTR1,
+  syncInvoicesWithGSTR2A,
+} from '@/services/GST_Services/GST_Services';
 import { useMutation } from '@tanstack/react-query';
 import { ExternalLink, Info, RefreshCw } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
@@ -28,6 +31,7 @@ const SyncInvoicesModal = ({
   onClose,
   onSyncError,
   triggerSyncPeriod,
+  type = 'SALES', // 'SALES' or 'PURCHASES'
 }) => {
   const [step, setStep] = useState('selection');
   const [selectedSources, setSelectedSources] = useState(['gst']); // default
@@ -44,7 +48,8 @@ const SyncInvoicesModal = ({
   ];
 
   const { mutate: runSync, isPending: isLoading } = useMutation({
-    mutationFn: syncInvoicesWithGSTR1,
+    mutationFn:
+      type === 'SALES' ? syncInvoicesWithGSTR1 : syncInvoicesWithGSTR2A,
     onSuccess: (res) => {
       const data = res?.data?.data || {};
       setSyncResults({
@@ -97,7 +102,9 @@ const SyncInvoicesModal = ({
             <RefreshCw
               className={`size-5 text-primary ${isLoading ? 'animate-spin' : ''}`}
             />
-            {step === 'selection' ? 'Sync Sales Invoices' : 'Sync Results'}
+            {step === 'selection'
+              ? `Sync ${type === 'SALES' ? 'Sales' : 'Purchase'} Invoices`
+              : 'Sync Results'}
           </DialogTitle>
         </DialogHeader>
 
@@ -279,7 +286,7 @@ const SyncInvoicesModal = ({
                             className="h-8 gap-1.5 px-3 text-[11px] font-semibold hover:bg-neutral-100"
                             onClick={() =>
                               window.open(
-                                `/dashboard/sales/sales-invoices/${inv.id}`,
+                                `/dashboard/${type === 'SALES' ? 'sales/sales-invoices' : 'purchases/purchase-invoices'}/${inv.id}`,
                                 '_blank',
                               )
                             }
