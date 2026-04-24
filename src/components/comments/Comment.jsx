@@ -211,6 +211,9 @@ const Comment = ({ comment, invalidateId }) => {
                     />
                     <X
                       size={18}
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Remove attachment"
                       className="absolute right-0 top-0 cursor-pointer rounded-full text-red-500"
                       onClick={() =>
                         handleRemoveExistingAttachment(attachment.id)
@@ -235,6 +238,9 @@ const Comment = ({ comment, invalidateId }) => {
                   </div>
                   <X
                     size={18}
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Remove file"
                     className="absolute right-0 top-0 cursor-pointer rounded-full text-red-500"
                     onClick={() => handleRemoveNewFile(index)}
                   />

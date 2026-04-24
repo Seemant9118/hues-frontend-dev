@@ -234,6 +234,7 @@ const CreateNewEntry = ({ onCancel }) => {
                         <Button
                           variant="ghost"
                           size="icon"
+                          aria-label="Delete row"
                           className="text-red-500 hover:text-red-600"
                           onClick={() => removeRow(row.id)}
                         >

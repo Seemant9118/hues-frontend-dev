@@ -117,6 +117,7 @@ const CommentBox = ({ contextId, context }) => {
           {/* Textarea */}
           <Textarea
             name="comment"
+            data-testid="comment-textarea"
             value={comment.text}
             onChange={(e) =>
               setComment((prev) => ({ ...prev, text: e.target.value }))
@@ -129,7 +130,7 @@ const CommentBox = ({ contextId, context }) => {
           <div className="absolute right-6 top-[18px] flex items-center gap-4 text-[#A5ABBD]">
             <Tooltips
               trigger={
-                <label htmlFor="fileUpload">
+                <label htmlFor="fileUpload" aria-label="Attach file">
                   <Paperclip
                     size={20}
                     className="cursor-pointer hover:text-black"
@@ -177,6 +178,9 @@ const CommentBox = ({ contextId, context }) => {
                 >
                   <X
                     size={16}
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Remove file"
                     onClick={() => handleFileRemove(file)}
                     className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
                   />
@@ -241,7 +245,12 @@ const CommentBox = ({ contextId, context }) => {
         )}
 
         <CollapsibleTrigger asChild>
-          <Button variant="ghost" size="sm" debounceTime={0}>
+          <Button
+            variant="ghost"
+            size="sm"
+            debounceTime={0}
+            aria-label="Toggle comments"
+          >
             {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </Button>
         </CollapsibleTrigger>
@@ -258,6 +267,7 @@ const CommentBox = ({ contextId, context }) => {
           {/* 2 */}
           <Textarea
             name="comment"
+            data-testid="comment-textarea"
             value={comment.text}
             onChange={(e) => {
               setComment((prev) => ({ ...prev, text: e.target.value }));
@@ -323,6 +333,9 @@ const CommentBox = ({ contextId, context }) => {
                 {/* Remove Button */}
                 <X
                   size={16}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Remove file"
                   onClick={() => handleFileRemove(file)}
                   className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
                 />
