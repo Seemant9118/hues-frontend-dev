@@ -798,6 +798,10 @@ const ViewDispatchNote = () => {
               productName:
                 item?.invoiceItem?.orderItemId?.productDetails?.productName ||
                 '',
+              salesPrice:
+                item?.invoiceItem?.unitPrice || item?.product?.salesPrice || 0,
+              skuId:
+                item?.invoiceItem?.orderItemId?.productDetails?.skuId || '',
             },
           },
         },
@@ -835,6 +839,7 @@ const ViewDispatchNote = () => {
       viewPdfInNewTab(dispatchDetails?.dispatchDocumentSlug);
     } else {
       const formattedPayload = formatDispatchPreviewPayload(dispatchDetails);
+
       previewDispatchNoteMutation.mutate({
         id: params.dispatchId,
         data: formattedPayload,
@@ -878,6 +883,7 @@ const ViewDispatchNote = () => {
 
   const generateDC = () => {
     const formattedPayload = formatDispatchPreviewPayload(dispatchDetails);
+
     // preview DC
     previewDCMutation.mutate({
       id: params.dispatchId,

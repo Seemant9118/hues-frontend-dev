@@ -31,6 +31,7 @@ export default function InfiniteDataTable({
   onRowClick,
   rowSelection,
   onRowSelectionChange,
+  getRowId,
 }) {
   const tableContainerRef = useRef(null);
   const [sorting, setSorting] = useState([]);
@@ -59,6 +60,8 @@ export default function InfiniteDataTable({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getRowId,
+    manualPagination: true,
   });
 
   const { rows } = table.getRowModel();
@@ -117,9 +120,13 @@ export default function InfiniteDataTable({
               {rows.length > 0 && (
                 <>
                   {/* Top spacer */}
-                  <TableRow aria-hidden className="pointer-events-none">
+                  <TableRow
+                    key="top-spacer"
+                    aria-hidden
+                    className="pointer-events-none"
+                  >
                     <TableCell
-                      colSpan={columns.length}
+                      colSpan={columns?.length || 1}
                       className="border-0 bg-transparent p-0"
                       style={{
                         height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0,
@@ -162,9 +169,13 @@ export default function InfiniteDataTable({
                   })}
 
                   {/* Bottom spacer */}
-                  <TableRow aria-hidden className="pointer-events-none">
+                  <TableRow
+                    key="bottom-spacer"
+                    aria-hidden
+                    className="pointer-events-none"
+                  >
                     <TableCell
-                      colSpan={columns.length}
+                      colSpan={columns?.length || 1}
                       className="border-0 bg-transparent p-0"
                       style={{
                         height:
@@ -178,11 +189,14 @@ export default function InfiniteDataTable({
 
               {/* Infinite scroll trigger */}
               {rows.length > 0 && hasNextPage && (
-                <TableRow>
-                  <TableCell colSpan={columns.length}>
+                <TableRow key="infinite-scroll-trigger">
+                  <TableCell
+                    colSpan={columns?.length || 1}
+                    className="border-0 p-0"
+                  >
                     <div
                       ref={loadMoreRef}
-                      className="py-4 text-center text-sm text-muted-foreground"
+                      className="flex items-center justify-center py-8 text-sm text-muted-foreground"
                     >
                       {isFetching
                         ? 'Loading more data...'

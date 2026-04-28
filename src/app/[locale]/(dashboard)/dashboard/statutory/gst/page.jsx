@@ -1,7 +1,10 @@
 'use client';
 
 import { gstAPIs } from '@/api/gstAPI/gstApi';
-import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import {
+  getCurrentFinancialYearPeriods,
+  getEnterpriseId,
+} from '@/appUtils/helperFunctions';
 import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
 import { PrepareGstrModal } from '@/components/statutory/PrepareGSTModal';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
@@ -19,6 +22,13 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useGstColumns } from './useGstColumns';
 
 const PAGE_LIMIT = 10;
@@ -30,7 +40,7 @@ const GST = () => {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
-
+  const currentFinancialPeriod = getCurrentFinancialYearPeriods();
   const translations = useTranslations('gsts');
   const keys = [
     'gsts.emptyStateComponent.subItems.subItem1',
@@ -45,6 +55,9 @@ const GST = () => {
   const [gsts, setGsts] = useState([]);
   const [paginationData, setPaginationData] = useState({});
   const [isPreparingGSTR1, setIsPreparingGSTR1] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState(
+    currentFinancialPeriod[0]?.value || '',
+  );
 
   // Handle tab change
   const onTabChange = (value) => {
@@ -53,11 +66,13 @@ const GST = () => {
 
   //   get filed gsts
   const gstsQuery = useInfiniteQuery({
-    queryKey: [gstAPIs.filedGsts.endpointKey],
+    queryKey: [gstAPIs.filedGsts.endpointKey, tab, selectedPeriod],
     queryFn: async ({ pageParam = 1 }) => {
       return filedGsts({
         page: pageParam,
         limit: PAGE_LIMIT,
+        retPeriod: selectedPeriod,
+        isFiled: tab === 'filled',
       });
     },
     initialPageParam: 1,
@@ -136,19 +151,34 @@ const GST = () => {
 
           {/* body - content */}
           <Tabs
-            className="flex flex-col gap-2"
+            className="flex flex-col"
             value={tab}
             onValueChange={onTabChange}
             defaultValue={'userOverview'}
           >
-            <TabsList className="w-fit border">
-              <TabsTrigger value="pending">
-                {translations('tabs.tab1.label')}
-              </TabsTrigger>
-              <TabsTrigger value="filled">
-                {translations('tabs.tab2.label')}
-              </TabsTrigger>
-            </TabsList>
+            <section className="flex items-center justify-between">
+              <TabsList className="w-fit border">
+                <TabsTrigger value="pending">
+                  {translations('tabs.tab1.label')}
+                </TabsTrigger>
+                <TabsTrigger value="filled">
+                  {translations('tabs.tab2.label')}
+                </TabsTrigger>
+              </TabsList>
+
+              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select Return Period" />
+                </SelectTrigger>
+                <SelectContent>
+                  {currentFinancialPeriod.map((period) => (
+                    <SelectItem key={period.value} value={period.value}>
+                      {period.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </section>
 
             <TabsContent value="pending">
               {' '}

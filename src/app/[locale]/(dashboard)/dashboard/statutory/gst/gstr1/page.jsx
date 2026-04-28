@@ -1,5 +1,6 @@
 'use client';
 
+import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
 import { gstAPIs } from '@/api/gstAPI/gstApi';
 import {
   formattedMonthDate,
@@ -19,8 +20,8 @@ import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
+import { getAllCreditNotes } from '@/services/Credit_Note_Services/CreditNoteServices';
 import {
   checkGSTAuth,
   filingGSTR1,
@@ -57,32 +58,54 @@ const GSTR1 = () => {
   const queryClient = useQueryClient();
 
   const router = useRouter();
-  const { hasPermission } = usePermission();
   const searchParams = useSearchParams();
   const period = searchParams.get('period');
   const [tab, setTab] = useState('b2b');
   const [showOTPDialog, setShowOTPDialog] = useState(false);
-  const [b2bInvoices, setB2BInvoices] = useState();
-  const [paginationData, setPaginationData] = useState({});
-  const [selectedInvoicesToFile, setSelectedInvoicesToFile] = useState([]);
+  const [b2bInvoices, setB2BInvoices] = useState(null);
+  const [creditNotes, setCreditNotes] = useState(null);
+  const [filingState, setFilingState] = useState({
+    selectedInvoices: [],
+    selectedCreditNotes: [],
+    deletedInvoices: [],
+    deletedCreditNotes: [],
+  });
+  const [b2bRowSelection, setB2BRowSelection] = useState({});
+  const [crnRowSelection, setCRNRowSelection] = useState({});
+
+  const [b2bPagination, setB2BPagination] = useState({
+    totalPages: 0,
+    currFetchedPage: 0,
+  });
+  const [crnPagination, setCRNPagination] = useState({
+    totalPages: 0,
+    currFetchedPage: 0,
+  });
+
   const [authExpiredModalOpen, setAuthExpiredModalOpen] = useState(false);
   /* eslint-disable-next-line no-unused-vars */
   const [isFinalized, setIsFinalized] = useState(false);
   const [summaryModalOpen, setSummaryModalOpen] = useState(false);
   const [filingOTPDialogOpen, setFilingOTPDialogOpen] = useState(false);
   const [summaryData, setSummaryData] = useState(null);
-  const [rowSelection, setRowSelection] = useState({});
   const isFirstLoad = useRef(true);
 
   const handleResetSelection = () => {
-    setSelectedInvoicesToFile([]);
-    setRowSelection({});
+    setFilingState({
+      selectedInvoices: [],
+      selectedCreditNotes: [],
+      deletedInvoices: [],
+      deletedCreditNotes: [],
+    });
+    setB2BRowSelection({});
+    setCRNRowSelection({});
+    setB2BPagination({ totalPages: 0, currFetchedPage: 0 });
+    setCRNPagination({ totalPages: 0, currFetchedPage: 0 });
   };
 
   // Handle tab change
   const onTabChange = (value) => {
     setTab(value);
-    handleResetSelection();
   };
 
   const gstBreadCrumbs = [
@@ -136,7 +159,7 @@ const GSTR1 = () => {
       if (isFirstLoad.current) return;
       toast.error('Failed to refetch data');
     },
-    enabled: hasPermission('permission:item-masters-view'),
+    enabled: tab === 'b2b',
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -161,11 +184,72 @@ const GSTR1 = () => {
     // pagination from last page
     const lastPage = source.pages[source.pages.length - 1]?.data?.data;
 
-    setPaginationData({
+    setB2BPagination({
       totalPages: Number(lastPage?.totalPages ?? 0),
       currFetchedPage: Number(lastPage?.currentPage ?? 0),
     });
   }, [invoicesForGstFilingQuery.data]);
+
+  // TODO: API endpoint change
+  // Fetch crns for GST Filling
+  const crnsQuery = useInfiniteQuery({
+    queryKey: [CreditNoteApi.getAllCreditNotes.endpoint, period],
+    queryFn: async ({ pageParam = 1 }) => {
+      return getAllCreditNotes({
+        page: pageParam,
+        limit: PAGE_LIMIT,
+        returnPeriod: period,
+        context: 'SELLER',
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const nextPage = groups.length + 1;
+      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+    },
+    onSuccess: () => {
+      if (isFirstLoad.current) {
+        isFirstLoad.current = false; // don't show toast on first load
+        return;
+      }
+      toast.success(`Data refetched successfully for period ${period}`);
+    },
+
+    onError: () => {
+      if (isFirstLoad.current) return;
+      toast.error('Failed to refetch data');
+    },
+    enabled: tab === 'crn',
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+
+  useEffect(() => {
+    const source = crnsQuery.data;
+
+    if (!source?.pages?.length) return;
+
+    // flatten items from pages
+    const flattened = source.pages.flatMap(
+      (page) => page?.data?.data?.data || [],
+    );
+
+    // remove duplicates by id
+    const uniqueCreditNotesListData = Array.from(
+      new Map(flattened.map((item) => [item.id, item])).values(),
+    );
+
+    setCreditNotes(uniqueCreditNotesListData);
+
+    // pagination from last page
+    const lastPage = source.pages[source.pages.length - 1]?.data?.data;
+
+    setCRNPagination({
+      totalPages: Number(lastPage?.totalPages ?? 0),
+      currFetchedPage: Number(lastPage?.currentPage ?? 0),
+    });
+  }, [crnsQuery.data]);
 
   // Request OTP mutation
   const requestOTPMutation = useMutation({
@@ -217,6 +301,11 @@ const GSTR1 = () => {
         gstAPIs.getInvoicesByPeriod.endpointKey,
         period,
       ]);
+      // Refetch credit notes for GST filing
+      queryClient.invalidateQueries([
+        CreditNoteApi.getAllCreditNotes.endpoint,
+        period,
+      ]);
       handleResetSelection();
     },
     onError: (error) => {
@@ -242,7 +331,10 @@ const GSTR1 = () => {
       // continue with next operation
       const payload = {
         retPeriod: period,
-        invoiceIds: selectedInvoicesToFile?.map((item) => item.invoiceId),
+        invoiceIds:
+          filingState.selectedInvoices?.map((item) => item.invoiceId) || [],
+        creditNoteIds:
+          filingState.selectedCreditNotes?.map((item) => item.id) || [],
       };
 
       saveDraftMutation.mutate(payload);
@@ -263,14 +355,19 @@ const GSTR1 = () => {
         return;
       }
 
-      const draftInvoices = selectedInvoicesToFile?.filter(
+      const draftInvoices = filingState.selectedInvoices?.filter(
+        (item) => item.gstr1Filed?.isDraft === true,
+      );
+      const draftCreditNotes = filingState.selectedCreditNotes?.filter(
         (item) => item.gstr1Filed?.isDraft === true,
       );
 
       const payload = {
         retPeriod: period,
         invoiceIds: [],
-        removedInvoiceIds: draftInvoices?.map((item) => item.invoiceId),
+        creditNoteIds: [],
+        removedInvoiceIds: draftInvoices?.map((item) => item.invoiceId) || [],
+        deletedCreditNoteIds: draftCreditNotes?.map((item) => item.id) || [],
       };
 
       saveDraftMutation.mutate(payload);
@@ -287,6 +384,11 @@ const GSTR1 = () => {
       // Refetch invoices for GST filing
       queryClient.invalidateQueries([
         gstAPIs.getInvoicesByPeriod.endpointKey,
+        period,
+      ]);
+      // Refetch credit notes for GST filing
+      queryClient.invalidateQueries([
+        CreditNoteApi.getAllCreditNotes.endpoint,
         period,
       ]);
       handleResetSelection();
@@ -369,6 +471,11 @@ const GSTR1 = () => {
         gstAPIs.getInvoicesByPeriod.endpointKey,
         period,
       ]);
+      // Refetch credit notes for GST filing
+      queryClient.invalidateQueries([
+        CreditNoteApi.getAllCreditNotes.endpoint,
+        period,
+      ]);
       handleResetSelection();
     },
     onError: (error) => {
@@ -390,8 +497,18 @@ const GSTR1 = () => {
     b2bInvoices?.length > 0 &&
     b2bInvoices.every((inv) => inv.gstr1Filed?.isDraft === true);
 
-  const gstColumns = useInvoicesForGSTFilingColumns({
-    setSelectedInvoicesToFile,
+  const totalSelectedCount =
+    filingState.selectedInvoices.length +
+    filingState.selectedCreditNotes.length;
+
+  const b2bColumns = useInvoicesForGSTFilingColumns({
+    type: 'b2b',
+    setFilingState,
+  });
+
+  const crnColumns = useInvoicesForGSTFilingColumns({
+    type: 'crn',
+    setFilingState,
   });
 
   return (
@@ -449,28 +566,22 @@ const GSTR1 = () => {
                     },
                   },
                   {
-                    key: 'b2cInvoices',
-                    label: 'B2C Invoices (coming soon)',
-                    className: 'cursor-not-allowed opacity-50',
-                    disabled: true,
-                    onClick: () => {},
-                  },
-                  {
                     key: 'crn',
-                    label: 'Credit Notes (coming soon)',
-                    className: 'cursor-not-allowed opacity-50',
-                    disabled: true,
-                    onClick: () => {},
+                    label: 'Credit Notes',
+                    onClick: async () => {
+                      await crnsQuery.refetch();
+                      handleResetSelection();
+                    },
                   },
                 ]}
               />
 
               <Button
                 size="sm"
-                disabled={selectedInvoicesToFile.length === 0 || isFinalized}
+                disabled={totalSelectedCount === 0 || isFinalized}
                 onClick={handleSaveDraft}
               >
-                Save Draft {`(${selectedInvoicesToFile.length})`}
+                Save Draft {`(${totalSelectedCount})`}
               </Button>
 
               {!isFinalized ? (
@@ -507,15 +618,24 @@ const GSTR1 = () => {
               <TabsList className="w-fit border">
                 <TabsTrigger value="b2b">
                   {translations('tabs.tab1.label')}
+                  {filingState.selectedInvoices.length
+                    ? ` (${filingState.selectedInvoices.length})`
+                    : ''}
                 </TabsTrigger>
                 <TabsTrigger value="crn">
                   {translations('tabs.tab2.label')}
+                  {filingState.selectedCreditNotes.length
+                    ? ` (${filingState.selectedCreditNotes.length})`
+                    : ''}
                 </TabsTrigger>
               </TabsList>
 
-              {selectedInvoicesToFile.some(
+              {(filingState.selectedInvoices.some(
                 (inv) => inv.gstr1Filed?.isDraft === true,
-              ) && (
+              ) ||
+                filingState.selectedCreditNotes.some(
+                  (crn) => crn.gstr1Filed?.isDraft === true,
+                )) && (
                 <Button
                   size="sm"
                   variant="destructive"
@@ -556,18 +676,12 @@ const GSTR1 = () => {
                                 },
                               },
                               {
-                                key: 'b2cInvoices',
-                                label: 'B2C Invoices (coming soon)',
-                                className: 'cursor-not-allowed opacity-50',
-                                disabled: true,
-                                onClick: () => {},
-                              },
-                              {
                                 key: 'crn',
-                                label: 'Credit Notes (coming soon)',
-                                className: 'cursor-not-allowed opacity-50',
-                                disabled: true,
-                                onClick: () => {},
+                                label: 'Credit Notes',
+                                onClick: async () => {
+                                  await crnsQuery.refetch();
+                                  handleResetSelection();
+                                },
                               },
                             ]}
                           />
@@ -577,15 +691,16 @@ const GSTR1 = () => {
                       // Case 2: data is available → Show Table
                       <InfiniteDataTable
                         id="gstr1-b2b-table"
-                        columns={gstColumns}
+                        columns={b2bColumns}
                         data={b2bInvoices}
                         fetchNextPage={invoicesForGstFilingQuery.fetchNextPage}
                         isFetching={invoicesForGstFilingQuery.isFetching}
-                        totalPages={paginationData?.totalPages}
-                        currFetchedPage={paginationData?.currFetchedPage}
+                        totalPages={b2bPagination?.totalPages}
+                        currFetchedPage={b2bPagination?.currFetchedPage}
                         // onRowClick={onRowClick}
-                        rowSelection={rowSelection}
-                        onRowSelectionChange={setRowSelection}
+                        rowSelection={b2bRowSelection}
+                        onRowSelectionChange={setB2BRowSelection}
+                        getRowId={(row) => row.invoiceId}
                       />
                     )}
                   </>
@@ -593,7 +708,64 @@ const GSTR1 = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="crn">Coming Soon...</TabsContent>
+            <TabsContent value="crn">
+              <div className="flex-grow overflow-hidden">
+                {crnsQuery.isLoading || crnsQuery.isFetching ? (
+                  <Loading />
+                ) : (
+                  <>
+                    {/* Case 1: No data → Empty stage */}
+                    {creditNotes?.length === 0 ? (
+                      <EmptyStageComponent
+                        heading={translations('emptyStateComponent.heading')}
+                        subHeading={translations(
+                          'emptyStateComponent.subHeading1',
+                        )}
+                        actionBtn={
+                          <ActionsDropdown
+                            label={'Fetch'}
+                            variant="default"
+                            actions={[
+                              {
+                                key: 'b2bInvoices',
+                                label: 'B2B Invoices',
+                                onClick: async () => {
+                                  await invoicesForGstFilingQuery.refetch();
+                                  handleResetSelection();
+                                },
+                              },
+                              {
+                                key: 'crn',
+                                label: 'Credit Notes',
+                                onClick: async () => {
+                                  await crnsQuery.refetch();
+                                  handleResetSelection();
+                                },
+                              },
+                            ]}
+                          />
+                        }
+                      />
+                    ) : (
+                      // Case 2: data is available → Show Table
+                      <InfiniteDataTable
+                        id="gstr1-crn-table"
+                        columns={crnColumns}
+                        data={creditNotes}
+                        fetchNextPage={crnsQuery.fetchNextPage}
+                        isFetching={crnsQuery.isFetching}
+                        totalPages={crnPagination?.totalPages}
+                        currFetchedPage={crnPagination?.currFetchedPage}
+                        // onRowClick={onRowClick}
+                        rowSelection={crnRowSelection}
+                        onRowSelectionChange={setCRNRowSelection}
+                        getRowId={(row) => row.id}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+            </TabsContent>
           </Tabs>
 
           {/* OTP Dialog */}

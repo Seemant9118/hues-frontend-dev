@@ -332,10 +332,6 @@ const ViewDelivery = () => {
     billingFrom: dispatchDetails?.metaData?.billingFromAddress?.address || '-',
     legFrom: capitalize(dispatchDetails?.transportBookings[0]?.legFrom) || '-',
     legTo: capitalize(dispatchDetails?.transportBookings[0]?.legTo) || '-',
-    // billingAddress:
-    //   capitalize(dispatchDetails?.metaData?.billingAddress?.address) || '-',
-    // shippingAddress:
-    //   capitalize(dispatchDetails?.metaData?.shippingAddress?.address) || '-',
   };
   const overviewLabels = {
     deliveryChallanNo: translations('overview_labels.delivery_challan_no'),
@@ -352,8 +348,6 @@ const ViewDelivery = () => {
     billingFrom: translations('overview_labels.billing_from'),
     legFrom: translations('overview_labels.legFrom'),
     legTo: translations('overview_labels.legTo'),
-    // billingAddress: translations('overview_labels.billing_address'),
-    // shippingAddress: translations('overview_labels.shipping_address'),
   };
 
   // overview custom label render
@@ -776,7 +770,6 @@ const ViewDelivery = () => {
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
-
   useEffect(() => {
     if (!data) return;
 

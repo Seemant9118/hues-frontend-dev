@@ -6,25 +6,38 @@ import moment from 'moment';
 
 export const useGstColumns = () => {
   return [
-    /* Return Type */
+    /* Context / Document Type */
     {
-      accessorKey: 'returnType',
+      accessorKey: 'context',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Return Type" />
+        <DataTableColumnHeader column={column} title="Document Type" />
       ),
-      cell: ({ row }) => row.original?.returnType || '--',
+      cell: ({ row }) => {
+        const context = row.original?.context;
+        if (!context) return '--';
+        return context.replace('_', ' ');
+      },
     },
 
     /* Period */
     {
-      accessorKey: 'period',
+      accessorKey: 'retPeriod',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Period" />
       ),
       cell: ({ row }) => {
-        const period = row.original?.period; // MMYYYY
+        const period = row.original?.retPeriod; // MMYYYY
         return period ? moment(period, 'MMYYYY').format('MMMM YYYY') : '--';
       },
+    },
+
+    /* Section Type */
+    {
+      accessorKey: 'sectionType',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Section" />
+      ),
+      cell: ({ row }) => row.original?.sectionType?.toUpperCase() || '--',
     },
 
     /* GSTIN */
@@ -36,36 +49,37 @@ export const useGstColumns = () => {
       cell: ({ row }) => row.original?.gstin || '--',
     },
 
+    /* Reference ID */
+    {
+      accessorKey: 'referenceId',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Reference ID" />
+      ),
+      cell: ({ row }) => row.original?.referenceId || '--',
+    },
+
     /* Filed On */
     {
-      accessorKey: 'filedOn',
+      accessorKey: 'filedAt',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Filed On" />
       ),
       cell: ({ row }) => {
-        const filedOn = row.original?.filedOn;
-        return filedOn ? moment(filedOn).format('DD MMM YYYY') : '--';
+        const filedAt = row.original?.filedAt;
+        return filedAt ? moment(filedAt).format('DD MMM YYYY') : '--';
       },
-    },
-
-    /* ARN */
-    {
-      accessorKey: 'arn',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="ARN" />
-      ),
-      cell: ({ row }) => row.original?.arn || '--',
     },
 
     /* Status */
     {
-      accessorKey: 'status',
+      accessorKey: 'isFiled',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Status" />
       ),
       cell: ({ row }) => {
-        const status = row.original?.status;
-        return status ? <ConditionalRenderingStatus status={status} /> : '--';
+        const isFiled = row.original?.isFiled;
+        const status = isFiled ? 'Filed' : 'Pending';
+        return <ConditionalRenderingStatus status={status} />;
       },
     },
   ];

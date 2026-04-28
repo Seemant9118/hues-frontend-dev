@@ -7,8 +7,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import moment from 'moment';
 
 export const useInvoicesForGSTFilingColumns = ({
-  setSelectedInvoicesToFile,
+  type, // 'b2b' or 'crn'
+  setFilingState,
 }) => {
+  const idField = type === 'b2b' ? 'invoiceId' : 'id';
+  const stateField =
+    type === 'b2b' ? 'selectedInvoices' : 'selectedCreditNotes';
+
   return [
     /* Selection */
     {
@@ -29,9 +34,15 @@ export const useInvoicesForGSTFilingColumns = ({
                   customerName: row.original.clientName,
                 }));
 
-                setSelectedInvoicesToFile(selectedRows);
+                setFilingState((prev) => ({
+                  ...prev,
+                  [stateField]: selectedRows,
+                }));
               } else {
-                setSelectedInvoicesToFile([]);
+                setFilingState((prev) => ({
+                  ...prev,
+                  [stateField]: [],
+                }));
               }
             }}
             aria-label="Select all"
@@ -45,18 +56,33 @@ export const useInvoicesForGSTFilingColumns = ({
             onCheckedChange={(value) => {
               row.toggleSelected(!!value);
 
-              setSelectedInvoicesToFile((prev) => {
+              setFilingState((prev) => {
+                const currentSelected = prev[stateField] || [];
                 if (value) {
-                  return [
+                  // Avoid duplicates
+                  const alreadyExists = currentSelected.some(
+                    (item) => item[idField] === row.original[idField],
+                  );
+                  if (alreadyExists) return prev;
+
+                  return {
                     ...prev,
-                    {
-                      ...row.original,
-                      customerName: row.original.clientName,
-                    },
-                  ];
+                    [stateField]: [
+                      ...currentSelected,
+                      {
+                        ...row.original,
+                        customerName: row.original.clientName,
+                      },
+                    ],
+                  };
                 }
 
-                return prev.filter((item) => item.id !== row.original.id);
+                return {
+                  ...prev,
+                  [stateField]: currentSelected.filter(
+                    (item) => item[idField] !== row.original[idField],
+                  ),
+                };
               });
             }}
             aria-label="Select row"
@@ -73,9 +99,10 @@ export const useInvoicesForGSTFilingColumns = ({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Doc No" />
       ),
-      cell: ({ row }) => (
-        <span>{row.original?.invoiceReferenceNumber || '--'}</span>
-      ),
+      cell: ({ row }) =>
+        row.original?.invoiceReferenceNumber ||
+        row.original?.referenceNumber ||
+        '--',
     },
 
     /* Doc Date */
@@ -85,7 +112,7 @@ export const useInvoicesForGSTFilingColumns = ({
         <DataTableColumnHeader column={column} title="Doc Date" />
       ),
       cell: ({ row }) => {
-        const date = row.original?.invoiceDate;
+        const date = row.original?.invoiceDate || row.original?.createdAt;
         return date ? moment(date).format('DD MMM YYYY') : '--';
       },
     },
@@ -96,7 +123,10 @@ export const useInvoicesForGSTFilingColumns = ({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Counterparty GSTIN" />
       ),
-      cell: ({ row }) => row.original?.gstNumber || '--',
+      cell: ({ row }) =>
+        row.original?.gstNumber ||
+        row.original?.toEnterprise?.gstNumber ||
+        '--',
     },
 
     /* Counterparty Name */
@@ -105,7 +135,8 @@ export const useInvoicesForGSTFilingColumns = ({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Counterparty Name" />
       ),
-      cell: ({ row }) => row.original?.vendorName || '--',
+      cell: ({ row }) =>
+        row.original?.vendorName || row.original?.toEnterprise?.name || '--',
     },
 
     /* Value */

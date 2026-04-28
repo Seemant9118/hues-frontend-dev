@@ -1,9 +1,15 @@
 import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
 import { APIinstance } from '@/services';
 
-export const getAllCreditNotes = ({ context, page, limit, debitNoteId }) => {
+export const getAllCreditNotes = ({
+  context,
+  page,
+  limit,
+  debitNoteId,
+  returnPeriod,
+}) => {
   return APIinstance.get(
-    `${CreditNoteApi.getAllCreditNotes.endpoint}?page=${page}&limit=${limit}&context=${context}&debitNoteId=${debitNoteId}`,
+    `${CreditNoteApi.getAllCreditNotes.endpoint}?page=${page}&limit=${limit}&context=${context}&debitNoteId=${debitNoteId}&returnPeriod=${returnPeriod}`,
   );
 };
 

@@ -363,7 +363,7 @@ const DispatchedNotes = () => {
                 defaultValue={'ALL'}
                 className="flex flex-grow flex-col overflow-hidden"
               >
-                <section className="flex w-full justify-between py-2">
+                <section className="flex w-full justify-between">
                   <TabsList className="border">
                     <TabsTrigger value="ALL">
                       {translations('tabs.tab1.label')}

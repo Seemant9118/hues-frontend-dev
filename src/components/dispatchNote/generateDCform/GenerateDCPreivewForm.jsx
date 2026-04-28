@@ -392,6 +392,10 @@ export default function GenerateDCPreviewForm({
               productName:
                 item?.invoiceItem?.orderItemId?.productDetails?.productName ||
                 '',
+              salesPrice:
+                item?.invoiceItem?.unitPrice || item?.product?.salesPrice || 0,
+              skuId:
+                item?.invoiceItem?.orderItemId?.productDetails?.skuId || '',
             },
           },
         },

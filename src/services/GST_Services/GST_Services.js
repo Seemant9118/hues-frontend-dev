@@ -13,9 +13,9 @@ export const verifyGSTOTP = (data) => {
   return APIinstance.post(gstAPIs.verifyOTPForGSTAuth.endpoint, data);
 };
 
-export const filedGsts = ({ page, limit }) => {
+export const filedGsts = ({ page, limit, retPeriod, isFiled }) => {
   return APIinstance.get(
-    `${gstAPIs.filedGsts.endpoint}?page=${page}&limit=${limit}`,
+    `${gstAPIs.filedGsts.endpoint}?page=${page}&limit=${limit}&retPeriod=${retPeriod}&isFiled=${isFiled}`,
   );
 };
 
