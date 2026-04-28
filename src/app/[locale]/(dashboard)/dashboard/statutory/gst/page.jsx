@@ -9,8 +9,16 @@ import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
 import { PrepareGstrModal } from '@/components/statutory/PrepareGSTModal';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import SubHeader from '@/components/ui/Sub-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
@@ -22,13 +30,6 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useGstColumns } from './useGstColumns';
 
 const PAGE_LIMIT = 10;
@@ -78,7 +79,8 @@ const GST = () => {
     initialPageParam: 1,
     getNextPageParam: (_lastGroup, groups) => {
       const nextPage = groups.length + 1;
-      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+      const lastPageData = _lastGroup?.data?.data || [];
+      return lastPageData.length === PAGE_LIMIT ? nextPage : undefined;
     },
     enabled: hasPermission('permission:item-masters-view'),
     staleTime: Infinity, // data never becomes stale
@@ -88,12 +90,11 @@ const GST = () => {
 
   useEffect(() => {
     const source = gstsQuery.data;
+
     if (!source?.pages?.length) return;
 
     // flatten items from  pages
-    const flattened = source.pages.flatMap(
-      (page) => page?.data?.data?.data || [],
-    );
+    const flattened = source.pages.flatMap((page) => page?.data?.data || []);
 
     // remove duplicates by id
     const uniqueQCListData = Array.from(
@@ -103,11 +104,13 @@ const GST = () => {
     setGsts(uniqueQCListData);
 
     // pagination from last page
-    const lastPage = source.pages[source.pages.length - 1]?.data?.data;
+    const lastPageData =
+      source.pages[source.pages.length - 1]?.data?.data || [];
 
     setPaginationData({
-      totalPages: Number(lastPage?.totalPages ?? 0),
-      currFetchedPage: Number(lastPage?.page ?? 0),
+      totalPages:
+        source.pages.length + (lastPageData.length === PAGE_LIMIT ? 1 : 0),
+      currFetchedPage: source.pages.length,
     });
   }, [gstsQuery.data]);
 
@@ -166,18 +169,26 @@ const GST = () => {
                 </TabsTrigger>
               </TabsList>
 
-              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select Return Period" />
-                </SelectTrigger>
-                <SelectContent>
-                  {currentFinancialPeriod.map((period) => (
-                    <SelectItem key={period.value} value={period.value}>
-                      {period.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center justify-center gap-2">
+                <Label className="text-sm font-medium text-gray-700">
+                  Return Period:
+                </Label>
+                <Select
+                  value={selectedPeriod}
+                  onValueChange={setSelectedPeriod}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select Return Period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currentFinancialPeriod.map((period) => (
+                      <SelectItem key={period.value} value={period.value}>
+                        {period.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </section>
 
             <TabsContent value="pending">

@@ -26,8 +26,10 @@ export function PrepareGstrModal({
   // filingPeriods,
   onPrepare,
 }) {
-  const [selectedPeriod, setSelectedPeriod] = useState('');
   const filingPeriods = getCurrentFinancialYearPeriods();
+  const [selectedPeriod, setSelectedPeriod] = useState(
+    filingPeriods[0]?.value || '',
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

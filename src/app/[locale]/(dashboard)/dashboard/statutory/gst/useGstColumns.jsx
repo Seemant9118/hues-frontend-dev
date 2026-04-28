@@ -1,11 +1,50 @@
 'use client';
 
-import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
+import { capitalize } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { ExternalLink } from 'lucide-react';
 import moment from 'moment';
+import { useRouter } from 'next/navigation';
 
 export const useGstColumns = () => {
+  const router = useRouter();
+
   return [
+    {
+      accessorKey: 'contextId',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Document no." />
+      ),
+      cell: ({ row }) => {
+        const isCDNR = row.original?.sectionType === 'cdnr';
+
+        const contextRef = isCDNR
+          ? row.original?.invoiceData?.cdnr?.[0]?.nt?.[0]?.nt_num
+          : row.original?.invoiceData?.b2b?.[0]?.inv?.[0]?.inum;
+
+        const contextId = row.original?.contextId;
+
+        if (!contextRef) return '--';
+
+        return (
+          <span
+            className="hover:text-primary hover:underline"
+            onClick={() => {
+              if (isCDNR) {
+                router.push(`/dashboard/sales/sales-creditNotes/${contextId}`);
+              } else {
+                router.push(`/dashboard/sales/sales-invoices/${contextId}`);
+              }
+            }}
+          >
+            <span className="flex w-fit items-center justify-center gap-1 rounded-sm border bg-foreground/5 p-1">
+              {contextRef} <ExternalLink size={14} />
+            </span>
+          </span>
+        );
+      },
+    },
+
     /* Context / Document Type */
     {
       accessorKey: 'context',
@@ -15,7 +54,7 @@ export const useGstColumns = () => {
       cell: ({ row }) => {
         const context = row.original?.context;
         if (!context) return '--';
-        return context.replace('_', ' ');
+        return capitalize(context.replace('_', ' '));
       },
     },
 
@@ -47,40 +86,6 @@ export const useGstColumns = () => {
         <DataTableColumnHeader column={column} title="GSTIN" />
       ),
       cell: ({ row }) => row.original?.gstin || '--',
-    },
-
-    /* Reference ID */
-    {
-      accessorKey: 'referenceId',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Reference ID" />
-      ),
-      cell: ({ row }) => row.original?.referenceId || '--',
-    },
-
-    /* Filed On */
-    {
-      accessorKey: 'filedAt',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Filed On" />
-      ),
-      cell: ({ row }) => {
-        const filedAt = row.original?.filedAt;
-        return filedAt ? moment(filedAt).format('DD MMM YYYY') : '--';
-      },
-    },
-
-    /* Status */
-    {
-      accessorKey: 'isFiled',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Status" />
-      ),
-      cell: ({ row }) => {
-        const isFiled = row.original?.isFiled;
-        const status = isFiled ? 'Filed' : 'Pending';
-        return <ConditionalRenderingStatus status={status} />;
-      },
     },
   ];
 };

@@ -8,9 +8,15 @@ export const getAllCreditNotes = ({
   debitNoteId,
   returnPeriod,
 }) => {
-  return APIinstance.get(
-    `${CreditNoteApi.getAllCreditNotes.endpoint}?page=${page}&limit=${limit}&context=${context}&debitNoteId=${debitNoteId}&returnPeriod=${returnPeriod}`,
-  );
+  if (returnPeriod) {
+    return APIinstance.get(
+      `${CreditNoteApi.getAllCreditNotes.endpoint}?page=${page}&limit=${limit}&context=${context}&debitNoteId=${debitNoteId}&returnPeriod=${returnPeriod}`,
+    );
+  } else {
+    return APIinstance.get(
+      `${CreditNoteApi.getAllCreditNotes.endpoint}?page=${page}&limit=${limit}&context=${context}&debitNoteId=${debitNoteId}`,
+    );
+  }
 };
 
 export const getCreditNote = ({ id }) => {

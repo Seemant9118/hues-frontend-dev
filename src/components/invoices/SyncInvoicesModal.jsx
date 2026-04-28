@@ -36,6 +36,7 @@ const SyncInvoicesModal = ({
   const [step, setStep] = useState('selection');
   const [selectedSources, setSelectedSources] = useState(['gst']); // default
   const [syncResults, setSyncResults] = useState(null);
+
   // Periods from financial year
   const filingPeriods = getCurrentFinancialYearPeriods();
   const [selectedPeriod, setSelectedPeriod] = useState(
@@ -69,10 +70,11 @@ const SyncInvoicesModal = ({
           );
 
           processedInvoices.push({
-            id: match?.result?.systemReferenceNumber || inv.inum, // Fallback to inum if no system ref
+            id: match?.systemInvoiceNumber || inv.inum, // Fallback to inum if no system ref
             portalNo: inv.inum,
             booksNo: match?.result?.systemReferenceNumber || 'Not in Books',
             entity: ctin,
+            systemInvoiceNumber: match?.systemInvoiceNumber || null,
             status:
               match?.result?.status === 'MATCHED' ? 'Matched' : 'Portal Only',
           });
@@ -86,10 +88,11 @@ const SyncInvoicesModal = ({
         );
         if (!alreadyAdded) {
           processedInvoices.push({
-            id: m.result?.systemReferenceNumber || m.portalInvoiceNumber,
+            id: m.systemInvoiceNumber || m.portalInvoiceNumber,
             portalNo: m.portalInvoiceNumber || 'N/A',
             booksNo: m.result?.systemReferenceNumber || 'N/A',
             entity: m.ctin,
+            systemInvoiceNumber: m.systemInvoiceNumber || null,
             status: 'Books Only',
           });
         }
@@ -336,7 +339,7 @@ const SyncInvoicesModal = ({
                             className="h-8 gap-1.5 px-3 text-[11px] font-semibold hover:bg-neutral-100"
                             onClick={() =>
                               window.open(
-                                `/dashboard/${type === 'SALES' ? 'sales/sales-invoices' : 'purchases/purchase-invoices'}/${inv.id}`,
+                                `/dashboard/${type === 'SALES' ? 'sales/sales-invoices' : 'purchases/purchase-invoices'}/${inv.systemInvoiceNumber}`,
                                 '_blank',
                               )
                             }
