@@ -29,6 +29,8 @@ export default function MultiStepForm({
   isConfigLoading,
 
   finalStepActions,
+  headerExtra,
+  onBack,
 }) {
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -125,20 +127,30 @@ export default function MultiStepForm({
   return (
     <div className="flex h-[calc(100vh-0px)] flex-col gap-2 py-2">
       {/* Breadcrumbs */}
-      {shouldRenderBreadcrumbList ? (
-        <OrderBreadCrumbs possiblePagesBreadcrumbs={breadcrumbs} />
-      ) : (
-        <div className="flex items-center gap-2 text-lg font-semibold">
-          <Link
-            href={breadcrumbHome}
-            className="flex items-center gap-1 hover:text-primary"
-          >
-            <span>{breadcrumbHomeText}</span>
-          </Link>
-          <span>›</span>
-          <span className="font-medium text-foreground">{breadcrumbTitle}</span>
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        {onBack && (
+          <button onClick={onBack} className="rounded-sm p-2 hover:bg-gray-100">
+            <ArrowLeft size={16} />
+          </button>
+        )}
+        {shouldRenderBreadcrumbList ? (
+          <OrderBreadCrumbs possiblePagesBreadcrumbs={breadcrumbs} />
+        ) : (
+          <div className="flex items-center gap-2 text-lg font-semibold">
+            <Link
+              href={breadcrumbHome}
+              className="flex items-center gap-1 hover:text-primary"
+            >
+              <span>{breadcrumbHomeText}</span>
+            </Link>
+            <span>›</span>
+            <span className="font-medium text-foreground">
+              {breadcrumbTitle}
+            </span>
+          </div>
+        )}
+        {headerExtra}
+      </div>
 
       {/* Step Indicator */}
       <StepIndicator

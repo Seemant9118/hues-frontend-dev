@@ -17,7 +17,19 @@ const AuthenticationExpiredModal = ({
   onClose,
   handleGenerateOTP,
   requestOTPMutation,
+  module = 'GST',
 }) => {
+  const getMessage = () => {
+    switch (module) {
+      case 'GSTR-1':
+        return 'access GSTR-1 data.';
+      case 'GSTR-3B':
+        return 'access GSTR-3B data.';
+      default:
+        return 'access GST data.';
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -31,8 +43,8 @@ const AuthenticationExpiredModal = ({
           </DialogTitle>
 
           <DialogDescription className="text-center">
-            Your GST authentication has expired. Please authenticate yourself to
-            access GSTR-1 data.
+            Your GST authentication has expired. Please authenticate yourself to{' '}
+            {getMessage()}
           </DialogDescription>
         </DialogHeader>
 

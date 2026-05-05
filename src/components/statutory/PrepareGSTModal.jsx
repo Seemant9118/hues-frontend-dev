@@ -21,9 +21,7 @@ import { getCurrentFinancialYearPeriods } from '@/appUtils/helperFunctions';
 export function PrepareGstrModal({
   open,
   onOpenChange,
-  // gstin,
-  // businessName,
-  // filingPeriods,
+  type = 'gstr1',
   onPrepare,
 }) {
   const filingPeriods = getCurrentFinancialYearPeriods();
@@ -31,24 +29,18 @@ export function PrepareGstrModal({
     filingPeriods[0]?.value || '',
   );
 
+  const isGstr3B = type === 'gstr3b';
+  const label = isGstr3B ? 'GSTR-3B' : 'GSTR-1';
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Prepare GSTR-1</DialogTitle>
+          <DialogTitle>Prepare {label}</DialogTitle>
           <DialogDescription>
-            Select the filing period to prepare a new GSTR-1 return.
+            Select the filing period to prepare a new {label} return.
           </DialogDescription>
         </DialogHeader>
-
-        {/* GSTIN */}
-        {/* <div className="space-y-2">
-          <Label>GSTIN</Label>
-          <div className="rounded-md bg-muted px-3 py-2 text-sm">
-            <span className="font-medium">{gstin}</span>
-            <span className="ml-2 text-muted-foreground">{businessName}</span>
-          </div>
-        </div> */}
 
         {/* Filing Period */}
         <div className="space-y-2 pt-4">
@@ -74,7 +66,7 @@ export function PrepareGstrModal({
           <Button
             size="sm"
             disabled={!selectedPeriod}
-            onClick={() => onPrepare(selectedPeriod)}
+            onClick={() => onPrepare(selectedPeriod, type)}
           >
             Prepare
           </Button>

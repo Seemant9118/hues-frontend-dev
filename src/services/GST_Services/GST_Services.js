@@ -71,3 +71,46 @@ export const syncInvoicesWithGSTR2A = (period) => {
     `${gstAPIs.syncInvoicesWithGSTR2A.endpoint}?retPeriod=${period}`,
   );
 };
+
+export const getGSTR2Avs2BMissing = (period) => {
+  return APIinstance.get(
+    `${gstAPIs.getGSTR2Avs2BMissing.endpoint}?retPeriod=${period}`,
+  );
+};
+
+export const getSystemSummary = (period) => {
+  return APIinstance.get(
+    `${gstAPIs.getSystemSummary.endpoint}?retPeriod=${period}`,
+  );
+};
+
+export const getPortalAutoLiab = (period) => {
+  return APIinstance.get(
+    `${gstAPIs.getPortalAutoLiab.endpoint}?retPeriod=${period}`,
+  );
+};
+
+export const getGSTR3BReturnSummary = (period) => {
+  return APIinstance.get(
+    `${gstAPIs.getGSTR3BReturnSummary.endpoint}?retPeriod=${period}`,
+  );
+};
+
+export const fileGSTR3B = (period, data = {}) => {
+  return APIinstance.post(
+    `${gstAPIs.fileGSTR3B.endpoint}?retPeriod=${period}`,
+    data,
+  );
+};
+
+export const getGstr3bOffsetPayload = (period) => {
+  return APIinstance.get(
+    `${gstAPIs.getGstr3bOffsetPayload.endpoint}?retPeriod=${period}`,
+  );
+};
+
+export const retOffsetGstr3b = (period) => {
+  return APIinstance.post(
+    `${gstAPIs.retOffsetGstr3b.endpoint}?retPeriod=${period}`,
+  );
+};

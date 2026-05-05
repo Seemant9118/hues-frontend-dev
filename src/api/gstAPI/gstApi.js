@@ -63,4 +63,32 @@ export const gstAPIs = {
     endpoint: '/gstr2a/b2b',
     endpointKey: 'SYNC_INVOICES_GSTR2A',
   },
+  getGSTR2Avs2BMissing: {
+    endpoint: '/gstr3b/compare-2a-2b-missing',
+    endpointKey: 'GET_GSTR2A_VS_2B_MISSING',
+  },
+  getSystemSummary: {
+    endpoint: '/gstr3b/generate-system-summary',
+    endpointKey: 'GET_SYSTEM_SUMMARY',
+  },
+  getPortalAutoLiab: {
+    endpoint: '/gstr3b/autoliab',
+    endpointKey: 'GET_PORTAL_AUTO_LIAB',
+  },
+  getGSTR3BReturnSummary: {
+    endpoint: '/gstr3b/retsum',
+    endpointKey: 'GET_GSTR3B_RETURN_SUMMARY',
+  },
+  fileGSTR3B: {
+    endpoint: '/gstr3b/retevcfile',
+    endpointKey: 'FILE_GSTR3B',
+  },
+  getGstr3bOffsetPayload: {
+    endpoint: '/gstr3b/offset-payload',
+    endpointKey: 'GET_GSTR3B_OFFSET_PAYLOAD',
+  },
+  retOffsetGstr3b: {
+    endpoint: '/gstr3b/retoffset',
+    endpointKey: 'RET_OFFSET_GSTR3B',
+  },
 };

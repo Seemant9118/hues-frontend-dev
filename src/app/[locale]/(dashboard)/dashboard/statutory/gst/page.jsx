@@ -55,7 +55,7 @@ const GST = () => {
   const [tab, setTab] = useState('pending');
   const [gsts, setGsts] = useState([]);
   const [paginationData, setPaginationData] = useState({});
-  const [isPreparingGSTR1, setIsPreparingGSTR1] = useState(false);
+  const [preparingGst, setPreparingGst] = useState(null); // 'gstr1' or 'gstr3b'
   const [selectedPeriod, setSelectedPeriod] = useState(
     currentFinancialPeriod[0]?.value || '',
   );
@@ -137,15 +137,15 @@ const GST = () => {
                     key: 'gstr1',
                     label: 'GSTR-1',
                     onClick: () => {
-                      setIsPreparingGSTR1(true);
+                      setPreparingGst('gstr1');
                     },
                   },
                   {
                     key: 'gstr3b',
-                    label: 'GSTR-3B (coming soon)',
-                    className: 'cursor-not-allowed opacity-50',
-                    disabled: true,
-                    onClick: () => {},
+                    label: 'GSTR-3B',
+                    onClick: () => {
+                      setPreparingGst('gstr3b');
+                    },
                   },
                 ]}
               />
@@ -253,14 +253,15 @@ const GST = () => {
           </Tabs>
 
           {/* preparing - modal */}
-          {isPreparingGSTR1 && (
+          {preparingGst && (
             <PrepareGstrModal
-              open={isPreparingGSTR1}
-              onOpenChange={setIsPreparingGSTR1}
-              onPrepare={(period) => {
-                setIsPreparingGSTR1(false);
+              open={!!preparingGst}
+              onOpenChange={() => setPreparingGst(null)}
+              type={preparingGst}
+              onPrepare={(period, type) => {
+                setPreparingGst(null);
                 router.push(
-                  `/dashboard/statutory/gst/gstr1?period=${encodeURIComponent(period)}`,
+                  `/dashboard/statutory/gst/${type}?period=${encodeURIComponent(period)}`,
                 );
               }}
             />
