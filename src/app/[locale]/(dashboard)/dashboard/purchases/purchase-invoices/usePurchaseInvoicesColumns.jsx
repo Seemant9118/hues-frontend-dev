@@ -1,9 +1,11 @@
 'use client';
 
+import { formattedAmount } from '@/appUtils/helperFunctions';
+import Tooltips from '@/components/auth/Tooltips';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dot } from 'lucide-react';
+import { Dot, Info } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 
@@ -131,7 +133,59 @@ export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
         );
       },
     },
+    {
+      accessorKey: 'totalAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('total_amount')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { totalAmount } = row.original;
+        return formattedAmount(totalAmount);
+      },
+    },
+    {
+      accessorKey: 'round_off',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('round_off')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { totalAmount, roundOffAmount } = row.original;
+        const roundOffVal = (Number(roundOffAmount) || 0) - totalAmount;
 
+        if (roundOffVal === 0) return formattedAmount(0);
+
+        const prefix = roundOffVal > 0 ? '+' : '';
+        return (
+          <span className={roundOffVal > 0 ? 'text-green-600' : 'text-red-600'}>
+            {prefix}
+            {formattedAmount(roundOffVal)}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: 'roundOffAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('roundOff_amount')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { roundOffAmount } = row.original;
+        return (
+          <div className="font-bold text-primary">
+            {formattedAmount(roundOffAmount)}
+          </div>
+        );
+      },
+    },
     {
       accessorKey: 'status',
       header: ({ column }) => (
@@ -145,7 +199,7 @@ export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
             : row.original?.invoiceMetaData?.debitNote?.status;
 
         return (
-          <div className="flex items-start gap-2">
+          <div className="flex max-w-36 flex-wrap gap-2">
             <ConditionalRenderingStatus status={paymentStatus} />
             {debitNoteStatus !== '' && (
               <ConditionalRenderingStatus status={debitNoteStatus} />
@@ -156,20 +210,83 @@ export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
     },
 
     {
-      accessorKey: 'totalAmount',
+      accessorKey: 'match_status',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('total_amount')}
+          title={translations('match_status')}
         />
       ),
       cell: ({ row }) => {
-        const { totalAmount } = row.original;
-        const formattedAmount = new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'INR',
-        }).format(totalAmount);
-        return formattedAmount;
+        const metaData = row.original?.metaData;
+        const matchStatusData = metaData?.gstFeeds?.purchaseSide?.matchStatus;
+
+        const portalInvoiceNumber = matchStatusData?.portalInvoiceNumber || '—';
+        const systemInvoiceNumber =
+          matchStatusData?.systemInvoiceNumber ||
+          row.original?.invoiceReferenceNumber ||
+          '—';
+        const status =
+          matchStatusData?.result?.status ||
+          matchStatusData?.matchStatus ||
+          'BOOKS_ONLY';
+        const lastSyncAt =
+          metaData?.gstFeeds?.salesSide?.syncAt || row.original.invoiceDate;
+
+        return (
+          <div className="flex flex-col gap-0.5 text-[11px] leading-tight">
+            <div className="flex gap-1">
+              <span className="text-[#A5ABBD]">Portal:</span>
+              <span className="font-medium text-black">
+                {portalInvoiceNumber}
+              </span>
+            </div>
+            <div className="flex gap-1">
+              <span className="text-[#A5ABBD]">Books:</span>
+              <span className="font-medium text-black">
+                {systemInvoiceNumber}
+              </span>
+            </div>
+            <div className="mt-1 flex items-center gap-1">
+              <ConditionalRenderingStatus
+                status={status}
+                className="h-5 px-2 py-0"
+              />
+              <Tooltips
+                trigger={
+                  <Info size={14} className="cursor-pointer text-[#A5ABBD]" />
+                }
+                content={`Last Synced at : ${moment(lastSyncAt).format('DD-MM-YYYY hh:mm A')}`}
+              />
+            </div>
+          </div>
+        );
+      },
+    },
+
+    {
+      accessorKey: 'gstfeeds',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('gst_feeds')}
+        />
+      ),
+      cell: ({ row }) => {
+        const isDraft = row.original?.gstr1Filed?.isDraft;
+        const isFiled = row.original?.gstr1Filed?.isFiled;
+
+        return (
+          <div className="flex max-w-36 flex-wrap gap-2">
+            {isFiled ? (
+              <ConditionalRenderingStatus status={'GSTR_1_FILED'} />
+            ) : isDraft ? (
+              <ConditionalRenderingStatus status={'IMS_DRAFT'} />
+            ) : (
+              <ConditionalRenderingStatus status={'PLATFORM_ONLY'} />
+            )}
+          </div>
+        );
       },
     },
   ];

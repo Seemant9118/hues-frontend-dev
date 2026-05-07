@@ -287,7 +287,7 @@ const InvoicePreview = ({
             )}
 
             {/* RCM */}
-            {order?.clientType === 'B2B' && order?.orderType === 'PURCHASE' && (
+            {/* {order?.clientType === 'B2B' && order?.orderType === 'PURCHASE' && (
               <div className="flex flex-col">
                 <Label className="mb-2 block text-sm font-medium">
                   RCM Classification
@@ -321,7 +321,7 @@ const InvoicePreview = ({
                   </RadioGroup>
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* invoice date */}
             {order?.clientType === 'B2B' && (

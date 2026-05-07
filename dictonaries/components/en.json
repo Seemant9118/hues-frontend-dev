@@ -311,6 +311,7 @@
                     "gross_amount": "Gross Amount",
                     "tax_amount": "Tax Amount",
                     "discountAmount": "Discount",
+                    "round_off": "Round-off",
                     "total_amount": "Total Amount"
                 }
             }
@@ -444,7 +445,9 @@
                 "vendor_name": "Vendor name",
                 "type": "Type",
                 "payment_status": "Payment status",
-                "total_amount": "Total amount",
+                "total_amount": "Amount (inc. GST)",
+                "round_off": "Round off",
+                "round_off_amount": "Total Amount",
                 "debit_notes": "Debit notes",
                 "defects": "Defects"
             }
@@ -1188,7 +1191,18 @@
             "RECIEVED": "Recieved",
             "SENT": "Sent",
             "IN_TRANSIT": "In Transit",
-            "READY_FOR_DISPATCH": " Ready for Dispatch"
+            "READY_FOR_DISPATCH": " Ready for Dispatch",
+            "NOT_PUSHED": "Not Pushed",
+            "UPLOADED": "Uploaded",
+            "GSTR_1_FILED": "GSTR-1",
+            "IMS_DRAFT": "IMS",
+            "PORTAL_ONLY": "Portal Only",
+            "PLATFORM_ONLY": "Platform Only",
+            "MATCHED": "Matched",
+            "PARTIAL": "Partial",
+            "BOOKS_ONLY": "Books Only",
+            "MISMATCHED": "Mismatched",
+            "NOT_APPLICABLE": "-"
         }
     }
 }

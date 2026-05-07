@@ -1,5 +1,3 @@
-/* eslint-disable prettier/prettier */
-/* eslint-disable no-unsafe-optional-chaining */
 import { catalogueApis } from '@/api/catalogue/catalogueApi';
 import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
 import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
@@ -302,13 +300,10 @@ const CreateB2BInvoice = ({
     return { totalAmount, totalGstAmt, totalDiscountAmt };
   };
 
-  const grossAmt = order.orderItems.reduce(
-    (acc, orderItem) => acc + (Number(orderItem.totalAmount) || 0),
-    0,
-  );
-
   const { totalAmount, totalGstAmt, totalDiscountAmt } = handleSetTotalAmt();
   const totalAmtWithGst = totalAmount + totalGstAmt;
+  const roundedTotal = Math.round(totalAmtWithGst);
+  const roundOff = (roundedTotal - totalAmtWithGst).toFixed(2);
 
   // create invoice mutation
   const invoiceMutation = useMutation({
@@ -361,6 +356,7 @@ const CreateB2BInvoice = ({
         invoiceItems: getMappedPayloadRows(updatedOrder),
         buyerId: Number(updatedOrder.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
+        roundOffAmount: roundedTotal,
         gstAmount: parseFloat(totalGstAmt.toFixed(2)),
         discountAmount: parseFloat(totalDiscountAmt.toFixed(2)),
       });
@@ -404,6 +400,7 @@ const CreateB2BInvoice = ({
         invoiceItems: getMappedPayloadRows(updatedOrder),
         buyerId: Number(updatedOrder.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
+        roundOffAmount: roundedTotal,
         gstAmount: parseFloat(totalGstAmt.toFixed(2)),
         discountAmount: parseFloat(totalDiscountAmt.toFixed(2)),
       });
@@ -501,7 +498,19 @@ const CreateB2BInvoice = ({
 
               <Select
                 value={order.source}
-                onValueChange={(value) => setOrder({ ...order, source: value })}
+                onValueChange={(value) => {
+                  const updatedOrder = {
+                    ...order,
+                    source: value,
+                    ...(value === 'hues' && { invoiceReferenceNumber: null }),
+                  };
+                  setOrder(updatedOrder);
+
+                  saveDraftToSession({
+                    key: 'b2bInvoiceDraft',
+                    data: updatedOrder,
+                  });
+                }}
               >
                 <SelectTrigger>
                   <SelectValue
@@ -519,30 +528,30 @@ const CreateB2BInvoice = ({
             </div>
 
             {/* Refernce No. */}
-            <div className="flex flex-col gap-1">
-              <Label className="flex gap-1">
-                {translations('form.label.reference_number')}
-                {order.source !== 'hues' && (
+            {order.source !== 'hues' && (
+              <div className="flex flex-col gap-1">
+                <Label className="flex gap-1">
+                  {translations('form.label.reference_number')}
                   <span className="text-red-600">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  placeholder={translations(
+                    'form.input.reference_number.placeholder',
+                  )}
+                  value={order.invoiceReferenceNumber || ''}
+                  onChange={(e) => {
+                    setOrder({
+                      ...order,
+                      invoiceReferenceNumber: e.target.value,
+                    });
+                  }}
+                />
+                {errorMsg.invoiceReferenceNumber && (
+                  <ErrorBox msg={errorMsg.invoiceReferenceNumber} />
                 )}
-              </Label>
-              <Input
-                type="text"
-                placeholder={translations(
-                  'form.input.reference_number.placeholder',
-                )}
-                value={order.invoiceReferenceNumber || ''}
-                onChange={(e) => {
-                  setOrder({
-                    ...order,
-                    invoiceReferenceNumber: e.target.value,
-                  });
-                }}
-              />
-              {errorMsg.invoiceReferenceNumber && (
-                <ErrorBox msg={errorMsg.invoiceReferenceNumber} />
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-4 rounded-sm border border-neutral-200 p-4">
@@ -1241,35 +1250,43 @@ const CreateB2BInvoice = ({
           <div className="mt-auto h-[1px] bg-neutral-300"></div>
 
           <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4 bg-white">
-            <div className="flex items-center gap-2">
-              {isGstApplicable(isGstApplicableForSalesOrders) && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold">
-                      {translations('form.footer.gross_amount')} :
-                    </span>
-                    <span className="rounded-sm border bg-slate-100 p-2">
-                      {grossAmt.toFixed(2)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold">
-                      {translations('form.footer.tax_amount')} :
-                    </span>
-                    <span className="rounded-sm border bg-slate-100 p-2">
-                      {totalGstAmt.toFixed(2)}
-                    </span>
-                  </div>
-                </>
-              )}
-
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-sm">
                 <span className="font-bold">
-                  {translations('form.footer.total_amount')} :
+                  {translations('form.footer.gross_amount')} :
                 </span>
                 <span className="rounded-sm border bg-slate-100 p-2">
+                  {totalAmount.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-bold">
+                  {translations('form.footer.tax_amount')} :
+                </span>
+                <span className="rounded-sm border bg-slate-100 p-2">
+                  {totalGstAmt.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-bold">Total Amount :</span>
+                <span className="rounded-sm border bg-slate-100 p-2">
                   {totalAmtWithGst.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-bold">Round Off :</span>
+                <span className="rounded-sm border bg-slate-100 p-2">
+                  {Number(roundOff) > 0 ? `+${roundOff}` : roundOff}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-bold">Grand Total :</span>
+                <span className="rounded-sm border bg-slate-100 p-2 font-bold text-primary">
+                  {roundedTotal.toFixed(2)}
                 </span>
               </div>
             </div>

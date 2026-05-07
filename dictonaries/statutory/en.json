@@ -1,21 +1,44 @@
 {
     "gsts": {
-        "title": "GST",
+        "title": "GST Returns",
+        "description": "Manage and file GST returns for your business.",
         "emptyStateComponent": {
-            "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
-            "subItems": {
-                "subItem1": {
-                    "value": "Bulk upload and tweak your product info with ease"
-                },
-                "subItem2": {
-                    "value": "Add fresh items for a squeaky-clean inventory"
-                },
-                "subItem3": {
-                    "value": "Digitally sign your stock to keep things secure and compliant"
-                },
-                "subItem4": {
-                    "value": "Need a paper trail? Export your signed inventory to PDF in a click"
-                }
+            "heading": "No GST returns available for {period}",
+            "description": "Returns will appear automatically based on your GST registration and filing frequency."
+        },
+        "table": {
+            "documentType": "Document Type",
+            "documentNo": "Document No.",
+            "section": "Section",
+            "period": "Period",
+            "status": "Status",
+            "gstin": "GSTIN"
+        },
+        "summary": {
+            "pending": "Pending Returns",
+            "filed": "Filed Returns",
+            "overdue": "Overdue Returns",
+            "draft": "Draft Returns"
+        },
+        "filters": {
+            "search": "Search returns...",
+            "status": "Status",
+            "returnType": "Return Type",
+            "allStatus": "All Statuses",
+            "allReturns": "All Returns",
+            "statusOptions": {
+                "all": "All Statuses",
+                "draft": "Draft",
+                "pending": "Pending",
+                "filed": "Filed",
+                "failed": "Failed",
+                "overdue": "Overdue"
+            },
+            "returnTypeOptions": {
+                "all": "All Returns",
+                "gstr1": "GSTR-1",
+                "gstr3b": "GSTR-3B",
+                "gstr9": "GSTR-9"
             }
         },
         "tabs": {
@@ -26,12 +49,19 @@
                 "label": "Filed Returns"
             }
         },
+        "ctas": {
+            "prepare": "Prepare Return"
+        },
+        "labels": {
+            "returnPeriod": "Return Period",
+            "selectReturnPeriod": "Select Return Period"
+        },
         "gstr1": {
             "title1": "GST",
             "title2": "GSTR-1",
             "emptyStateComponent": {
                 "heading": "No items saved to Draft for this period yet.",
-                "subHeading1": "Use Fetch to pull documents into a review list,  Select what to include and Save to Draft. Repeat as needed before Finalize."
+                "subHeading1": "Use Fetch to pull documents into a review list, Select what to include and Save to Draft. Repeat as needed before Finalize."
             },
             "tabs": {
                 "tab1": {
@@ -40,6 +70,33 @@
                 "tab2": {
                     "label": "Credit Notes"
                 }
+            },
+            "actions": {
+                "prepare": "Prepare",
+                "fetch": "Fetch",
+                "saveDraft": "Save Draft",
+                "finalize": "Finalize",
+                "file": "File",
+                "delete": "Discard Draft",
+                "finalized": "✅ Finalized"
+            },
+            "table": {
+                "documentNo": "Document no.",
+                "documentType": "Document Type",
+                "period": "Period",
+                "section": "Section",
+                "gstin": "GSTIN",
+                "docNo": "Doc No",
+                "docDate": "Doc Date",
+                "counterpartyGstin": "Counterparty GSTIN",
+                "counterpartyName": "Counterparty Name",
+                "value": "Value",
+                "status": "Status",
+                "sync": "Sync",
+                "description": "Description",
+                "dueDate": "Due Date",
+                "lastUpdated": "Last Updated",
+                "action": "Action"
             }
         }
     }

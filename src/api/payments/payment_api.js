@@ -24,7 +24,7 @@ export const paymentApi = {
   },
   // 4. getPaymentsByInvoiceId
   getPaymentsByInvoiceId: {
-    endpoint: `/payment/getpaymentsbyinvoice/`,
+    endpoint: `/payment/invoice/`,
     endpointKey: 'get_payments_by_invoiceId',
   },
 

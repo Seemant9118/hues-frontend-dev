@@ -7,7 +7,6 @@ import { orderApi } from '@/api/order_api/order_api';
 import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import DynamicModal from '@/components/Modals/DynamicModal';
-import AccessDenied from '@/components/shared/AccessDenied';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import PINVerifyModal from '@/components/invoices/PINVerifyModal';
@@ -16,16 +15,11 @@ import EditOrder from '@/components/orders/EditOrderS';
 import NegotiationHistory from '@/components/orders/NegotiationHistory';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import PaymentDetails from '@/components/payments/PaymentDetails';
+import AccessDenied from '@/components/shared/AccessDenied';
 import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
 import TimelineItem from '@/components/ui/TimelineItem';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -53,7 +47,6 @@ import {
   FileText,
   Handshake,
   IndianRupee,
-  MoreVertical,
   Package,
   Pencil,
   X,
@@ -510,7 +503,7 @@ const ViewOrder = () => {
               setIsEditingServiceOrder(true);
             }
           },
-          variant: 'blue_outline',
+          variant: 'warning',
         });
       }
     }
@@ -591,7 +584,7 @@ const ViewOrder = () => {
               enterpriseId: Number(enterpriseId),
               orderId: Number(params.order_id),
             }),
-          variant: 'blue_outline',
+          variant: 'outline',
         });
       }
     }
@@ -606,7 +599,7 @@ const ViewOrder = () => {
           icon: <X size={14} />,
           label: translations('ctas.withdraw.cta'),
           onClick: () => setWithdrawModalOpen(true),
-          variant: 'blue_outline',
+          variant: 'outline',
         });
       }
     }
@@ -693,7 +686,7 @@ const ViewOrder = () => {
                     )}
 
                   {/* Dynamic CTAs */}
-                  {ctaList.length <= 2 ? (
+                  {ctaList.length > 0 &&
                     ctaList.map((cta) => (
                       <Button
                         key={cta.label}
@@ -706,36 +699,7 @@ const ViewOrder = () => {
                         {cta.icon}
                         {cta.label}
                       </Button>
-                    ))
-                  ) : (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="px-2 font-bold"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {ctaList.map((cta) => (
-                          <DropdownMenuItem
-                            key={cta.label}
-                            onClick={cta.onClick}
-                            disabled={cta.disabled}
-                            className={
-                              cta.className ||
-                              'item-center flex cursor-pointer gap-2 font-medium'
-                            }
-                          >
-                            {cta.icon}
-                            {cta.label}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
+                    ))}
                 </div>
               </section>
 

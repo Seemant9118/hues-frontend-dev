@@ -39,7 +39,14 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  CheckCircle,
+  Download,
+  Save,
+  Send,
+  Trash2,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
@@ -552,68 +559,88 @@ const GSTR1 = () => {
               </Badge>
               {/* <Input disabled value={GSTIN} className="max-w-fit" /> */}
             </div>
-            <div className="flex items-center gap-2">
-              <ActionsDropdown
-                label={'Fetch'}
-                variant="secondary"
-                actions={[
-                  {
-                    key: 'b2bInvoices',
-                    label: 'B2B Invoices',
-                    onClick: async () => {
-                      await invoicesForGstFilingQuery.refetch();
-                      handleResetSelection();
+            <div className="flex items-center gap-3">
+              {/* Preparation Section */}
+              <div className="flex items-center gap-2 border-r pr-3">
+                <ActionsDropdown
+                  label={
+                    <div className="flex items-center gap-2">
+                      <Download size={14} />
+                      {translations('actions.fetch')}
+                    </div>
+                  }
+                  variant="outline"
+                  className="h-8 border-dashed text-gray-600 hover:text-primary"
+                  actions={[
+                    {
+                      key: 'b2bInvoices',
+                      label: translations('tabs.tab1.label'),
+                      onClick: async () => {
+                        await invoicesForGstFilingQuery.refetch();
+                        handleResetSelection();
+                      },
                     },
-                  },
-                  {
-                    key: 'crn',
-                    label: 'Credit Notes',
-                    onClick: async () => {
-                      await crnsQuery.refetch();
-                      handleResetSelection();
+                    {
+                      key: 'crn',
+                      label: translations('tabs.tab2.label'),
+                      onClick: async () => {
+                        await crnsQuery.refetch();
+                        handleResetSelection();
+                      },
                     },
-                  },
-                ]}
-              />
+                  ]}
+                />
+              </div>
 
-              <Button
-                size="sm"
-                disabled={totalSelectedCount === 0 || isFinalized}
-                onClick={handleSaveDraft}
-              >
-                Save Draft {`(${totalSelectedCount})`}
-              </Button>
-
-              {!isFinalized ? (
+              {/* Filing Workflow Section */}
+              <div className="flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50/50 p-1">
                 <Button
                   size="sm"
-                  variant="secondary"
-                  disabled={!isAllDraft}
-                  onClick={handleFinalize}
+                  variant="ghost"
+                  disabled={totalSelectedCount === 0 || isFinalized}
+                  onClick={handleSaveDraft}
                 >
-                  Finalize
+                  <Save size={14} className="text-gray-500" />
+                  {translations('actions.saveDraft')}
+                  {totalSelectedCount > 0 && (
+                    <Badge
+                      variant="secondary"
+                      className="ml-1 h-4 border-none bg-primary/10 px-1 text-[10px] text-primary"
+                    >
+                      {totalSelectedCount}
+                    </Badge>
+                  )}
                 </Button>
-              ) : (
-                <Badge
-                  variant="success"
-                  className="bg-green-100 text-green-700 hover:bg-green-100"
-                >
-                  ✅ Finalized
-                </Badge>
-              )}
 
-              <Button size="sm" onClick={handleFile} disabled={!isFinalized}>
-                File
-              </Button>
+                <div className="h-4 w-px bg-gray-200" />
+                {!isFinalized ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={!isAllDraft}
+                    onClick={handleFinalize}
+                  >
+                    <CheckCircle size={14} className="text-gray-500" />
+                    {translations('actions.finalize')}
+                  </Button>
+                ) : (
+                  <div className="flex items-center gap-2 rounded-md border border-green-100 bg-green-50 px-3 py-1 text-xs font-bold text-green-700">
+                    <CheckCircle size={16} />
+                    {translations('actions.finalized')}
+                  </div>
+                )}
+
+                <div className="h-4 w-px bg-gray-200" />
+
+                <Button size="sm" onClick={handleFile} disabled={!isFinalized}>
+                  <Send size={14} />
+                  {translations('actions.file')}
+                </Button>
+              </div>
             </div>
           </section>
 
-          <Tabs
-            className="flex flex-col gap-2"
-            value={tab}
-            onValueChange={onTabChange}
-            defaultValue={'b2b'}
-          >
+          <Tabs value={tab} onValueChange={onTabChange} defaultValue={'b2b'}>
             <section className="flex items-center justify-between gap-1">
               <TabsList className="w-fit border">
                 <TabsTrigger value="b2b">
@@ -638,11 +665,20 @@ const GSTR1 = () => {
                 )) && (
                 <Button
                   size="sm"
-                  variant="destructive"
+                  variant="outline"
+                  className="h-9 gap-2 border-red-100 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
                   onClick={handleDeleteDraft}
                   disabled={saveDraftMutation.isPending}
                 >
-                  <Trash2 size={16} /> Delete
+                  <Trash2 size={16} />
+                  <div className="flex flex-col items-start leading-none">
+                    <span className="text-xs font-bold">
+                      {translations('actions.delete')}
+                    </span>
+                    <span className="text-[9px] opacity-70">
+                      Remove items from GST Portal draft
+                    </span>
+                  </div>
                 </Button>
               )}
             </section>
@@ -664,12 +700,12 @@ const GSTR1 = () => {
                         )}
                         actionBtn={
                           <ActionsDropdown
-                            label={'Fetch'}
+                            label={translations('actions.fetch')}
                             variant="default"
                             actions={[
                               {
                                 key: 'b2bInvoices',
-                                label: 'B2B Invoices',
+                                label: translations('tabs.tab1.label'),
                                 onClick: async () => {
                                   await invoicesForGstFilingQuery.refetch();
                                   handleResetSelection();
@@ -677,7 +713,7 @@ const GSTR1 = () => {
                               },
                               {
                                 key: 'crn',
-                                label: 'Credit Notes',
+                                label: translations('tabs.tab2.label'),
                                 onClick: async () => {
                                   await crnsQuery.refetch();
                                   handleResetSelection();
@@ -723,12 +759,12 @@ const GSTR1 = () => {
                         )}
                         actionBtn={
                           <ActionsDropdown
-                            label={'Fetch'}
+                            label={translations('actions.fetch')}
                             variant="default"
                             actions={[
                               {
                                 key: 'b2bInvoices',
-                                label: 'B2B Invoices',
+                                label: translations('tabs.tab1.label'),
                                 onClick: async () => {
                                   await invoicesForGstFilingQuery.refetch();
                                   handleResetSelection();
@@ -736,7 +772,7 @@ const GSTR1 = () => {
                               },
                               {
                                 key: 'crn',
-                                label: 'Credit Notes',
+                                label: translations('tabs.tab2.label'),
                                 onClick: async () => {
                                   await crnsQuery.refetch();
                                   handleResetSelection();

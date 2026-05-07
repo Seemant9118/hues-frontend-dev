@@ -160,6 +160,20 @@ export const isGstApplicable = (isHaveGst) => {
   else return false;
 };
 
+// vendor GST applicability check
+export const checkVendorGSTApplicability = (vendor) => {
+  if (!vendor) return false;
+
+  const vendorData = vendor?.vendor;
+  const invitationData = vendor?.invitation?.userDetails;
+
+  if (vendorData?.gsts?.length > 0) return true;
+  if (vendorData?.gstNumber) return true;
+  if (invitationData?.gstNumber) return true;
+
+  return false;
+};
+
 // Utility function to handle empty strings and undefined values
 export const formatValue = (value) => (value?.trim() ? value : '-');
 

@@ -5,11 +5,13 @@ import ConditionalRenderingStatus from '@/components/orders/ConditionalRendering
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Checkbox } from '@/components/ui/checkbox';
 import moment from 'moment';
+import { useTranslations } from 'next-intl';
 
 export const useInvoicesForGSTFilingColumns = ({
   type, // 'b2b' or 'crn'
   setFilingState,
 }) => {
+  const translations = useTranslations('gsts.gstr1.table');
   const idField = type === 'b2b' ? 'invoiceId' : 'id';
   const stateField =
     type === 'b2b' ? 'selectedInvoices' : 'selectedCreditNotes';
@@ -97,7 +99,7 @@ export const useInvoicesForGSTFilingColumns = ({
     {
       accessorKey: 'docNo',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Doc No" />
+        <DataTableColumnHeader column={column} title={translations('docNo')} />
       ),
       cell: ({ row }) =>
         row.original?.invoiceReferenceNumber ||
@@ -109,7 +111,10 @@ export const useInvoicesForGSTFilingColumns = ({
     {
       accessorKey: 'docDate',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Doc Date" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('docDate')}
+        />
       ),
       cell: ({ row }) => {
         const date = row.original?.invoiceDate || row.original?.createdAt;
@@ -121,7 +126,10 @@ export const useInvoicesForGSTFilingColumns = ({
     {
       accessorKey: 'counterpartyGstin',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Counterparty GSTIN" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('counterpartyGstin')}
+        />
       ),
       cell: ({ row }) =>
         row.original?.gstNumber ||
@@ -133,7 +141,10 @@ export const useInvoicesForGSTFilingColumns = ({
     {
       accessorKey: 'counterpartyName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Counterparty Name" />
+        <DataTableColumnHeader
+          column={column}
+          title={translations('counterpartyName')}
+        />
       ),
       cell: ({ row }) =>
         row.original?.vendorName || row.original?.toEnterprise?.name || '--',
@@ -143,7 +154,7 @@ export const useInvoicesForGSTFilingColumns = ({
     {
       accessorKey: 'value',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Value" />
+        <DataTableColumnHeader column={column} title={translations('value')} />
       ),
       cell: ({ row }) => formattedAmount(row.original?.totalAmount),
     },
@@ -152,7 +163,7 @@ export const useInvoicesForGSTFilingColumns = ({
     {
       accessorKey: 'status',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Status" />
+        <DataTableColumnHeader column={column} title={translations('status')} />
       ),
       cell: ({ row }) => {
         const { isDraft, isFiled } = row.original?.gstr1Filed || {};
@@ -165,7 +176,7 @@ export const useInvoicesForGSTFilingColumns = ({
     {
       accessorKey: 'sync',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Sync" />
+        <DataTableColumnHeader column={column} title={translations('sync')} />
       ),
       cell: ({ row }) => row.original?.syncStatus || '--',
     },

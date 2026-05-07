@@ -27,6 +27,11 @@ const STATUS_UI = {
     bg: '#DD97451A',
     border: '#DD9745',
   },
+  GRAY: {
+    color: '#6B7280',
+    bg: '#F3F4F6',
+    border: '#E5E7EB',
+  },
 };
 
 const podStatusResolver = ({ status, isSeller, t }) => {
@@ -143,6 +148,28 @@ const defaultStatusResolver = ({ status, isPayment, isSellerPage, t }) => {
       return { text: t(status), ...STATUS_UI.WARNING };
     case 'FILED':
       return { text: t(status), ...STATUS_UI.SUCCESS };
+    case 'NOT_PUSHED':
+      return { text: t(status), ...STATUS_UI.NEUTRAL };
+    case 'UPLOADED':
+      return { text: t(status), ...STATUS_UI.INFO };
+    case 'GSTR_1_FILED':
+      return { text: t(status), ...STATUS_UI.SUCCESS };
+    case 'IMS_DRAFT':
+      return { text: t(status), ...STATUS_UI.INFO };
+    case 'PLATFORM_ONLY':
+      return { text: t(status), ...STATUS_UI.NEUTRAL };
+    case 'MATCHED':
+      return { text: t(status), ...STATUS_UI.SUCCESS };
+    case 'PARTIAL':
+      return { text: t(status), ...STATUS_UI.WARNING };
+    case 'BOOKS_ONLY':
+      return { text: t(status), ...STATUS_UI.GRAY };
+    case 'PORTAL_ONLY':
+      return { text: t(status), ...STATUS_UI.ERROR };
+    case 'MISMATCHED':
+      return { text: t(status), ...STATUS_UI.ERROR };
+    case 'NOT_APPLICABLE':
+      return { text: t(status), ...STATUS_UI.NEUTRAL };
     case 'SENT':
     case 'RAISED':
       return { text: t(status), ...STATUS_UI.INFO };

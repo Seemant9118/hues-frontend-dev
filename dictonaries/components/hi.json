@@ -307,6 +307,7 @@
                 "footer": {
                     "gross_amount": "कुल राशि",
                     "tax_amount": "कर राशि",
+                    "round_off": "राउंड-ऑफ",
                     "total_amount": "कुल भुगतान राशि"
                 }
             }
@@ -440,7 +441,9 @@
                 "vendor_name": "विक्रेता का नाम",
                 "type": "प्रकार",
                 "payment_status": "भुगतान स्थिति",
-                "total_amount": "कुल राशि",
+                "total_amount": "राशि (जीएसटी सहित)",
+                "round_off": "राउंड ऑफ",
+                "round_off_amount": "कुल राशि",
                 "debit_notes": "डेबिट नोट्स",
                 "defects": "खामियाँ"
             }
@@ -1179,7 +1182,18 @@
             "CREDIT": "क्रेडिट",
             "SENT": "भेजा गया",
             "IN_TRANSIT": "परिवहन में",
-            "READY_FOR_DISPATCH": "डिस्पैच के लिए तैयार"
+            "READY_FOR_DISPATCH": "डिस्पैच के लिए तैयार",
+            "NOT_PUSHED": "पुश नहीं किया गया",
+            "UPLOADED": "अपलोड किया गया",
+            "GSTR_1_FILED": "जीएसटीआर-1",
+            "IMS_DRAFT": "IMS",
+            "PORTAL_ONLY": "केवल पोर्टल",
+            "PLATFORM_ONLY": "केवल प्लेटफॉर्म",
+            "MATCHED": "Matched",
+            "PARTIAL": "आंशिक",
+            "BOOKS_ONLY": "केवल बुक्स",
+            "MISMATCHED": "Mismatched",
+            "NOT_APPLICABLE": "-"
         }
     }
 }

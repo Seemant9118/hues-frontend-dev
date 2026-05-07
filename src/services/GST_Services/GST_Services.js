@@ -14,8 +14,13 @@ export const verifyGSTOTP = (data) => {
 };
 
 export const filedGsts = ({ page, limit, retPeriod, isFiled }) => {
+  if (isFiled !== undefined) {
+    return APIinstance.get(
+      `${gstAPIs.filedGsts.endpoint}?page=${page}&limit=${limit}&retPeriod=${retPeriod}&isFiled=${isFiled}`,
+    );
+  }
   return APIinstance.get(
-    `${gstAPIs.filedGsts.endpoint}?page=${page}&limit=${limit}&retPeriod=${retPeriod}&isFiled=${isFiled}`,
+    `${gstAPIs.filedGsts.endpoint}?page=${page}&limit=${limit}&retPeriod=${retPeriod}`,
   );
 };
 

@@ -192,8 +192,12 @@
                     "date": "Date",
                     "vendors": "Vendor",
                     "order_id": "Order ID",
+                    "total_amount": "Amount (inc. GST)",
+                    "round_off": "Round Off",
+                    "roundOff_amount": "Total Amount",
                     "status": "Status",
-                    "total_amount": "Total amount"
+                    "match_status": "Match Status",
+                    "gst_feeds": "GST Feeds"
                 }
             },
             "invoice_details": {

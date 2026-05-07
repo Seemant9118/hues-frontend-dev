@@ -198,7 +198,9 @@
                     "customers": "ग्राहक",
                     "status": "स्थिति",
                     "order_id": "प्रस्ताव आईडी",
-                    "total_amount": "कुल राशि"
+                    "total_amount": "राशि (जीएसटी सहित)",
+                    "round_off": "राउंड ऑफ",
+                    "roundOff_amount": "कुल राशि"
                 }
             },
             "invoice_details": {

@@ -7,6 +7,7 @@ import { orderApi } from '@/api/order_api/order_api';
 import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { userAuth } from '@/api/user_auth/Users';
 import {
+  checkVendorGSTApplicability,
   getEnterpriseId,
   getStylesForSelectComponent,
   isGstApplicable,
@@ -267,8 +268,10 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
   useEffect(() => {
     if (!isCreatingPurchase || !order?.selectedValue) return;
     // Check if GST is applicable for purchase orders
-    const gstNumber = order?.selectedValue?.gstNumber;
-    setIsGstApplicableForPurchaseOrders(!!gstNumber);
+    const isApplicable = checkVendorGSTApplicability(
+      order?.selectedValue?.originalVendor,
+    );
+    setIsGstApplicableForPurchaseOrders(isApplicable);
   }, [isCreatingPurchase, order?.selectedValue]);
 
   // [clients]
@@ -341,7 +344,14 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
             : vendor?.invitation?.status;
         const gstNumber = vendor?.vendor?.gstNumber;
 
-        return { value, label, data, isAccepted, gstNumber };
+        return {
+          value,
+          label,
+          data,
+          isAccepted,
+          gstNumber,
+          originalVendor: vendor,
+        };
       }),
     // Special option for "Add New Vendor"
     {
@@ -453,11 +463,11 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
   }
 
   return (
-    <div className="flex h-full flex-col gap-8 py-6">
+    <div className="flex h-full flex-col gap-8">
       {/* 1. Section: Client/Vendor Information */}
       {isOfferType === 'GOODS' && (
-        <section className="flex flex-col gap-4">
-          <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
+        <section className="flex flex-col gap-4 border-b border-neutral-100 pb-4">
+          <div className="flex items-center gap-2">
             <User className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-semibold text-neutral-800">
               {cta === 'offer'
@@ -576,12 +586,14 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
                         totalGstAmount: null,
                       });
 
-                      const { value: id, gstNumber } = selectedOption;
+                      const { value: id, originalVendor } = selectedOption;
 
                       if (selectedOption.value === 'add-new-vendor') {
                         setIsModalOpen(true);
                       } else {
-                        setIsGstApplicableForPurchaseOrders(!!gstNumber);
+                        setIsGstApplicableForPurchaseOrders(
+                          checkVendorGSTApplicability(originalVendor),
+                        );
 
                         const updatedOrder = {
                           ...order,
@@ -625,8 +637,8 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
       )}
 
       {/* 2. Section: Items/Services Related Fields */}
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
+      <section className="flex flex-col gap-4 border-b border-neutral-100 pb-4">
+        <div className="flex items-center gap-2">
           <Package className="h-5 w-5 text-primary" />
           <h3 className="text-lg font-semibold text-neutral-800">
             {translations('title.sub_titles.add_item')}
@@ -904,8 +916,8 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
       </section>
 
       {/* 3. Section: DataTable */}
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center gap-2 border-b border-neutral-100 pb-1">
+      <section className="flex flex-col gap-4 border-b border-neutral-100 pb-4">
+        <div className="flex items-center gap-2">
           <List className="h-5 w-5 text-primary" />
           <h3 className="text-lg font-semibold text-neutral-800">
             Items Added
@@ -925,39 +937,41 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
           </div>
 
           <div className="flex flex-wrap items-center gap-10">
-            {isGstApplicable(
-              isPurchasePage
-                ? isGstApplicableForPurchaseOrders
-                : isGstApplicableForSalesOrders,
-            ) && (
-              <>
-                <div className="flex flex-col items-end">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
-                    {translations('form.footer.gross_amount')}
-                  </span>
-                  <span className="text-sm font-bold text-neutral-800">
-                    ₹ {grossAmount.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex flex-col items-end">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
-                    {translations('form.footer.tax_amount')}
-                  </span>
-                  <span className="text-sm font-bold text-orange-600">
-                    ₹ {totalGstAmount.toFixed(2)}
-                  </span>
-                </div>
+            <>
+              <div className="flex flex-col items-end">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                  {translations('form.footer.gross_amount')}
+                </span>
+                <span className="text-sm font-bold text-neutral-800">
+                  ₹ {grossAmount.toFixed(2)}
+                </span>
+              </div>
+              {isGstApplicable(
+                isPurchasePage
+                  ? isGstApplicableForPurchaseOrders
+                  : isGstApplicableForSalesOrders,
+              ) && (
+                <>
+                  <div className="flex flex-col items-end">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                      {translations('form.footer.tax_amount')}
+                    </span>
+                    <span className="text-sm font-bold text-orange-600">
+                      ₹ {totalGstAmount.toFixed(2)}
+                    </span>
+                  </div>
 
-                <div className="flex flex-col items-end">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
-                    {translations('form.footer.total_amount')}
-                  </span>
-                  <span className="text-sm font-bold text-green-600">
-                    ₹ {finalAmount.toFixed(2)}
-                  </span>
-                </div>
-              </>
-            )}
+                  <div className="flex flex-col items-end">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
+                      {translations('form.footer.total_amount')}
+                    </span>
+                    <span className="text-sm font-bold text-green-600">
+                      ₹ {finalAmount.toFixed(2)}
+                    </span>
+                  </div>
+                </>
+              )}
+            </>
           </div>
         </div>
       </footer>

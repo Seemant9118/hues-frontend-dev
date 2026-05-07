@@ -204,6 +204,9 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
     setInvoicedData((prev) => ({
       ...prev,
       discountAmount: parseFloat(finalDiscountAmount.toFixed(2)),
+      roundOffAmount: parseFloat(
+        (finalTotalAmount + finalTotalGstAmount).toFixed(2),
+      ),
       amount: parseFloat(finalTotalAmount.toFixed(2)),
       gstAmount: parseFloat(finalTotalGstAmount.toFixed(2)),
     }));

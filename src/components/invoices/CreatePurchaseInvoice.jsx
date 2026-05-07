@@ -103,6 +103,8 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
     invoiceDate: purchaseInvoiceDraft?.invoiceDate || null,
     source: purchaseInvoiceDraft?.source || '',
     refrenceNumber: purchaseInvoiceDraft?.refrenceNumber || '',
+    roundOffAmount: purchaseInvoiceDraft?.roundOffAmount || 0,
+    roundOffType: purchaseInvoiceDraft?.roundOffType || 'ADD',
   });
 
   const [
@@ -235,6 +237,10 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
           : translations('form.errorMsg.itemOrder');
     }
 
+    if (Number(order.roundOffAmount) < 0) {
+      errorObj.roundOffAmount = '*Round-off amount cannot be negative';
+    }
+
     return errorObj;
   };
 
@@ -269,6 +275,10 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
 
   const { totalAmount, totalGstAmt, totalDiscountAmt } = handleSetTotalAmt();
   const totalAmtWithGst = totalAmount + totalGstAmt;
+  const finalTotal =
+    order.roundOffType === 'SUBTRACT'
+      ? totalAmtWithGst - (Number(order.roundOffAmount) || 0)
+      : totalAmtWithGst + (Number(order.roundOffAmount) || 0);
 
   // create invoice mutation
   const invoiceMutation = useMutation({
@@ -301,6 +311,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
         ...updatedOrder,
         buyerId: Number(updatedOrder.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
+        roundOffAmount: finalTotal,
         gstAmount: parseFloat(totalGstAmt.toFixed(2)),
         discountAmount: parseFloat(totalDiscountAmt.toFixed(2)),
         invoiceItems: updatedOrder.orderItems.map((item) => ({
@@ -349,6 +360,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
         ...updatedOrder,
         buyerId: Number(updatedOrder.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
+        roundOffAmount: finalTotal,
         gstAmount: parseFloat(totalGstAmt.toFixed(2)),
         discountAmount: parseFloat(totalDiscountAmt.toFixed(2)),
         invoiceItems: updatedOrder.orderItems.map((item) => ({
@@ -430,6 +442,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                       },
                     });
                   }}
+                  popperPlacement={'right-end'}
                   dateFormat="dd/MM/yyyy"
                   placeholderText="dd/mm/yyyy"
                   className="max-w-xs"
@@ -448,7 +461,21 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
 
               <Select
                 value={order.source}
-                onValueChange={(value) => setOrder({ ...order, source: value })}
+                onValueChange={(value) => {
+                  const updatedOrder = {
+                    ...order,
+                    source: value,
+                  };
+                  setOrder(updatedOrder);
+
+                  saveDraftToSession({
+                    key: 'purchaseInvoiceDraft',
+                    data: {
+                      ...updatedOrder,
+                      isGstApplicableForSelectedVendor,
+                    },
+                  });
+                }}
               >
                 <SelectTrigger>
                   <SelectValue
@@ -478,7 +505,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                 )}
                 value={order.refrenceNumber || ''}
                 onChange={(e) => {
-                  const {value} = e.target;
+                  const { value } = e.target;
 
                   const updatedOrder = {
                     ...order,
@@ -1060,12 +1087,80 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                 </>
               )}
 
-              <div className="flex items-center gap-2">
-                <span className="font-bold">
-                  {translations('form.footer.total_amount')} :
-                </span>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-bold">Total Amount :</span>
                 <span className="rounded-sm border bg-slate-100 p-2">
                   {totalAmtWithGst.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold">
+                    {translations('form.footer.round_off')} :
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Select
+                      value={order.roundOffType}
+                      onValueChange={(val) => {
+                        const updatedOrder = { ...order, roundOffType: val };
+                        setOrder(updatedOrder);
+                        saveDraftToSession({
+                          key: 'purchaseInvoiceDraft',
+                          data: {
+                            ...updatedOrder,
+                            isGstApplicableForSelectedVendor,
+                          },
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="h-10 w-32 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ADD" className="text-sm">
+                          (+) Add
+                        </SelectItem>
+                        <SelectItem value="SUBTRACT" className="text-sm">
+                          (-) Subtract
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      type="text"
+                      placeholder="0.00"
+                      className="h-10 w-20 text-right text-base"
+                      value={order.roundOffAmount}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.]/g, '');
+                        // Limit to 3 decimal places
+                        const parts = val.split('.');
+                        if (parts[1] && parts[1].length > 3) return;
+
+                        const updatedOrder = { ...order, roundOffAmount: val };
+                        setOrder(updatedOrder);
+                        saveDraftToSession({
+                          key: 'purchaseInvoiceDraft',
+                          data: {
+                            ...updatedOrder,
+                            isGstApplicableForSelectedVendor,
+                          },
+                        });
+                      }}
+                    />
+                  </div>
+                </div>
+                {errorMsg?.roundOffAmount && (
+                  <span className="text-[10px] text-red-500">
+                    {errorMsg.roundOffAmount}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-bold">Grand Total :</span>
+                <span className="rounded-sm border bg-slate-100 p-2 font-bold text-primary">
+                  {finalTotal.toFixed(2)}
                 </span>
               </div>
             </div>

@@ -611,6 +611,10 @@ const ViewInvoice = () => {
                           type={invoiceDetails?.invoiceDetails?.invoiceType}
                           date={invoiceDetails?.invoiceDetails?.invoiceDate}
                           amount={invoiceDetails?.invoiceDetails?.totalAmount}
+                          roundOff={invoiceDetails?.invoiceDetails?.roundOff}
+                          roundOffAmount={
+                            invoiceDetails?.invoiceDetails?.roundOffAmount
+                          }
                           amountPaid={
                             invoiceDetails?.invoiceDetails?.amountPaid
                           }
