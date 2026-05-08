@@ -143,6 +143,7 @@ const ViewInvoice = () => {
       invoice?.orderItemId?.productDetails?.serviceName,
     quantity: invoice?.quantity,
     unit: invoice?.unit,
+    gstPerUnit: invoice?.gstPerUnit,
     unitPrice: invoice?.unitPrice,
     totalAmount: invoice?.totalAmount,
   }));
@@ -352,8 +353,10 @@ const ViewInvoice = () => {
                       type={invoiceDetails?.invoiceDetails?.invoiceType}
                       date={invoiceDetails?.invoiceDetails?.invoiceDate}
                       defectsStatus={defectsStatus()}
-                      amount={invoiceDetails?.invoiceDetails?.totalAmount}
+                      grossAmount={invoiceDetails?.invoiceDetails?.grossAmount}
+                      gstAmount={invoiceDetails?.invoiceDetails?.gstAmount}
                       roundOff={invoiceDetails?.invoiceDetails?.roundOff}
+                      amount={invoiceDetails?.invoiceDetails?.totalAmount}
                       roundOffAmount={
                         invoiceDetails?.invoiceDetails?.roundOffAmount
                       }

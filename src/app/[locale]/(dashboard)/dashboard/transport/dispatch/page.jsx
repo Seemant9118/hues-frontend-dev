@@ -15,7 +15,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
-import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import {
   createDispatchNote,
@@ -28,10 +27,10 @@ import { PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import React, { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import { getCreateDispatchSteps } from '@/components/dispatchNote/Direct_Dispatch_Notes_MultiStep_Form/dispatch-notes-config';
 import MultiStepForm from '@/components/shared/MultiStepForm/MultiStepForm';
+import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { useDispatchedNotes } from './useDispatchedNotes';
 
 // macros
@@ -52,7 +51,6 @@ const DispatchedNotes = () => {
     'transport.dispatched-notes.emtpyStateComponent.subItems.subItem3',
     'transport.dispatched-notes.emtpyStateComponent.subItems.subItem4',
   ];
-  const { hasPermission } = usePermission();
   const router = useRouter();
   const searchParams = useSearchParams();
   const action = searchParams.get('action');
@@ -116,20 +114,20 @@ const DispatchedNotes = () => {
       searchCycle,
     ],
     queryFn: async ({ pageParam = 1 }) => {
-      return getDispatchNotes({
+      const response = await getDispatchNotes({
         enterpriseId,
         page: pageParam,
         limit: PAGE_LIMIT,
-        movement: tab,
+        movement: tab === 'ALL' ? undefined : tab,
         searchString: searchTerm,
       });
+      return response;
     },
     initialPageParam: 1,
     getNextPageParam: (_lastGroup, groups) => {
       const nextPage = groups.length + 1;
       return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
     },
-    enabled: hasPermission('permission:sales-view'),
     staleTime: Infinity, // data never becomes stale
     refetchOnMount: false, // don’t refetch on remount
     refetchOnWindowFocus: false, // already correct
@@ -140,9 +138,9 @@ const DispatchedNotes = () => {
     if (!data) return;
 
     // Flatten sales dispatched data from all pages
-    const flattenedSalesDispatchedNotesData = data.pages
-      .map((page) => page?.data?.data?.data) // Assuming sales dispatched data is nested in `data.data.data`
-      .flat();
+    const flattenedSalesDispatchedNotesData = data.pages.flatMap(
+      (page) => page?.data?.data?.data || [],
+    );
 
     // Deduplicate sales dispatched data based on unique `id`
     const uniqueSalesDispatchedNotesData = Array.from(
@@ -160,8 +158,8 @@ const DispatchedNotes = () => {
     // Calculate pagination data using the last page's information
     const lastPage = data.pages[data.pages.length - 1]?.data?.data;
     setPaginationData({
-      totalPages: lastPage?.totalPages,
-      currFetchedPage: lastPage?.currentPage,
+      totalPages: Number(lastPage?.totalPages),
+      currFetchedPage: Number(lastPage?.page || lastPage?.currentPage),
     });
   }, [data]);
 

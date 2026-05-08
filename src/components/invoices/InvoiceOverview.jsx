@@ -25,6 +25,8 @@ const InvoiceOverview = ({
   hasDebitNote,
   type,
   date,
+  grossAmount,
+  gstAmount,
   amount,
   roundOffAmount,
   amountPaid = 0,
@@ -126,6 +128,18 @@ const InvoiceOverview = ({
             <>
               <section className="flex flex-col">
                 <p className="text-sm text-gray-600">
+                  {translations('label.gross_amount')}
+                </p>
+                <p className="font-bold">{`${formattedAmount(grossAmount)}`}</p>
+              </section>
+              <section className="flex flex-col">
+                <p className="text-sm text-gray-600">
+                  {translations('label.gst_amount')}
+                </p>
+                <p className="font-bold">{`${formattedAmount(gstAmount)}`}</p>
+              </section>
+              <section className="flex flex-col">
+                <p className="text-sm text-gray-600">
                   {translations('label.total_amount')}
                 </p>
                 <p className="font-bold">{`${formattedAmount(amount)}`}</p>
@@ -145,7 +159,7 @@ const InvoiceOverview = ({
                 <p className="text-sm text-gray-600">
                   {translations('label.round_off_amount')}
                 </p>
-                <p className="font-bold">{`${formattedAmount(roundOffAmount)}`}</p>
+                <p className="font-bold text-primary">{`${formattedAmount(roundOffAmount)}`}</p>
               </section>
             </>
           )}
@@ -296,6 +310,18 @@ const InvoiceOverview = ({
                 <>
                   <section className="flex flex-col gap-3">
                     <p className="text-sm text-gray-600">
+                      {translations('label.gross_amount')}
+                    </p>
+                    <p className="font-bold">{`${formattedAmount(grossAmount)}`}</p>
+                  </section>
+                  <section className="flex flex-col gap-3">
+                    <p className="text-sm text-gray-600">
+                      {translations('label.gst_amount')}
+                    </p>
+                    <p className="font-bold">{`${formattedAmount(gstAmount)}`}</p>
+                  </section>
+                  <section className="flex flex-col gap-3">
+                    <p className="text-sm text-gray-600">
                       {translations('label.total_amount')}
                     </p>
                     <p className="font-bold">{`${formattedAmount(amount)}`}</p>
@@ -315,7 +341,7 @@ const InvoiceOverview = ({
                     <p className="text-sm text-gray-600">
                       {translations('label.round_off_amount')}
                     </p>
-                    <p className="font-bold">{`${formattedAmount(roundOffAmount)}`}</p>
+                    <p className="font-bold text-primary">{`${formattedAmount(roundOffAmount)}`}</p>
                   </section>
                 </>
               )}

@@ -12,13 +12,22 @@ import { toast } from 'sonner';
 import Wrapper from '../wrappers/Wrapper';
 import MultiStepForm from './multi-step-form/MultiStepForm';
 import { stepsGoodsConfig } from './multi-step-form/goods-form-configs/stepsConfig';
+import Loading from '../ui/Loading';
 
 const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
-  const draftData = SessionStorageService.get(`${enterpriseId}_GoodsData`);
+  const [enterpriseId, setEnterpriseId] = useState(null);
+  const [draftData, setDraftData] = useState(null);
+  const [isMounted, setIsMounted] = useState(false);
   const translation = useTranslations('components.addGoods');
   const queryClient = useQueryClient();
   const hasRestoredDraftRef = useRef(false);
+
+  useEffect(() => {
+    const eId = LocalStorageService.get('enterprise_Id');
+    setEnterpriseId(eId);
+    setDraftData(SessionStorageService.get(`${eId}_GoodsData`));
+    setIsMounted(true);
+  }, []);
   const [goods, setGoods] = useState({
     productType: '',
     productName: '',
@@ -234,6 +243,8 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
 
     addGoodsMutation.mutate(payload);
   };
+
+  if (!isMounted) return <Loading />;
 
   return (
     <Wrapper className="h-full">

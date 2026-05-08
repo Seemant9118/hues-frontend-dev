@@ -494,6 +494,15 @@
                 "next": "अगला",
                 "verify": "सत्यापित करें",
                 "cancel": "रद्द करें"
+            },
+            "footer": {
+                "gross_amount": "कुल राशि",
+                "tax_amount": "कर राशि",
+                "total_amount": "कुल राशि (टैक्स सहित)",
+                "round_off": "राउंड-ऑफ",
+                "grand_total": "कुल भुगतान राशि",
+                "add": "जोड़ें (+)",
+                "subtract": "घटाएं (-)"
             }
         },
         "generate_invoice_modal_otp": {

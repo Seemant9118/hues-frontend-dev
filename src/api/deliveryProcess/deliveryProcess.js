@@ -4,7 +4,7 @@ export const deliveryProcess = {
     endpointKey: 'create_dispatch_note',
   },
   getDispatchNotes: {
-    endpoint: `/dispatchnote/list/`,
+    endpoint: `/dispatchnote/list`,
     endpointKey: 'get_dispatch_notes_by_invoice',
   },
   getDispatchNote: {

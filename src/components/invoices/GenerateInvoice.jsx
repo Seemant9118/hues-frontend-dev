@@ -201,14 +201,19 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
       finalTotalGstAmount += totalGstAmount;
     });
 
+    const taxableAmount = finalTotalAmount - finalDiscountAmount;
+    const untroundedTotal = taxableAmount + finalTotalGstAmount;
+    const roundedTotal = Math.round(untroundedTotal);
+    const roundOff = parseFloat((roundedTotal - untroundedTotal).toFixed(2));
+
     setInvoicedData((prev) => ({
       ...prev,
       discountAmount: parseFloat(finalDiscountAmount.toFixed(2)),
-      roundOffAmount: parseFloat(
-        (finalTotalAmount + finalTotalGstAmount).toFixed(2),
-      ),
-      amount: parseFloat(finalTotalAmount.toFixed(2)),
+      amount: parseFloat(taxableAmount.toFixed(2)),
       gstAmount: parseFloat(finalTotalGstAmount.toFixed(2)),
+      roundOffAmount: roundedTotal, // Backend: Grand Total
+      totalAmount: parseFloat(untroundedTotal.toFixed(2)), // Backend: Unrounded Sum
+      roundOffAdjustment: roundOff, // For UI Display
     }));
   }, [invoicedData.invoiceItems]);
 
@@ -798,34 +803,86 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
               )}
             </Table>
 
-            <div className="flex justify-end gap-4 border-t pt-4">
-              <div className="mt-auto h-[1px] bg-neutral-300"></div>
+            <div className="flex justify-between gap-4 border-t pt-4">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-bold">
+                    {translations('footer.gross_amount')} :
+                  </span>
+                  <span className="rounded-sm border bg-slate-100 p-2">
+                    ₹ {(invoicedData.amount || 0).toFixed(2)}
+                  </span>
+                </div>
 
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onHandleClose()}
-              >
-                {translations('ctas.cancel')}
-              </Button>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-bold">
+                    {translations('footer.tax_amount')} :
+                  </span>
+                  <span className="rounded-sm border bg-slate-100 p-2">
+                    ₹ {(invoicedData.gstAmount || 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-bold">
+                    {translations('footer.total_amount')} :
+                  </span>
+                  <span className="rounded-sm border bg-slate-100 p-2">
+                    ₹{' '}
+                    {(
+                      (invoicedData.amount || 0) + (invoicedData.gstAmount || 0)
+                    ).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-bold">
+                    {translations('footer.round_off')} :
+                  </span>
+                  <span className="rounded-sm border bg-slate-100 p-2">
+                    {invoicedData.roundOffAdjustment > 0
+                      ? `${translations('footer.add')} `
+                      : invoicedData.roundOffAdjustment < 0
+                        ? `${translations('footer.subtract')} `
+                        : ''}
+                    ₹{' '}
+                    {Math.abs(invoicedData.roundOffAdjustment || 0).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-bold">
+                    {translations('footer.grand_total')} :
+                  </span>
+                  <span className="rounded-sm border bg-slate-100 p-2">
+                    ₹ {(invoicedData.roundOffAmount || 0).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+              <div className="items-cneter flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onHandleClose()}
+                >
+                  {translations('ctas.cancel')}
+                </Button>
 
-              <Button
-                size="sm"
-                onClick={() => {
-                  isAutoSelect
-                    ? setIsPINModalOpen(true)
-                    : handlePreview(invoicedData);
-                }}
-                disabled={previewInvMutation.isPending}
-              >
-                {previewInvMutation.isPending ? (
-                  <Loading />
-                ) : isAutoSelect ? (
-                  translations('ctas.verify')
-                ) : (
-                  translations('ctas.next')
-                )}
-              </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    isAutoSelect
+                      ? setIsPINModalOpen(true)
+                      : handlePreview(invoicedData);
+                  }}
+                  disabled={previewInvMutation.isPending}
+                >
+                  {previewInvMutation.isPending ? (
+                    <Loading />
+                  ) : isAutoSelect ? (
+                    translations('ctas.verify')
+                  ) : (
+                    translations('ctas.next')
+                  )}
+                </Button>
+              </div>
             </div>
           </section>
         </>

@@ -445,6 +445,8 @@
                 "vendor_name": "Vendor name",
                 "type": "Type",
                 "payment_status": "Payment status",
+                "gross_amount": "Gross amount",
+                "gst_amount": "GST amount",
                 "total_amount": "Amount (inc. GST)",
                 "round_off": "Round off",
                 "round_off_amount": "Total Amount",
@@ -498,6 +500,15 @@
                 "next": "Next",
                 "verify": "Verify",
                 "cancel": "Cancel"
+            },
+            "footer": {
+                "gross_amount": "Gross Amount",
+                "tax_amount": "Tax Amount",
+                "total_amount": "Total Amount",
+                "round_off": "Round Off",
+                "grand_total": "Grand Total",
+                "add": "Add (+)",
+                "subtract": "Subtract (-)"
             }
         },
         "generate_invoice_modal_otp": {

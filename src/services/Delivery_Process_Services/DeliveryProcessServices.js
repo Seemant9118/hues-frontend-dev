@@ -28,7 +28,7 @@ export const getDispatchNotes = ({
     page,
     limit,
     ...(movement ? { movement } : {}),
-    ...(searchString !== undefined && { searchString }),
+    ...(searchString ? { searchString } : {}),
   };
   return APIinstance.get(baseUrl, { params });
 };

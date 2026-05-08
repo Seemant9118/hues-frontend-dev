@@ -40,9 +40,10 @@ function Goods() {
 
   const translations = useTranslations('goods');
 
-  const enterpriseId = getEnterpriseId();
-  const isEnterpriseOnboardingComplete =
-    LocalStorageService.get('isEnterpriseOnboardingComplete') ?? false;
+  const [enterpriseId, setEnterpriseId] = useState(null);
+  const [isEnterpriseOnboardingComplete, setIsEnterpriseOnboardingComplete] =
+    useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const { hasPermission } = usePermission();
   const router = useRouter();
@@ -55,6 +56,15 @@ function Goods() {
   const [productGoods, setProductGoods] = useState([]);
   const [paginationData, setPaginationData] = useState({});
 
+  // to fetch enterprise id and onboarding status
+  useEffect(() => {
+    setEnterpriseId(getEnterpriseId());
+    setIsEnterpriseOnboardingComplete(
+      LocalStorageService.get('isEnterpriseOnboardingComplete') ?? false,
+    );
+    setIsMounted(true);
+  }, []);
+
   const emptyStateSubItems = useMemo(() => {
     return [
       translations('emptyStateComponent.subItems.subItem1.value'),
@@ -65,26 +75,22 @@ function Goods() {
   }, [translations]);
 
   useEffect(() => {
-    const state = searchParams?.get?.('action');
-    setIsAdding(state === 'add');
-    setIsEditing(state === 'edit');
+    const action = searchParams?.get?.('action');
+    setIsAdding(action === 'add');
+    setIsEditing(action === 'edit');
   }, [searchParams]);
 
-  useEffect(() => {
-    const currentAction = searchParams.get('action') || '';
-    const requiredAction = isAdding ? 'add' : isEditing ? 'edit' : '';
-
-    if (currentAction === requiredAction) return;
-
-    const newPath = requiredAction
-      ? `/dashboard/inventory/goods?action=${requiredAction}`
-      : `/dashboard/inventory/goods`;
-
-    router.replace(newPath);
-  }, [isAdding, isEditing, router, searchParams]);
+  const handleSetIsEditing = (val, goods = null) => {
+    setIsEditing(val);
+    if (goods) setGoodsToEdit(goods);
+    const params = new URLSearchParams(searchParams.toString());
+    if (val) params.set('action', 'edit');
+    else params.delete('action');
+    router.replace(`/dashboard/inventory/goods?${params.toString()}`);
+  };
 
   const goodsQuery = useInfiniteQuery({
-    queryKey: [goodsApi.getAllProductGoods.endpointKey],
+    queryKey: [goodsApi.getAllProductGoods.endpointKey, enterpriseId],
     queryFn: async ({ pageParam = 1 }) =>
       GetAllProductGoods({
         id: enterpriseId,
@@ -99,6 +105,8 @@ function Goods() {
       return nextPage <= totalPages ? nextPage : undefined;
     },
     enabled:
+      isMounted &&
+      Boolean(enterpriseId) &&
       searchTerm.trim().length === 0 &&
       Boolean(hasPermission('permission:item-masters-view')),
     refetchOnWindowFocus: false,
@@ -120,7 +128,7 @@ function Goods() {
       const nextPage = allPages.length + 1;
       return nextPage <= totalPages ? nextPage : undefined;
     },
-    enabled: searchTerm.trim().length > 0,
+    enabled: isMounted && searchTerm.trim().length > 0,
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
@@ -133,7 +141,11 @@ function Goods() {
       source.pages.flatMap((page) => page?.data?.data?.data ?? []) ?? [];
 
     const uniqueGoodsData = Array.from(
-      new Map(flattened.map((item) => [item.id, item])).values(),
+      new Map(
+        flattened
+          .filter((item) => item && item.id)
+          .map((item) => [item.id, item]),
+      ).values(),
     );
 
     setProductGoods(uniqueGoodsData || []);
@@ -153,11 +165,13 @@ function Goods() {
     router.push(`/dashboard/inventory/goods/${row.id}`);
   };
 
-  const GoodsColumns = useGoodsColumns(setIsEditing, setGoodsToEdit);
+  const GoodsColumns = useGoodsColumns(handleSetIsEditing, setGoodsToEdit);
 
   return (
     <ProtectedWrapper permissionCode="permission:item-masters-view">
-      {!enterpriseId || !isEnterpriseOnboardingComplete ? (
+      {!isMounted ? (
+        <Loading />
+      ) : !enterpriseId || !isEnterpriseOnboardingComplete ? (
         <>
           <SubHeader name={translations('title')} />
           <RestrictedComponent />
@@ -252,7 +266,7 @@ function Goods() {
 
           {isEditing && (
             <EditProduct
-              setIsCreatingGoods={setIsEditing}
+              setIsCreatingGoods={handleSetIsEditing}
               goodsToEdit={goodsToEdit}
             />
           )}

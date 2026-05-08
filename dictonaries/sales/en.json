@@ -198,9 +198,7 @@
                     "date": "Date",
                     "customers_type": "Type",
                     "customers": "Name",
-                    "total_amount": "Amount (inc. GST)",
-                    "round_off": "Round Off",
-                    "roundOff_amount": "Total Amount",
+                    "roundOff_amount": "Invoice Total",
                     "status": "Status",
                     "match_status": "Match Status",
                     "gst_feeds": "GST Feeds",
@@ -241,6 +239,7 @@
                                     "item": "Item",
                                     "quantity": "Quantity",
                                     "rate": "Rate",
+                                    "gstPerUnit": "GST (%)",
                                     "total_amount": "Total Amount"
                                 }
                             }

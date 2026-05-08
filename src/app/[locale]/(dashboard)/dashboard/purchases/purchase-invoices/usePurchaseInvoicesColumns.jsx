@@ -117,76 +117,6 @@ export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
       ),
     },
     {
-      accessorKey: 'orderReferenceNumber',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('order_id')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { orderReferenceNumber } = row.original;
-        return (
-          <div className="w-48 rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1">
-            {orderReferenceNumber}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'totalAmount',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('total_amount')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { totalAmount } = row.original;
-        return formattedAmount(totalAmount);
-      },
-    },
-    {
-      accessorKey: 'round_off',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('round_off')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { totalAmount, roundOffAmount } = row.original;
-        const roundOffVal = (Number(roundOffAmount) || 0) - totalAmount;
-
-        if (roundOffVal === 0) return formattedAmount(0);
-
-        const prefix = roundOffVal > 0 ? '+' : '';
-        return (
-          <span className={roundOffVal > 0 ? 'text-green-600' : 'text-red-600'}>
-            {prefix}
-            {formattedAmount(roundOffVal)}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: 'roundOffAmount',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('roundOff_amount')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { roundOffAmount } = row.original;
-        return (
-          <div className="font-bold text-primary">
-            {formattedAmount(roundOffAmount)}
-          </div>
-        );
-      },
-    },
-    {
       accessorKey: 'status',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={translations('status')} />
@@ -208,7 +138,23 @@ export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
         );
       },
     },
-
+    {
+      accessorKey: 'roundOffAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('roundOff_amount')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { roundOffAmount } = row.original;
+        return (
+          <div className="font-bold text-primary">
+            {formattedAmount(roundOffAmount)}
+          </div>
+        );
+      },
+    },
     {
       accessorKey: 'match_status',
       header: ({ column }) => (
@@ -285,6 +231,23 @@ export const usePurchaseInvoicesColumns = (setSelectedInvoices) => {
             ) : (
               <ConditionalRenderingStatus status={'PLATFORM_ONLY'} />
             )}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: 'orderReferenceNumber',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('order_id')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { orderReferenceNumber } = row.original;
+        return (
+          <div className="w-48 rounded border border-[#EDEEF2] bg-[#F6F7F9] p-1">
+            {orderReferenceNumber}
           </div>
         );
       },

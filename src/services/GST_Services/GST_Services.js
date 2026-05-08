@@ -77,6 +77,12 @@ export const syncInvoicesWithGSTR2A = (period) => {
   );
 };
 
+export const syncInvoicesWithIMS = (period) => {
+  return APIinstance.get(
+    `${gstAPIs.syncInvoicesWithIMS.endpoint}?retPeriod=${period}&section=b2b&rtnTyp=GSTR1`,
+  );
+};
+
 export const getGSTR2Avs2BMissing = (period) => {
   return APIinstance.get(
     `${gstAPIs.getGSTR2Avs2BMissing.endpoint}?retPeriod=${period}`,

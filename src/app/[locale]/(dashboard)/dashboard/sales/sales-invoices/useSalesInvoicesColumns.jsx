@@ -122,60 +122,6 @@ export const useSalesInvoicesColumns = (setSelectedInvoices) => {
         />
       ),
     },
-
-    {
-      accessorKey: 'totalAmount',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('total_amount')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { totalAmount } = row.original;
-        return formattedAmount(totalAmount);
-      },
-    },
-    {
-      accessorKey: 'round_off',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('round_off')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { totalAmount, roundOffAmount } = row.original;
-        const roundOffVal = (Number(roundOffAmount) || 0) - totalAmount;
-
-        if (roundOffVal === 0) return formattedAmount(0);
-
-        const prefix = roundOffVal > 0 ? '+' : '';
-        return (
-          <span className={roundOffVal > 0 ? 'text-green-600' : 'text-red-600'}>
-            {prefix}
-            {formattedAmount(roundOffVal)}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: 'roundOffAmount',
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={translations('roundOff_amount')}
-        />
-      ),
-      cell: ({ row }) => {
-        const { roundOffAmount } = row.original;
-        return (
-          <div className="font-bold text-primary">
-            {formattedAmount(roundOffAmount)}
-          </div>
-        );
-      },
-    },
     {
       accessorKey: 'status',
       header: ({ column }) => (
@@ -198,6 +144,24 @@ export const useSalesInvoicesColumns = (setSelectedInvoices) => {
         );
       },
     },
+    {
+      accessorKey: 'roundOffAmount',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('roundOff_amount')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { roundOffAmount } = row.original;
+        return (
+          <div className="font-bold text-primary">
+            {formattedAmount(roundOffAmount)}
+          </div>
+        );
+      },
+    },
+
     {
       accessorKey: 'match_status',
       header: ({ column }) => (

@@ -3,7 +3,6 @@
 import { getCurrentFinancialYearPeriods } from '@/appUtils/helperFunctions';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -20,11 +19,13 @@ import {
 import {
   syncInvoicesWithGSTR1,
   syncInvoicesWithGSTR2A,
+  syncInvoicesWithIMS,
 } from '@/services/GST_Services/GST_Services';
 import { useMutation } from '@tanstack/react-query';
 import { ExternalLink, Info, RefreshCw } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const SyncInvoicesModal = ({
   isOpen,
@@ -34,7 +35,7 @@ const SyncInvoicesModal = ({
   type = 'SALES', // 'SALES' or 'PURCHASES'
 }) => {
   const [step, setStep] = useState('selection');
-  const [selectedSources, setSelectedSources] = useState(['gst']); // default
+  const [selectedSource, setSelectedSource] = useState('gstr1'); // default source
   const [syncResults, setSyncResults] = useState(null);
 
   // Periods from financial year
@@ -44,13 +45,20 @@ const SyncInvoicesModal = ({
   );
 
   const sources = [
-    { id: 'gst', label: 'GST (IMS / GSTR-1)' },
+    { id: 'gstr1', label: type === 'SALES' ? 'GSTR-1' : 'GSTR-2A' },
+    ...(type === 'PURCHASES' ? [{ id: 'ims', label: 'IMS' }] : []),
     { id: 'tally', label: 'Tally' },
   ];
 
   const { mutate: runSync, isPending: isLoading } = useMutation({
-    mutationFn:
-      type === 'SALES' ? syncInvoicesWithGSTR1 : syncInvoicesWithGSTR2A,
+    mutationFn: (period) => {
+      if (selectedSource === 'ims') {
+        return syncInvoicesWithIMS(period);
+      }
+      return type === 'SALES'
+        ? syncInvoicesWithGSTR1(period)
+        : syncInvoicesWithGSTR2A(period);
+    },
     onSuccess: (res) => {
       const responseData = res?.data || {};
       const innerData = responseData.data || {};
@@ -193,28 +201,27 @@ const SyncInvoicesModal = ({
               <h4 className="text-sm font-semibold text-neutral-900">
                 Portal Feeds
               </h4>
-              <div className="space-y-2">
-                {sources.map((source) => (
-                  <div key={source.id} className="flex items-center space-x-3">
-                    <Checkbox
-                      id={source.id}
-                      checked={selectedSources.includes(source.id)}
-                      onCheckedChange={(checked) => {
-                        setSelectedSources((prev) =>
-                          checked
-                            ? [...prev, source.id]
-                            : prev.filter((s) => s !== source.id),
-                        );
-                      }}
-                    />
-                    <label
-                      htmlFor={source.id}
-                      className="cursor-pointer text-sm font-medium text-neutral-700"
+              <div className="space-y-4">
+                <RadioGroup
+                  value={selectedSource}
+                  onValueChange={setSelectedSource}
+                  className="space-y-2"
+                >
+                  {sources.map((source) => (
+                    <div
+                      key={source.id}
+                      className="flex items-center space-x-3"
                     >
-                      {source.label}
-                    </label>
-                  </div>
-                ))}
+                      <RadioGroupItem value={source.id} id={source.id} />
+                      <label
+                        htmlFor={source.id}
+                        className="cursor-pointer text-sm font-medium text-neutral-700"
+                      >
+                        {source.label}
+                      </label>
+                    </div>
+                  ))}
+                </RadioGroup>
               </div>
             </div>
 
@@ -230,7 +237,7 @@ const SyncInvoicesModal = ({
               <Button
                 size="sm"
                 onClick={handleRunSync}
-                disabled={isLoading || selectedSources.length === 0}
+                disabled={isLoading || !selectedSource}
                 className="gap-2 px-6"
               >
                 <RefreshCw

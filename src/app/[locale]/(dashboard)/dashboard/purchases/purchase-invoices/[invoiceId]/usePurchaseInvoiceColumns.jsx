@@ -40,6 +40,15 @@ export const usePurchaseInvoiceColumns = () => {
       ),
     },
     {
+      accessorKey: 'gstPerUnit',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('gstPerUnit')}
+        />
+      ),
+    },
+    {
       accessorKey: 'totalAmount',
       header: ({ column }) => (
         <DataTableColumnHeader

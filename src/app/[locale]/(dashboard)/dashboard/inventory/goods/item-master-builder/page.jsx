@@ -155,7 +155,7 @@ const ItemMasterBuilder = () => {
 
   return (
     <ProtectedWrapper permissionCode="permission:item-masters-view">
-      <Wrapper className="h-screen">
+      <Wrapper>
         {!isAddingItemType && (
           <div>
             {/* header */}
@@ -189,7 +189,7 @@ const ItemMasterBuilder = () => {
               </div>
             </section>
 
-            <div className="flex-grow overflow-hidden">
+            <div>
               {itemTypesQuery.isLoading ? (
                 <Loading />
               ) : itemTypes?.length === 0 ? (

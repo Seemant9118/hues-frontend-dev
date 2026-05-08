@@ -218,59 +218,6 @@ const Sidebar = () => {
           },
         ],
       },
-      hasPermission(PERMISSIONS.SALES) &&
-        isRouteEnabled('/dashboard/transport') && {
-          name: 'sidebar.transport',
-          icon: <Truck size={ICON_SIZE} />,
-          path: '/dashboard/transport/dispatch',
-          subTab: [
-            isRouteEnabled('/dashboard/transport/dispatch') && {
-              name: 'sidebar.subTabs.dispatch',
-              icon: <ArchiveRestore size={ICON_SIZE} />,
-              path: '/dashboard/transport/dispatch',
-            },
-            isRouteEnabled('/dashboard/transport/delivery-challan') && {
-              name: 'sidebar.subTabs.deliveryChallan',
-              icon: <ReceiptText size={ICON_SIZE} />,
-              path: '/dashboard/transport/delivery-challan',
-            },
-            isRouteEnabled('/dashboard/transport/pod') && {
-              name: 'sidebar.subTabs.pod',
-              icon: <FileSignature size={ICON_SIZE} />,
-              path: '/dashboard/transport/pod',
-            },
-            isRouteEnabled('/dashboard/transport/grn') && {
-              name: 'sidebar.subTabs.grn',
-              icon: <NotepadText size={ICON_SIZE} />,
-              path: '/dashboard/transport/grn',
-            },
-          ].filter(Boolean),
-        },
-      hasPermission(PERMISSIONS.SALES) &&
-        isRouteEnabled('/dashboard/accounting/trial-balance') && {
-          name: 'sidebar.accounting',
-          icon: <Banknote size={ICON_SIZE} />,
-          path: '/dashboard/accounting/trial-balance',
-          subTab: [
-            {
-              name: 'sidebar.subTabs.trialBalance',
-              icon: <BookOpen size={ICON_SIZE} />,
-              path: '/dashboard/accounting/trial-balance',
-            },
-          ],
-        },
-      hasPermission(PERMISSIONS.SALES) && {
-        name: 'sidebar.statutory',
-        icon: <ReceiptIndianRupee size={ICON_SIZE} />,
-        path: '/dashboard/statutory/gst',
-        subTab: [
-          {
-            name: 'sidebar.subTabs.gst',
-            icon: <FileText size={ICON_SIZE} />,
-            path: '/dashboard/statutory/gst',
-          },
-        ],
-      },
       hasPermission(PERMISSIONS.SALES) && {
         name: 'sidebar.sales',
         icon: <ClipboardList size={ICON_SIZE} />,
@@ -335,6 +282,60 @@ const Sidebar = () => {
           },
         ],
       },
+      hasPermission(PERMISSIONS.SALES) &&
+        isRouteEnabled('/dashboard/transport') && {
+          name: 'sidebar.transport',
+          icon: <Truck size={ICON_SIZE} />,
+          path: '/dashboard/transport/dispatch',
+          subTab: [
+            isRouteEnabled('/dashboard/transport/dispatch') && {
+              name: 'sidebar.subTabs.dispatch',
+              icon: <ArchiveRestore size={ICON_SIZE} />,
+              path: '/dashboard/transport/dispatch',
+            },
+            isRouteEnabled('/dashboard/transport/delivery-challan') && {
+              name: 'sidebar.subTabs.deliveryChallan',
+              icon: <ReceiptText size={ICON_SIZE} />,
+              path: '/dashboard/transport/delivery-challan',
+            },
+            isRouteEnabled('/dashboard/transport/pod') && {
+              name: 'sidebar.subTabs.pod',
+              icon: <FileSignature size={ICON_SIZE} />,
+              path: '/dashboard/transport/pod',
+            },
+            isRouteEnabled('/dashboard/transport/grn') && {
+              name: 'sidebar.subTabs.grn',
+              icon: <NotepadText size={ICON_SIZE} />,
+              path: '/dashboard/transport/grn',
+            },
+          ].filter(Boolean),
+        },
+      hasPermission(PERMISSIONS.SALES) &&
+        isRouteEnabled('/dashboard/accounting/trial-balance') && {
+          name: 'sidebar.accounting',
+          icon: <Banknote size={ICON_SIZE} />,
+          path: '/dashboard/accounting/trial-balance',
+          subTab: [
+            {
+              name: 'sidebar.subTabs.trialBalance',
+              icon: <BookOpen size={ICON_SIZE} />,
+              path: '/dashboard/accounting/trial-balance',
+            },
+          ],
+        },
+      hasPermission(PERMISSIONS.SALES) && {
+        name: 'sidebar.statutory',
+        icon: <ReceiptIndianRupee size={ICON_SIZE} />,
+        path: '/dashboard/statutory/gst',
+        subTab: [
+          {
+            name: 'sidebar.subTabs.gst',
+            icon: <FileText size={ICON_SIZE} />,
+            path: '/dashboard/statutory/gst',
+          },
+        ],
+      },
+
       contactSubTabs.length > 0 && contactsLink,
       hasPermission(PERMISSIONS.MEMBERS) && {
         name: 'sidebar.members',
