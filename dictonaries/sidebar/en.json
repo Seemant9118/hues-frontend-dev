@@ -41,7 +41,8 @@
             "clients": "Clients",
             "vendors": "Vendors",
             "customers": "Customers",
-            "gst": "GST"
+            "gst": "GST",
+            "batch": "Product Batch"
         }
     }
 }

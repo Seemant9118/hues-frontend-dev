@@ -78,5 +78,25 @@ export const usePODColumnsItems = () => {
         return rejectQty;
       },
     },
+
+    /* Batch Number */
+    {
+      id: 'batchNo',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('header.batch')} />
+      ),
+      cell: ({ row }) =>
+        row.original?.batchNo || row.original?.metaData?.batchNo || '--',
+    },
+
+    /* Expiry Date */
+    {
+      id: 'expiryDate',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('header.expiry')} />
+      ),
+      cell: ({ row }) =>
+        row.original?.expiryDate || row.original?.metaData?.expiryDate || '--',
+    },
   ];
 };

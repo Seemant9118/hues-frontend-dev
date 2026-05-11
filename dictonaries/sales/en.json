@@ -240,7 +240,9 @@
                                     "quantity": "Quantity",
                                     "rate": "Rate",
                                     "gstPerUnit": "GST (%)",
-                                    "total_amount": "Total Amount"
+                                    "total_amount": "Total Amount",
+                                    "batch": "Batch",
+                                    "expiry": "Expiry"
                                 }
                             }
                         },

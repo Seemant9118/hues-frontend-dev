@@ -140,6 +140,8 @@ const ViewQC = () => {
         qcPassedQuantity: Number(item.qcPassedQuantity || 0),
         qcFailedQuantity: Number(item.qcFailedQuantity || 0),
         qcRemarks: item.qcRemarks || '',
+        batchNo: item.batchNo,
+        expiryDate: item.expiryDate,
       };
     });
 

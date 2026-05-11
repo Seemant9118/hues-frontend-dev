@@ -167,6 +167,8 @@ const ViewInvoice = () => {
     unit: invoice?.unit,
     unitPrice: invoice?.unitPrice,
     totalAmount: invoice?.totalAmount,
+    batchNo: invoice?.batchNo,
+    expiryDate: invoice?.expiryDate,
   }));
 
   // fetch items to create debit note

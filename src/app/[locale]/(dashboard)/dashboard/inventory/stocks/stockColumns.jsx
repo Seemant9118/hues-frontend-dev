@@ -14,9 +14,9 @@ export const useStocksColumns = () => {
       cell: ({ row }) => {
         return (
           <div className="flex flex-col gap-1">
-            <span>{row.original?.productname}</span>
+            <span>{row.original?.productName}</span>
             <span className="text-xs text-muted-foreground">
-              {row.original?.skuid}
+              {row.original?.skuId}
             </span>
           </div>
         );
@@ -24,21 +24,11 @@ export const useStocksColumns = () => {
     },
 
     {
-      accessorKey: 'category',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Category" />
-      ),
-      cell: ({ row }) => (
-        <Badge variant="secondary">{row.original?.categoryname}</Badge>
-      ),
-    },
-
-    {
       accessorKey: 'location',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Location" />
       ),
-      cell: ({ row }) => row.original?.warehousename || '--',
+      cell: ({ row }) => row.original?.warehouseName || '--',
     },
 
     {
@@ -47,7 +37,9 @@ export const useStocksColumns = () => {
         <DataTableColumnHeader column={column} title="Bucket" />
       ),
       cell: ({ row }) => (
-        <Badge variant="secondary">{row.original?.bucketname}</Badge>
+        <Badge variant="secondary">
+          {row.original?.batches?.[0]?.bucketName}
+        </Badge>
       ),
     },
 
@@ -57,7 +49,7 @@ export const useStocksColumns = () => {
         <DataTableColumnHeader column={column} title="Available" />
       ),
       cell: ({ row }) =>
-        Math.ceil(Number(row.original?.availablequantity) ?? 0),
+        Math.ceil(Number(row.original?.availableQuantity) ?? 0),
     },
 
     {
@@ -65,7 +57,7 @@ export const useStocksColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Avg Cost" />
       ),
-      cell: ({ row }) => formattedAmount(row.original?.unitprice ?? 0),
+      cell: ({ row }) => formattedAmount(row.original?.unitPrice ?? 0),
     },
 
     {
@@ -73,7 +65,7 @@ export const useStocksColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Value" />
       ),
-      cell: ({ row }) => formattedAmount(row.original?.totalprice ?? 0),
+      cell: ({ row }) => formattedAmount(row.original?.totalPrice ?? 0),
     },
   ];
 };

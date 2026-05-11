@@ -13,21 +13,19 @@ import { LocalStorageService } from '@/lib/utils';
 import {
   ArchiveRestore,
   ArrowRightLeft,
-  Banknote,
   Bell,
   Blocks,
   BookOpen,
   Boxes,
-  ClipboardList,
   Cuboid,
   Database,
   FileCheck,
   FileSignature,
   FileSymlink,
   FileText,
+  FileTextIcon,
   Gauge,
   GitGraph,
-  HandCoins,
   HandPlatter,
   IndianRupee,
   NotebookTabs,
@@ -44,10 +42,12 @@ import {
   ShoppingCart,
   SquareKanban,
   Store,
+  TrendingUp,
   Truck,
   UserRound,
   Users,
   Warehouse,
+  Wrench,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -204,23 +204,28 @@ const Sidebar = () => {
             icon: <ShieldCheck size={ICON_SIZE} />,
             path: '/dashboard/inventory/qc',
           },
+          {
+            name: 'sidebar.subTabs.batch',
+            icon: <Cuboid size={ICON_SIZE} />,
+            path: '/dashboard/inventory/batch',
+          },
         ],
       },
       hasPermission(PERMISSIONS.ITEM_MASTERS) && {
         name: 'sidebar.itemMaster-services',
-        icon: <HandCoins size={ICON_SIZE} />,
+        icon: <Cuboid size={ICON_SIZE} />,
         path: '/dashboard/inventory/services',
         subTab: [
           {
             name: 'sidebar.subTabs.services',
-            icon: <HandPlatter size={ICON_SIZE} />,
+            icon: <Wrench size={ICON_SIZE} />,
             path: '/dashboard/inventory/services',
           },
         ],
       },
       hasPermission(PERMISSIONS.SALES) && {
         name: 'sidebar.sales',
-        icon: <ClipboardList size={ICON_SIZE} />,
+        icon: <TrendingUp size={ICON_SIZE} />,
         path: '/dashboard/sales/sales-orders',
         subTab: [
           {
@@ -313,7 +318,7 @@ const Sidebar = () => {
       hasPermission(PERMISSIONS.SALES) &&
         isRouteEnabled('/dashboard/accounting/trial-balance') && {
           name: 'sidebar.accounting',
-          icon: <Banknote size={ICON_SIZE} />,
+          icon: <FileTextIcon size={ICON_SIZE} />,
           path: '/dashboard/accounting/trial-balance',
           subTab: [
             {
@@ -390,19 +395,25 @@ const Sidebar = () => {
               blurDataURL={isCollapsed ? '/hues_logo.png' : '/hues_logo.png'}
             />
           </Link>
-          <button
-            type="button"
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            aria-expanded={!isCollapsed}
-            onClick={toggleSidebar}
-            className="rounded-sm border border-transparent p-1 text-gray-600 transition hover:border-gray-200 hover:bg-gray-100 hover:text-black"
-          >
-            {isCollapsed ? (
-              <PanelLeftOpen size={ICON_SIZE} />
-            ) : (
-              <PanelLeftClose size={ICON_SIZE} />
-            )}
-          </button>
+
+          <Tooltips
+            trigger={
+              <button
+                type="button"
+                aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                aria-expanded={!isCollapsed}
+                onClick={toggleSidebar}
+                className="rounded-sm border border-transparent p-1 text-gray-600 transition hover:border-gray-200 hover:bg-gray-100 hover:text-black"
+              >
+                {isCollapsed ? (
+                  <PanelLeftOpen size={ICON_SIZE} />
+                ) : (
+                  <PanelLeftClose size={ICON_SIZE} />
+                )}
+              </button>
+            }
+            content={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          />
         </div>
 
         <div

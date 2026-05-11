@@ -270,6 +270,10 @@ const ViewDispatchNote = () => {
       rate: item?.invoiceItem?.unitPrice || item?.product?.salesPrice || 0,
 
       amount: Number(item?.amount ?? 0),
+
+      batchNo: item?.invoiceItem?.batchNo,
+
+      expiryDate: item?.invoiceItem?.expiryDate,
     }));
   };
   const formattedDispatchedItems = mapDispatchDetailsForItems(dispatchDetails);

@@ -12,6 +12,7 @@ import { DataTable } from '@/components/table/data-table';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LocalStorageService, SessionStorageService } from '@/lib/utils';
+import { GetProductBatchList } from '@/services/Inventories_Services/Goods_Inventories/ProductBatch_Services';
 import {
   getProductCatalogue,
   getServiceCatalogue,
@@ -100,6 +101,9 @@ const CreateB2BInvoice = ({
     gstPerUnit: b2bInvoiceDraft?.itemDraft?.gstPerUnit || 0,
     totalAmount: b2bInvoiceDraft?.itemDraft?.totalAmount || null,
     totalGstAmount: b2bInvoiceDraft?.itemDraft?.totalGstAmount || null,
+    batch: b2bInvoiceDraft?.itemDraft?.batch || null,
+    batches: b2bInvoiceDraft?.itemDraft?.batches || [],
+    expiryDate: b2bInvoiceDraft?.itemDraft?.expiryDate || '',
   });
 
   const [order, setOrder] = useState({
@@ -116,6 +120,7 @@ const CreateB2BInvoice = ({
     gstAmount: b2bInvoiceDraft?.gstAmount || null,
     amount: b2bInvoiceDraft?.amount || null,
     orderType: 'SALES',
+    roundOffType: b2bInvoiceDraft?.roundOffType || 'ADD',
     invoiceType: b2bInvoiceDraft?.invoiceType || '',
     orderItems: b2bInvoiceDraft?.orderItems || [],
     bankAccountId: b2bInvoiceDraft?.bankAccountId || null,
@@ -129,6 +134,7 @@ const CreateB2BInvoice = ({
     getAddressRelatedData: b2bInvoiceDraft?.getAddressRelatedData || null,
     invoiceDate: b2bInvoiceDraft?.invoiceDate || moment().format('YYYY-MM-DD'),
   });
+  const [productBatchesMap, setProductBatchesMap] = useState({});
 
   // fetch units
   const { data: units } = useQuery({
@@ -196,8 +202,33 @@ const CreateB2BInvoice = ({
     },
   ];
 
-  const isItemAlreadyAdded = (itemId) =>
-    order.orderItems?.some((item) => item.productId === itemId);
+  const isItemAlreadyAdded = (itemId, batchId = null) => {
+    // 1. If specific batchId provided (checking for batch dropdown)
+    if (batchId) {
+      return order.orderItems?.some(
+        (item) => item.productId === itemId && item.batch?.id === batchId,
+      );
+    }
+
+    // 2. Checking for the product itself (initial item dropdown)
+
+    // a. Check if added without a batch
+    const hasNonBatched = order.orderItems?.some(
+      (item) => item.productId === itemId && !item.batch,
+    );
+    if (hasNonBatched) return true;
+
+    // b. Check if it's a batched item and all batches are added
+    const batchesForThisItem = productBatchesMap[itemId];
+    if (batchesForThisItem && batchesForThisItem.length > 0) {
+      const addedBatchesCount = order.orderItems?.filter(
+        (item) => item.productId === itemId && item.batch,
+      ).length;
+      return addedBatchesCount >= batchesForThisItem.length;
+    }
+
+    return false;
+  };
 
   // goods
   const { data: goodsData } = useQuery({
@@ -332,18 +363,29 @@ const CreateB2BInvoice = ({
   });
 
   const getMappedPayloadRows = (updatedOrder) => {
-    if (!updatedOrder.orderId) return updatedOrder.orderItems || [];
-
     return (updatedOrder.orderItems || []).map((item) => ({
       orderItemId: item.orderItemId || item.id,
+      productName: item.productName || item.serviceName,
+      productType: item.productType || updatedOrder.invoiceType || 'GOODS',
+      hsnCode: item.hsnCode || null,
+      sac: item.sac || 0,
+      serviceName: item.serviceName || '',
+      productId: item.productId || item.id,
       quantity: Number(item.quantity) || 0,
+      unitId: item.unitId || null,
       unitPrice: Number(item.unitPrice) || 0,
       gstPerUnit: Number(item.gstPerUnit) || 0,
       totalAmount: Number(item.totalAmount) || 0,
       totalGstAmount: Number(item.totalGstAmount) || 0,
-      productType: item.productType || updatedOrder.invoiceType || 'GOODS',
       discountPercentage: Number(item.discountPercentage) || 0,
       discountAmount: Number(item.discountAmount) || 0,
+      batch: item.batch || null,
+      batches: item.batches || [],
+      batchNo: item.batch?.batchNo || null,
+      expiryDate: item.expiryDate
+        ? moment(item.expiryDate).format('YYYY-MM-DD')
+        : null,
+      gstPercentage: Number(item.gstPerUnit) || 0,
     }));
   };
 
@@ -351,9 +393,11 @@ const CreateB2BInvoice = ({
     const isError = validation({ order: updatedOrder });
 
     if (Object.keys(isError).length === 0) {
+      const mappedRows = getMappedPayloadRows(updatedOrder);
       invoiceMutation.mutate({
         ...updatedOrder,
-        invoiceItems: getMappedPayloadRows(updatedOrder),
+        orderItems: mappedRows,
+        invoiceItems: mappedRows,
         buyerId: Number(updatedOrder.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
         roundOffAmount: roundedTotal,
@@ -394,10 +438,12 @@ const CreateB2BInvoice = ({
     const isError = validation({ order: updatedOrder });
 
     if (Object.keys(isError).length === 0) {
+      const mappedRows = getMappedPayloadRows(updatedOrder);
       setErrorMsg({});
       previewInvMutation.mutate({
         ...updatedOrder,
-        invoiceItems: getMappedPayloadRows(updatedOrder),
+        orderItems: mappedRows,
+        invoiceItems: mappedRows,
         buyerId: Number(updatedOrder.buyerId),
         amount: parseFloat(totalAmount.toFixed(2)),
         roundOffAmount: roundedTotal,
@@ -413,7 +459,7 @@ const CreateB2BInvoice = ({
     isOrder,
     setOrder,
     setSelectedItem,
-    true,
+    'b2bInvoiceDraft',
     isGstApplicableForSalesOrders,
   );
 
@@ -449,426 +495,446 @@ const CreateB2BInvoice = ({
       </div>
 
       {!isInvoicePreview && (
-        <>
-          {/* Identifiers */}
-          <div className="grid grid-cols-3 gap-4 rounded-sm border border-neutral-200 p-4">
-            {/* Invoice Date */}
-            <div className="flex flex-col gap-1">
-              <Label className="flex gap-1">
-                {translations('form.label.invoice_date')}
-                <span className="text-red-600">*</span>
-              </Label>
-
-              <div className="relative flex items-center rounded-sm border p-2">
-                <DatePickers
-                  selected={
-                    order.invoiceDate ? new Date(order.invoiceDate) : null
-                  }
-                  onChange={(date) => {
-                    const formattedForAPI = date ? date.toISOString() : null;
-
-                    setOrder((prev) => ({
-                      ...prev,
-                      invoiceDate: formattedForAPI,
-                    }));
-
-                    saveDraftToSession({
-                      key: 'b2bInvoiceDraft',
-                      data: {
-                        ...order,
-                        invoiceDate: formattedForAPI,
-                      },
-                    });
-                  }}
-                  popperPlacement="end"
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="dd/mm/yyyy"
-                  className="max-w-xs"
-                />
-              </div>
-
-              {errorMsg.invoiceDate && <ErrorBox msg={errorMsg.invoiceDate} />}
-            </div>
-            {/* Source */}
-            <div className="flex flex-col gap-1">
-              <Label className="flex gap-1">
-                {translations('form.label.source')}
-                <span className="text-red-600">*</span>
-              </Label>
-
-              <Select
-                value={order.source}
-                onValueChange={(value) => {
-                  const updatedOrder = {
-                    ...order,
-                    source: value,
-                    ...(value === 'hues' && { invoiceReferenceNumber: null }),
-                  };
-                  setOrder(updatedOrder);
-
-                  saveDraftToSession({
-                    key: 'b2bInvoiceDraft',
-                    data: updatedOrder,
-                  });
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={translations('form.input.source.placeholder')}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="hues">Hues</SelectItem>
-                  <SelectItem value="tally">Tally</SelectItem>
-                  <SelectItem value="other">Other ERP</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {errorMsg.source && <ErrorBox msg={errorMsg.source} />}
-            </div>
-
-            {/* Refernce No. */}
-            {order.source !== 'hues' && (
-              <div className="flex flex-col gap-1">
-                <Label className="flex gap-1">
-                  {translations('form.label.reference_number')}
-                  <span className="text-red-600">*</span>
+        <div className="flex flex-col gap-6 pt-4">
+          {/* Invoice Configuration Section */}
+          <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-5 shadow-sm">
+            <h3 className="text-sm font-semibold text-neutral-700">
+              Invoice Details
+            </h3>
+            <div className="grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-4 lg:grid-cols-3">
+              {/* Invoice Date */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="flex gap-1 text-xs font-medium text-neutral-600">
+                  {translations('form.label.invoice_date')}
+                  <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  type="text"
-                  placeholder={translations(
-                    'form.input.reference_number.placeholder',
-                  )}
-                  value={order.invoiceReferenceNumber || ''}
-                  onChange={(e) => {
-                    setOrder({
-                      ...order,
-                      invoiceReferenceNumber: e.target.value,
-                    });
-                  }}
-                />
-                {errorMsg.invoiceReferenceNumber && (
-                  <ErrorBox msg={errorMsg.invoiceReferenceNumber} />
+
+                <div className="relative flex h-9 items-center rounded-md border border-input px-3 py-1 text-sm shadow-sm transition-colors focus-within:ring-1 focus-within:ring-ring">
+                  <DatePickers
+                    selected={
+                      order.invoiceDate ? new Date(order.invoiceDate) : null
+                    }
+                    onChange={(date) => {
+                      const formattedForAPI = date ? date.toISOString() : null;
+
+                      setOrder((prev) => ({
+                        ...prev,
+                        invoiceDate: formattedForAPI,
+                      }));
+
+                      saveDraftToSession({
+                        key: 'b2bInvoiceDraft',
+                        data: {
+                          ...order,
+                          invoiceDate: formattedForAPI,
+                        },
+                      });
+                    }}
+                    popperPlacement="end"
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="dd/mm/yyyy"
+                    className="w-full bg-transparent outline-none"
+                  />
+                </div>
+
+                {errorMsg.invoiceDate && (
+                  <ErrorBox msg={errorMsg.invoiceDate} />
                 )}
               </div>
-            )}
-          </div>
 
-          <div className="grid grid-cols-3 gap-4 rounded-sm border border-neutral-200 p-4">
-            {/* linked with Order - AsyncSelect */}
-            <div className="flex flex-col gap-1">
-              <Label className="flex gap-1">
-                {translations('form.label.linked_with_order')}
-                <Tooltips
-                  trigger={
-                    <Info
-                      size={16}
-                      className="cursor-pointer text-neutral-500"
-                    />
-                  }
-                  content="Optional: Select an order to link its items. Otherwise, a new order will be created for this invoice."
-                />
-              </Label>
+              {/* Source */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="flex gap-1 text-xs font-medium text-neutral-600">
+                  {translations('form.label.source')}
+                  <span className="text-red-500">*</span>
+                </Label>
 
-              <div className="flex w-full flex-col gap-1">
-                <AsyncSelect
-                  cacheOptions
-                  defaultOptions={false}
-                  name="linkedOrder"
-                  placeholder={translations(
-                    'form.input.linked_with_order.placeholder',
-                  )}
-                  loadOptions={(inputValue) =>
-                    new Promise((resolve) => {
-                      if (inputValue.length < 3) {
-                        resolve([]);
-                        return;
-                      }
-                      if (window.searchOrderTimeout)
-                        clearTimeout(window.searchOrderTimeout);
-                      window.searchOrderTimeout = setTimeout(async () => {
-                        try {
-                          const response = await GetSales({
-                            id: enterpriseId,
-                            data: {
-                              page: 1,
-                              limit: 10,
-                              searchString: inputValue,
-                              status: ['ACCEPTED'],
-                            },
-                          });
-                          const ordersData = response?.data?.data?.data || [];
-                          resolve(
-                            ordersData.map((orderItem) => ({
-                              value: orderItem.id,
-                              label:
-                                orderItem.referenceNumber ||
-                                `Order #${orderItem.id}`,
-                              originalData: orderItem,
-                            })),
-                          );
-                        } catch (e) {
-                          resolve([]);
-                        }
-                      }, 500);
-                    })
-                  }
-                  styles={getStylesForSelectComponent()}
-                  className="text-sm"
-                  classNamePrefix="select"
-                  value={order.selectedOrder || null}
-                  onChange={async (selectedOption) => {
-                    let prependedItems = order.orderItems || [];
-                    let prependedClientData = {};
-                    let prependedItemTypeData = {};
-
-                    // Fetch specific order details to prepend data
-                    if (selectedOption?.value) {
-                      try {
-                        const detailsRes = await OrderDetails(
-                          selectedOption.value,
-                        );
-                        const orderData = detailsRes?.data?.data;
-                        if (orderData) {
-                          if (orderData.orderItems) {
-                            // Format order items and add flag
-                            const formattedOrderItems =
-                              orderData.orderItems.map((item) => {
-                                const pName =
-                                  item.productType === 'GOODS'
-                                    ? item.productDetails?.productName
-                                    : item.productDetails?.serviceName;
-                                return {
-                                  ...item,
-                                  productName:
-                                    pName || item.productName || 'Unknown Item',
-                                  serviceName: pName || item.serviceName,
-                                  isFromLinkedOrder: true,
-                                };
-                              });
-
-                            // Filter out any items from the order that might already be in prependedItems.
-                            // Keep existing manually added items unaltered.
-                            const manualItems = prependedItems.filter(
-                              (i) => !i.isFromLinkedOrder,
-                            );
-                            prependedItems = [
-                              ...formattedOrderItems,
-                              ...manualItems,
-                            ];
-                          }
-
-                          // Map Client
-                          if (orderData.buyerId) {
-                            const matchedClient = clientOptions?.find(
-                              (opt) => opt.value === orderData.buyerId,
-                            );
-                            if (matchedClient) {
-                              prependedClientData = {
-                                buyerId: matchedClient.value,
-                                selectedValue: matchedClient,
-                                buyerType: matchedClient.isEnterpriseActive
-                                  ? 'ENTERPRISE'
-                                  : 'UNCONFIRMED_ENTERPRISE',
-                                getAddressRelatedData: {
-                                  clientId: matchedClient.clientId,
-                                  clientEnterpriseId:
-                                    matchedClient.clientEnterpriseId,
-                                },
-                              };
-                            }
-                          }
-
-                          // Map Item Type
-                          const apiItemType =
-                            orderData.invoiceType || orderData.orderType;
-                          if (
-                            apiItemType === 'GOODS' ||
-                            apiItemType === 'SERVICE'
-                          ) {
-                            prependedItemTypeData = {
-                              invoiceType: apiItemType,
-                            };
-                          }
-                        }
-                      } catch (error) {
-                        toast.error('Error fetching order details');
-                      }
-                    } else {
-                      // If the user clears the linked order search, remove the linked items
-                      prependedItems = prependedItems.filter(
-                        (i) => !i.isFromLinkedOrder,
-                      );
-                    }
-
+                <Select
+                  value={order.source}
+                  onValueChange={(value) => {
                     const updatedOrder = {
                       ...order,
-                      ...prependedClientData,
-                      ...prependedItemTypeData,
-                      orderId: selectedOption?.value || null,
-                      selectedOrder: selectedOption || null,
-                      orderItems: prependedItems, // Update with prepended items
+                      source: value,
+                      ...(value === 'hues' && { invoiceReferenceNumber: null }),
                     };
-
                     setOrder(updatedOrder);
+
                     saveDraftToSession({
                       key: 'b2bInvoiceDraft',
                       data: updatedOrder,
                     });
                   }}
-                  // isSearchable
-                  // isClearable
-                  noOptionsMessage={() => 'Type at least 3 characters'}
-                  components={{
-                    DropdownIndicator: () => null,
-                    ClearIndicator: () => null,
-                  }}
-                />
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue
+                      placeholder={translations(
+                        'form.input.source.placeholder',
+                      )}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hues">Hues</SelectItem>
+                    <SelectItem value="tally">Tally</SelectItem>
+                    <SelectItem value="other">Other ERP</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {errorMsg.source && <ErrorBox msg={errorMsg.source} />}
               </div>
 
-              {errorMsg.invoiceDate && <ErrorBox msg={errorMsg.invoiceDate} />}
-            </div>
+              {/* Reference No. */}
+              {order.source !== 'hues' ? (
+                <div className="flex flex-col gap-1.5">
+                  <Label className="flex gap-1 text-xs font-medium text-neutral-600">
+                    {translations('form.label.reference_number')}
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    type="text"
+                    className="h-9"
+                    placeholder={translations(
+                      'form.input.reference_number.placeholder',
+                    )}
+                    value={order.invoiceReferenceNumber || ''}
+                    onChange={(e) => {
+                      setOrder({
+                        ...order,
+                        invoiceReferenceNumber: e.target.value,
+                      });
+                    }}
+                  />
+                  {errorMsg.invoiceReferenceNumber && (
+                    <ErrorBox msg={errorMsg.invoiceReferenceNumber} />
+                  )}
+                </div>
+              ) : (
+                <div className="hidden md:block"></div>
+              )}
 
-            {/* Client */}
-            <div className="flex flex-col gap-1">
-              <Label className="flex gap-1">
-                {translations('form.label.client')}
-                <span className="text-red-600">*</span>
-              </Label>
+              {/* Client */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="flex gap-1 text-xs font-medium text-neutral-600">
+                  {translations('form.label.client')}
+                  <span className="text-red-500">*</span>
+                </Label>
 
-              <div className="flex w-full flex-col gap-1">
+                <div className="flex w-full flex-col gap-1">
+                  <ReactSelect
+                    name="clients"
+                    placeholder={translations('form.input.client.placeholder')}
+                    options={clientOptions}
+                    styles={getStylesForSelectComponent()}
+                    className="text-sm"
+                    classNamePrefix="select"
+                    value={
+                      clientOptions?.find(
+                        (option) =>
+                          option.value === order?.selectedValue?.value,
+                      ) || null
+                    }
+                    onChange={(selectedOption) => {
+                      if (!selectedOption) return;
+
+                      const {
+                        value: id,
+                        clientId,
+                        clientEnterpriseId,
+                        isEnterpriseActive,
+                      } = selectedOption;
+
+                      if (id === 'add-new-client') {
+                        setIsModalOpen(true);
+                        return;
+                      }
+
+                      const updatedOrder = {
+                        ...order,
+                        buyerId: id,
+                        selectedValue: selectedOption,
+                        buyerType: isEnterpriseActive
+                          ? 'ENTERPRISE'
+                          : 'UNCONFIRMED_ENTERPRISE',
+                        getAddressRelatedData: {
+                          clientId,
+                          clientEnterpriseId,
+                        },
+                      };
+
+                      setOrder(updatedOrder);
+                      saveDraftToSession({
+                        key: 'b2bInvoiceDraft',
+                        data: updatedOrder,
+                      });
+                    }}
+                  />
+
+                  {isModalOpen && (
+                    <AddModal
+                      type="Add"
+                      cta="client"
+                      btnName="Add a new Client"
+                      mutationFunc={createClient}
+                      isOpen={isModalOpen}
+                      setIsOpen={setIsModalOpen}
+                    />
+                  )}
+
+                  {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
+                </div>
+              </div>
+
+              {/* Item Type */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="flex gap-1 text-xs font-medium text-neutral-600">
+                  {translations('form.label.item_type')}
+                  <span className="text-red-500">*</span>
+                </Label>
+
                 <ReactSelect
-                  name="clients"
-                  placeholder={translations('form.input.client.placeholder')}
-                  options={clientOptions}
+                  name="itemType"
+                  placeholder={translations('form.input.item_type.placeholder')}
+                  options={itemTypeOptions}
                   styles={getStylesForSelectComponent()}
                   className="text-sm"
                   classNamePrefix="select"
                   value={
-                    clientOptions?.find(
-                      (option) => option.value === order?.selectedValue?.value,
+                    itemTypeOptions?.find(
+                      (option) => option.value === order.invoiceType,
                     ) || null
                   }
                   onChange={(selectedOption) => {
                     if (!selectedOption) return;
 
-                    const {
-                      value: id,
-                      clientId,
-                      clientEnterpriseId,
-                      isEnterpriseActive,
-                    } = selectedOption;
+                    const clearedItem = {
+                      productName: '',
+                      productType: '',
+                      hsnCode: '',
+                      sac: '',
+                      serviceName: '',
+                      productId: null,
+                      quantity: null,
+                      unitId: null,
+                      unitPrice: null,
+                      gstPerUnit: 0,
+                      totalAmount: null,
+                      totalGstAmount: null,
+                      batch: null,
+                      batches: [],
+                      expiryDate: '',
+                    };
 
-                    if (id === 'add-new-client') {
-                      setIsModalOpen(true);
-                      return;
-                    }
+                    setSelectedItem(clearedItem);
 
                     const updatedOrder = {
                       ...order,
-                      buyerId: id,
-                      selectedValue: selectedOption,
-                      buyerType: isEnterpriseActive
-                        ? 'ENTERPRISE'
-                        : 'UNCONFIRMED_ENTERPRISE',
-                      getAddressRelatedData: {
-                        clientId,
-                        clientEnterpriseId,
-                      },
+                      invoiceType: selectedOption.value,
+                      orderItems: [],
                     };
 
                     setOrder(updatedOrder);
 
                     saveDraftToSession({
                       key: 'b2bInvoiceDraft',
-                      data: updatedOrder,
+                      data: { ...updatedOrder, itemDraft: clearedItem },
                     });
                   }}
                 />
 
-                {isModalOpen && (
-                  <AddModal
-                    type="Add"
-                    cta="client"
-                    btnName="Add a new Client"
-                    mutationFunc={createClient}
-                    isOpen={isModalOpen}
-                    setIsOpen={setIsModalOpen}
-                  />
+                {errorMsg.invoiceType && (
+                  <ErrorBox msg={errorMsg.invoiceType} />
                 )}
-
-                {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
               </div>
-            </div>
 
-            {/* Item Type */}
-            <div className="flex flex-col gap-1">
-              <Label className="flex gap-1">
-                {translations('form.label.item_type')}
-                <span className="text-red-600">*</span>
-              </Label>
-
-              <ReactSelect
-                name="itemType"
-                placeholder={translations('form.input.item_type.placeholder')}
-                options={itemTypeOptions}
-                styles={getStylesForSelectComponent()}
-                className="text-sm"
-                classNamePrefix="select"
-                value={
-                  itemTypeOptions?.find(
-                    (option) => option.value === order.invoiceType,
-                  ) || null
-                }
-                onChange={(selectedOption) => {
-                  if (!selectedOption) return;
-
-                  const clearedItem = {
-                    productName: '',
-                    productType: '',
-                    hsnCode: '',
-                    sac: '',
-                    serviceName: '',
-                    productId: null,
-                    quantity: null,
-                    unitId: null,
-                    unitPrice: null,
-                    gstPerUnit: 0,
-                    totalAmount: null,
-                    totalGstAmount: null,
-                  };
-
-                  setSelectedItem(clearedItem);
-
-                  const updatedOrder = {
-                    ...order,
-                    invoiceType: selectedOption.value,
-                    orderItems: [],
-                  };
-
-                  setOrder(updatedOrder);
-
-                  saveDraftToSession({
-                    key: 'b2bInvoiceDraft',
-                    data: { ...updatedOrder, itemDraft: clearedItem },
-                  });
-                }}
-              />
-
-              {errorMsg.invoiceType && <ErrorBox msg={errorMsg.invoiceType} />}
-            </div>
-          </div>
-
-          {/* Item Add Form */}
-          <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex w-full max-w-xs flex-col gap-2">
-                <Label className="flex gap-1">
-                  {translations('form.label.item')}
-                  <span className="text-red-600">*</span>
+              {/* linked with Order - AsyncSelect */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="flex gap-1 text-xs font-medium text-neutral-600">
+                  {translations('form.label.linked_with_order')}
+                  <Tooltips
+                    trigger={
+                      <Info
+                        size={14}
+                        className="cursor-pointer text-neutral-400"
+                      />
+                    }
+                    content="Optional: Select an order to link its items. Otherwise, a new order will be created for this invoice."
+                  />
                 </Label>
 
-                <div className="flex flex-col gap-1">
+                <div className="flex w-full flex-col gap-1">
+                  <AsyncSelect
+                    cacheOptions
+                    defaultOptions={false}
+                    name="linkedOrder"
+                    placeholder={translations(
+                      'form.input.linked_with_order.placeholder',
+                    )}
+                    loadOptions={(inputValue) =>
+                      new Promise((resolve) => {
+                        if (inputValue.length < 3) {
+                          resolve([]);
+                          return;
+                        }
+                        if (window.searchOrderTimeout)
+                          clearTimeout(window.searchOrderTimeout);
+                        window.searchOrderTimeout = setTimeout(async () => {
+                          try {
+                            const response = await GetSales({
+                              id: enterpriseId,
+                              data: {
+                                page: 1,
+                                limit: 10,
+                                searchString: inputValue,
+                                status: ['ACCEPTED'],
+                              },
+                            });
+                            const ordersData = response?.data?.data?.data || [];
+                            resolve(
+                              ordersData.map((orderItem) => ({
+                                value: orderItem.id,
+                                label:
+                                  orderItem.referenceNumber ||
+                                  `Order #${orderItem.id}`,
+                                originalData: orderItem,
+                              })),
+                            );
+                          } catch (e) {
+                            resolve([]);
+                          }
+                        }, 500);
+                      })
+                    }
+                    styles={getStylesForSelectComponent()}
+                    className="text-sm"
+                    classNamePrefix="select"
+                    value={order.selectedOrder || null}
+                    onChange={async (selectedOption) => {
+                      let prependedItems = order.orderItems || [];
+                      let prependedClientData = {};
+                      let prependedItemTypeData = {};
+
+                      // Fetch specific order details to prepend data
+                      if (selectedOption?.value) {
+                        try {
+                          const detailsRes = await OrderDetails(
+                            selectedOption.value,
+                          );
+                          const orderData = detailsRes?.data?.data;
+                          if (orderData) {
+                            if (orderData.orderItems) {
+                              // Format order items and add flag
+                              const formattedOrderItems =
+                                orderData.orderItems.map((item) => {
+                                  const pName =
+                                    item.productType === 'GOODS'
+                                      ? item.productDetails?.productName
+                                      : item.productDetails?.serviceName;
+                                  return {
+                                    ...item,
+                                    productName:
+                                      pName ||
+                                      item.productName ||
+                                      'Unknown Item',
+                                    serviceName: pName || item.serviceName,
+                                    isFromLinkedOrder: true,
+                                  };
+                                });
+
+                              // Filter out any items from the order that might already be in prependedItems.
+                              // Keep existing manually added items unaltered.
+                              const manualItems = prependedItems.filter(
+                                (i) => !i.isFromLinkedOrder,
+                              );
+                              prependedItems = [
+                                ...formattedOrderItems,
+                                ...manualItems,
+                              ];
+                            }
+
+                            // Map Client
+                            if (orderData.buyerId) {
+                              const matchedClient = clientOptions?.find(
+                                (opt) => opt.value === orderData.buyerId,
+                              );
+                              if (matchedClient) {
+                                prependedClientData = {
+                                  buyerId: matchedClient.value,
+                                  selectedValue: matchedClient,
+                                  buyerType: matchedClient.isEnterpriseActive
+                                    ? 'ENTERPRISE'
+                                    : 'UNCONFIRMED_ENTERPRISE',
+                                  getAddressRelatedData: {
+                                    clientId: matchedClient.clientId,
+                                    clientEnterpriseId:
+                                      matchedClient.clientEnterpriseId,
+                                  },
+                                };
+                              }
+                            }
+
+                            // Map Item Type
+                            const apiItemType =
+                              orderData.invoiceType || orderData.orderType;
+                            if (
+                              apiItemType === 'GOODS' ||
+                              apiItemType === 'SERVICE'
+                            ) {
+                              prependedItemTypeData = {
+                                invoiceType: apiItemType,
+                              };
+                            }
+                          }
+                        } catch (error) {
+                          toast.error('Error fetching order details');
+                        }
+                      } else {
+                        // If the user clears the linked order search, remove the linked items
+                        prependedItems = prependedItems.filter(
+                          (i) => !i.isFromLinkedOrder,
+                        );
+                      }
+
+                      const updatedOrder = {
+                        ...order,
+                        ...prependedClientData,
+                        ...prependedItemTypeData,
+                        orderId: selectedOption?.value || null,
+                        selectedOrder: selectedOption || null,
+                        orderItems: prependedItems, // Update with prepended items
+                      };
+
+                      setOrder(updatedOrder);
+                      saveDraftToSession({
+                        key: 'b2bInvoiceDraft',
+                        data: updatedOrder,
+                      });
+                    }}
+                    // isSearchable
+                    // isClearable
+                    noOptionsMessage={() => 'Type at least 3 characters'}
+                    components={{
+                      DropdownIndicator: () => null,
+                      ClearIndicator: () => null,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Item Add Section */}
+          <section className="space-y-4 rounded-lg border border-neutral-200 bg-neutral-50/30 p-5">
+            <div className="flex flex-col gap-4">
+              <h3 className="text-sm font-semibold text-neutral-700">
+                Add Items
+              </h3>
+
+              <div className="flex flex-wrap items-end gap-4">
+                {/* Item Selection */}
+                <div className="flex flex-col gap-1.5">
+                  <Label>
+                    {translations('form.label.item')}
+                    <span className="text-red-500">*</span>
+                  </Label>
                   <ReactSelect
                     name="items"
                     value={
@@ -876,6 +942,7 @@ const CreateB2BInvoice = ({
                         (item) => item.value.id === selectedItem.productId,
                       ) ?? null
                     }
+                    className="w-56 text-sm"
                     placeholder={translations('form.input.item.placeholder')}
                     options={itemClientListingOptions}
                     styles={getStylesForSelectComponent()}
@@ -906,6 +973,9 @@ const CreateB2BInvoice = ({
                               productName: selectedItemData.productName,
                               unitPrice: selectedItemData.salesPrice,
                               gstPerUnit,
+                              batches: [],
+                              batch: null,
+                              expiryDate: '',
                             }
                           : {
                               ...selectedItem,
@@ -915,7 +985,157 @@ const CreateB2BInvoice = ({
                               serviceName: selectedItemData.serviceName,
                               unitPrice: selectedItemData.rate,
                               gstPerUnit,
+                              batches: [],
+                              batch: null,
+                              expiryDate: '',
                             };
+
+                      setSelectedItem(updatedItem);
+
+                      if (
+                        selectedItemData.productType === 'GOODS' &&
+                        selectedItemData.skuId
+                      ) {
+                        GetProductBatchList({
+                          searchString: selectedItemData.skuId,
+                        })
+                          .then((res) => {
+                            const batches = res.data.data.data || [];
+                            setSelectedItem((prev) => ({ ...prev, batches }));
+
+                            // Store batches map to check if all batches are added
+                            setProductBatchesMap((prev) => ({
+                              ...prev,
+                              [selectedItemData.id]: batches,
+                            }));
+                          })
+                          .catch((err) => {
+                            toast.error(err.response.data.message);
+                          });
+                      }
+
+                      saveDraftToSession({
+                        key: 'b2bInvoiceDraft',
+                        data: {
+                          ...order,
+                          itemDraft: updatedItem,
+                        },
+                      });
+                    }}
+                  />
+                  {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
+                </div>
+
+                {/* Batch & Expiry */}
+                <div className="flex flex-col gap-1.5">
+                  <Label>Batch</Label>
+                  <ReactSelect
+                    name="batch"
+                    value={
+                      selectedItem.batch
+                        ? {
+                            value: selectedItem.batch.id,
+                            label: `${selectedItem.batch.batchNo} & ${moment(selectedItem.batch.expiryDate).format('DD/MM/YYYY')}`,
+                          }
+                        : null
+                    }
+                    className="w-48 text-sm"
+                    placeholder="Select Batch"
+                    options={selectedItem.batches?.map((b) => ({
+                      value: b.id,
+                      label: (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-semibold">
+                            Batch: {b.batchNo}
+                          </span>
+                          <span className="text-xs text-neutral-500">
+                            Expiry: {moment(b.expiryDate).format('DD/MM/YYYY')}
+                          </span>
+                        </div>
+                      ),
+                      original: b,
+                      disabled: isItemAlreadyAdded(
+                        selectedItem.productId,
+                        b.id,
+                      ),
+                    }))}
+                    isOptionDisabled={(option) => option.disabled}
+                    styles={getStylesForSelectComponent()}
+                    isDisabled={
+                      isItemInputsDisabled ||
+                      selectedItem.productType !== 'GOODS'
+                    }
+                    onChange={(selectedOption) => {
+                      const batchData = selectedOption?.original;
+                      const updatedItem = {
+                        ...selectedItem,
+                        batch: batchData,
+                        expiryDate: batchData?.expiryDate || '',
+                      };
+                      setSelectedItem(updatedItem);
+                      saveDraftToSession({
+                        key: 'b2bInvoiceDraft',
+                        data: {
+                          ...order,
+                          itemDraft: updatedItem,
+                        },
+                      });
+                    }}
+                  />
+                </div>
+
+                {/* Quantity */}
+                <div className="flex w-32 flex-col gap-1.5">
+                  <InputWithSelect
+                    id="quantity"
+                    name={translations('form.label.quantity')}
+                    required={true}
+                    disabled={isItemInputsDisabled}
+                    className="h-9"
+                    value={
+                      selectedItem.quantity == null ||
+                      selectedItem.quantity === 0
+                        ? ''
+                        : selectedItem.quantity
+                    }
+                    onValueChange={(e) => {
+                      const inputValue = e.target.value;
+
+                      if (inputValue === '') {
+                        const updatedItem = {
+                          ...selectedItem,
+                          quantity: 0,
+                          totalAmount: 0,
+                          totalGstAmount: 0,
+                        };
+                        setSelectedItem(updatedItem);
+                        return;
+                      }
+
+                      if (!/^\d+$/.test(inputValue)) return;
+
+                      const value = Number(inputValue);
+                      if (value < 1) return;
+
+                      const totalAmt = parseFloat(
+                        (value * (Number(selectedItem.unitPrice) || 0)).toFixed(
+                          2,
+                        ),
+                      );
+
+                      const gstAmt = parseFloat(
+                        (
+                          totalAmt *
+                          ((Number(selectedItem.gstPerUnit) || 0) / 100)
+                        ).toFixed(2),
+                      );
+
+                      const updatedItem = {
+                        ...selectedItem,
+                        quantity: value,
+                        totalAmount: totalAmt,
+                        totalGstAmount: gstAmt,
+                      };
 
                       setSelectedItem(updatedItem);
 
@@ -927,100 +1147,33 @@ const CreateB2BInvoice = ({
                         },
                       });
                     }}
-                  />
-
-                  {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <InputWithSelect
-                  id="quantity"
-                  name={translations('form.label.quantity')}
-                  required={true}
-                  disabled={isItemInputsDisabled}
-                  value={
-                    selectedItem.quantity == null || selectedItem.quantity === 0
-                      ? ''
-                      : selectedItem.quantity
-                  }
-                  onValueChange={(e) => {
-                    const inputValue = e.target.value;
-
-                    if (inputValue === '') {
+                    unit={selectedItem.unitId}
+                    onUnitChange={(val) => {
                       const updatedItem = {
                         ...selectedItem,
-                        quantity: 0,
-                        totalAmount: 0,
-                        totalGstAmount: 0,
+                        unitId: Number(val),
                       };
                       setSelectedItem(updatedItem);
-                      return;
-                    }
 
-                    if (!/^\d+$/.test(inputValue)) return;
+                      saveDraftToSession({
+                        key: 'b2bInvoiceDraft',
+                        data: {
+                          ...order,
+                          itemDraft: updatedItem,
+                        },
+                      });
+                    }}
+                    units={units?.quantity}
+                    unitPlaceholder="Unit"
+                  />
+                </div>
 
-                    const value = Number(inputValue);
-                    if (value < 1) return;
-
-                    const totalAmt = parseFloat(
-                      (value * (Number(selectedItem.unitPrice) || 0)).toFixed(
-                        2,
-                      ),
-                    );
-
-                    const gstAmt = parseFloat(
-                      (
-                        totalAmt *
-                        ((Number(selectedItem.gstPerUnit) || 0) / 100)
-                      ).toFixed(2),
-                    );
-
-                    const updatedItem = {
-                      ...selectedItem,
-                      quantity: value,
-                      totalAmount: totalAmt,
-                      totalGstAmount: gstAmt,
-                    };
-
-                    setSelectedItem(updatedItem);
-
-                    saveDraftToSession({
-                      key: 'b2bInvoiceDraft',
-                      data: {
-                        ...order,
-                        itemDraft: updatedItem,
-                      },
-                    });
-                  }}
-                  unit={selectedItem.unitId}
-                  onUnitChange={(val) => {
-                    const updatedItem = {
-                      ...selectedItem,
-                      unitId: Number(val),
-                    };
-                    setSelectedItem(updatedItem);
-
-                    saveDraftToSession({
-                      key: 'b2bInvoiceDraft',
-                      data: {
-                        ...order,
-                        itemDraft: updatedItem,
-                      },
-                    });
-                  }}
-                  units={units?.quantity}
-                  unitPlaceholder="Select unit"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label className="flex gap-1">
-                  {translations('form.label.price')}
-                  <span className="text-red-600">*</span>
-                </Label>
-
-                <div className="flex flex-col gap-1">
+                {/* Price */}
+                <div className="flex w-32 flex-col gap-1.5">
+                  <Label>
+                    {translations('form.label.price')}
+                    <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     type="number"
                     disabled={isItemInputsDisabled}
@@ -1030,7 +1183,7 @@ const CreateB2BInvoice = ({
                         ? ''
                         : selectedItem.unitPrice
                     }
-                    className="max-w-30"
+                    className="h-9"
                     onChange={(e) => {
                       const inputValue = e.target.value;
 
@@ -1079,167 +1232,170 @@ const CreateB2BInvoice = ({
                       });
                     }}
                   />
-
                   {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
                 </div>
-              </div>
 
-              {isGstApplicable(isGstApplicableForSalesOrders) && (
-                <div className="flex flex-col gap-2">
-                  <Label className="flex">
-                    {translations('form.label.gst')}
-                    <span className="text-xs"> (%)</span>
-                    <span className="text-red-600">*</span>
-                  </Label>
-
-                  <div className="flex flex-col gap-1">
+                {/* GST */}
+                {isGstApplicable(isGstApplicableForSalesOrders) && (
+                  <div className="flex w-16 flex-col gap-1.5">
+                    <Label>GST %</Label>
                     <Input
                       disabled
                       value={selectedItem.gstPerUnit || ''}
-                      className="max-w-14"
+                      className="h-9 bg-neutral-100"
                     />
                   </div>
+                )}
+
+                {/* Total Value */}
+                <div className="flex w-28 flex-col gap-1.5">
+                  <Label>{translations('form.label.value')}</Label>
+                  <Input
+                    disabled
+                    value={selectedItem.totalAmount || ''}
+                    className="h-9 bg-neutral-100 font-medium"
+                  />
                 </div>
-              )}
 
-              <div className="flex flex-col gap-2">
-                <Label className="flex gap-1">
-                  {isOrder === 'invoice'
-                    ? translations('form.label.invoice_value')
-                    : translations('form.label.value')}
-                  <span className="text-red-600">*</span>
-                </Label>
+                {/* Tax Amount */}
+                {isGstApplicable(isGstApplicableForSalesOrders) && (
+                  <div className="flex w-24 flex-col gap-1.5">
+                    <Label>Tax Amount</Label>
+                    <Input
+                      disabled
+                      value={selectedItem.totalGstAmount || ''}
+                      className="h-9 bg-neutral-100 font-medium"
+                    />
+                  </div>
+                )}
 
-                <Input
-                  disabled
-                  value={selectedItem.totalAmount || ''}
-                  className="max-w-30"
-                />
+                {/* Total Amount */}
+                <div className="flex w-28 flex-1 flex-col gap-1.5">
+                  <Label>Total Amount</Label>
+                  <Input
+                    disabled
+                    value={
+                      selectedItem.totalAmount != null
+                        ? (
+                            Number(selectedItem.totalAmount) +
+                            (isGstApplicable(isGstApplicableForSalesOrders)
+                              ? Number(selectedItem.totalGstAmount) || 0
+                              : 0)
+                          ).toFixed(2)
+                        : ''
+                    }
+                    className="h-9 bg-neutral-100 font-semibold text-primary"
+                  />
+                </div>
               </div>
+              {/* Add/Cancel Buttons */}
+              <div className="flex items-center justify-end gap-2 pl-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-9 text-neutral-500 hover:text-red-500"
+                  onClick={() => {
+                    const clearedItem = {
+                      productName: '',
+                      productType: '',
+                      productId: null,
+                      quantity: null,
+                      unitId: null,
+                      unitPrice: null,
+                      gstPerUnit: 0,
+                      totalAmount: null,
+                      totalGstAmount: null,
+                      batch: null,
+                      batches: [],
+                      expiryDate: '',
+                    };
+                    setSelectedItem(clearedItem);
+                    saveDraftToSession({
+                      key: 'b2bInvoiceDraft',
+                      data: { ...order, itemDraft: clearedItem },
+                    });
+                  }}
+                >
+                  Clear
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-9 px-4"
+                  disabled={
+                    !selectedItem.productId ||
+                    !selectedItem.quantity ||
+                    selectedItem.quantity <= 0 ||
+                    !selectedItem.unitPrice ||
+                    selectedItem.unitPrice <= 0
+                  }
+                  onClick={() => {
+                    // Check for duplicates before adding
+                    const isDuplicate = isItemAlreadyAdded(
+                      selectedItem.productId,
+                      selectedItem.batch?.id,
+                    );
 
-              {isGstApplicable(isGstApplicableForSalesOrders) && (
-                <div className="flex flex-col gap-2">
-                  <Label className="flex gap-1">
-                    {translations('form.label.tax_amount')}
-                    <span className="text-red-600">*</span>
-                  </Label>
+                    if (isDuplicate) {
+                      toast.error(
+                        selectedItem.batch
+                          ? 'This batch is already added.'
+                          : 'This item is already added.',
+                      );
+                      return;
+                    }
 
-                  <Input
-                    disabled
-                    value={selectedItem.totalGstAmount || ''}
-                    className="max-w-30"
-                  />
-                </div>
-              )}
+                    const updatedOrderItems = [
+                      ...(order?.orderItems || []),
+                      {
+                        ...selectedItem,
+                        sac: Number(selectedItem.sac),
+                        unitPrice: Number(selectedItem.unitPrice),
+                        totalAmount: Number(selectedItem.totalAmount),
+                        totalGstAmount: Number(selectedItem.totalGstAmount),
+                        gstPercentage: Number(selectedItem.gstPerUnit ?? 0),
+                      },
+                    ];
 
-              {isGstApplicable(isGstApplicableForSalesOrders) && (
-                <div className="flex flex-col gap-2">
-                  <Label className="flex gap-1">
-                    {translations('form.label.amount')}
-                    <span className="text-red-600">*</span>
-                  </Label>
-
-                  <Input
-                    disabled
-                    value={(
-                      (Number(selectedItem.totalAmount) || 0) +
-                      (Number(selectedItem.totalGstAmount) || 0)
-                    ).toFixed(2)}
-                    className="max-w-30"
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-end gap-4">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  const clearedItem = {
-                    productName: '',
-                    productType: '',
-                    productId: null,
-                    quantity: null,
-                    unitId: null,
-                    unitPrice: null,
-                    gstPerUnit: 0,
-                    totalAmount: null,
-                    totalGstAmount: null,
-                  };
-
-                  setSelectedItem(clearedItem);
-
-                  saveDraftToSession({
-                    key: 'b2bInvoiceDraft',
-                    data: {
+                    const updatedOrder = {
                       ...order,
-                      itemDraft: clearedItem,
-                    },
-                  });
-                }}
-              >
-                {translations('form.ctas.cancel')}
-              </Button>
+                      orderItems: updatedOrderItems,
+                    };
 
-              <Button
-                size="sm"
-                disabled={
-                  !selectedItem.productId ||
-                  !selectedItem.quantity ||
-                  selectedItem.quantity <= 0 ||
-                  !selectedItem.unitPrice ||
-                  selectedItem.unitPrice <= 0
-                }
-                onClick={() => {
-                  const updatedOrderItems = [
-                    ...(order?.orderItems || []),
-                    {
-                      ...selectedItem,
-                      sac: Number(selectedItem.sac),
-                      unitPrice: Number(selectedItem.unitPrice),
-                      totalAmount: Number(selectedItem.totalAmount),
-                      totalGstAmount: Number(selectedItem.totalGstAmount),
-                      gstPercentage: Number(selectedItem.gstPerUnit ?? 0),
-                    },
-                  ];
+                    const clearedItem = {
+                      productName: '',
+                      productType: '',
+                      productId: null,
+                      quantity: null,
+                      unitId: null,
+                      unitPrice: null,
+                      gstPerUnit: 0,
+                      totalAmount: null,
+                      totalGstAmount: null,
+                      batch: null,
+                      batches: [],
+                      expiryDate: '',
+                    };
 
-                  const updatedOrder = {
-                    ...order,
-                    orderItems: updatedOrderItems,
-                  };
+                    setOrder(updatedOrder);
+                    setSelectedItem(clearedItem);
 
-                  const clearedItem = {
-                    productName: '',
-                    productType: '',
-                    productId: null,
-                    quantity: null,
-                    unitId: null,
-                    unitPrice: null,
-                    gstPerUnit: 0,
-                    totalAmount: null,
-                    totalGstAmount: null,
-                  };
+                    saveDraftToSession({
+                      key: 'b2bInvoiceDraft',
+                      data: {
+                        ...updatedOrder,
+                        itemDraft: clearedItem,
+                      },
+                    });
 
-                  setOrder(updatedOrder);
-                  setSelectedItem(clearedItem);
-
-                  saveDraftToSession({
-                    key: 'b2bInvoiceDraft',
-                    data: {
-                      ...updatedOrder,
-                      itemDraft: clearedItem,
-                    },
-                  });
-
-                  setErrorMsg({});
-                }}
-                variant="blue_outline"
-              >
-                {translations('form.ctas.add')}
-              </Button>
+                    setErrorMsg({});
+                  }}
+                  variant="blue_outline"
+                >
+                  {translations('form.ctas.add')}
+                </Button>
+              </div>
             </div>
-          </div>
+          </section>
 
           {/* selected items table */}
           <DataTable
@@ -1247,75 +1403,92 @@ const CreateB2BInvoice = ({
             columns={createSalesInvoiceColumns}
           />
 
-          <div className="mt-auto h-[1px] bg-neutral-300"></div>
+          {/* Summary Footer Section */}
+          <div className="sticky bottom-0 z-20 -mx-4 mt-6 border-t border-neutral-200 bg-white p-3 px-8 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-6">
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                    {translations('form.footer.gross_amount')}
+                  </span>
+                  <span className="text-sm font-medium text-neutral-700">
+                    ₹{' '}
+                    {totalAmount.toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
 
-          <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4 bg-white">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-bold">
-                  {translations('form.footer.gross_amount')} :
-                </span>
-                <span className="rounded-sm border bg-slate-100 p-2">
-                  {totalAmount.toFixed(2)}
-                </span>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                    {translations('form.footer.tax_amount')}
+                  </span>
+                  <span className="text-sm font-medium text-neutral-700">
+                    ₹{' '}
+                    {totalGstAmt.toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                    Round Off
+                  </span>
+                  <span className="text-sm font-medium text-neutral-600">
+                    {Number(roundOff) > 0 ? `+${roundOff}` : roundOff}
+                  </span>
+                </div>
+
+                <div className="h-8 w-[1px] bg-neutral-200"></div>
+
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-primary/70">
+                    Grand Total
+                  </span>
+                  <span className="text-sm font-bold text-primary">
+                    ₹{' '}
+                    {roundedTotal.toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-bold">
-                  {translations('form.footer.tax_amount')} :
-                </span>
-                <span className="rounded-sm border bg-slate-100 p-2">
-                  {totalGstAmt.toFixed(2)}
-                </span>
+              <div className="flex items-center gap-3">
+                <Button
+                  size="sm"
+                  onClick={onCancel}
+                  variant="outline"
+                  // className="h-11 px-6 text-neutral-500"
+                >
+                  {translations('form.ctas.cancel')}
+                </Button>
+
+                <Button
+                  size="sm"
+                  // className="h-11 min-w-[140px] px-8 shadow-md transition-all hover:shadow-lg"
+                  onClick={() => {
+                    isOrder === 'invoice'
+                      ? handlePreview(order)
+                      : handleSubmit(order);
+                  }}
+                  disabled={invoiceMutation.isPending}
+                >
+                  {invoiceMutation.isPending ? (
+                    <Loading />
+                  ) : isOrder === 'invoice' ? (
+                    <span className="flex items-center gap-2">
+                      {translations('form.ctas.next')}
+                    </span>
+                  ) : (
+                    translations('form.ctas.create')
+                  )}
+                </Button>
               </div>
-
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-bold">Total Amount :</span>
-                <span className="rounded-sm border bg-slate-100 p-2">
-                  {totalAmtWithGst.toFixed(2)}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-bold">Round Off :</span>
-                <span className="rounded-sm border bg-slate-100 p-2">
-                  {Number(roundOff) > 0 ? `+${roundOff}` : roundOff}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-bold">Grand Total :</span>
-                <span className="rounded-sm border bg-slate-100 p-2 font-bold text-primary">
-                  {roundedTotal.toFixed(2)}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button size="sm" onClick={onCancel} variant={'outline'}>
-                {translations('form.ctas.cancel')}
-              </Button>
-
-              <Button
-                size="sm"
-                onClick={() => {
-                  isOrder === 'invoice'
-                    ? handlePreview(order)
-                    : handleSubmit(order);
-                }}
-                disabled={invoiceMutation.isPending}
-              >
-                {invoiceMutation.isPending ? (
-                  <Loading />
-                ) : isOrder === 'invoice' ? (
-                  translations('form.ctas.next')
-                ) : (
-                  translations('form.ctas.create')
-                )}
-              </Button>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {isInvoicePreview && (

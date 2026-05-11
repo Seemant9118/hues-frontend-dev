@@ -123,7 +123,9 @@
                                 "invoiceQty": "Invoice Quantity",
                                 "dispatchedQty": "Dispatched Quantity",
                                 "rate": "Rate",
-                                "amount": "Amount"
+                                "amount": "Amount",
+                                "batch": "Batch",
+                                "expiry": "Expiry"
                             }
                         },
                         "emtpyStateComponent": {
@@ -489,11 +491,12 @@
                         "title": "Overview",
                         "table": {
                             "header": {
-                                "skuId": "SKU ID",
-                                "itemName": "Item name",
+                                "itemName": "Item name / SKU",
                                 "dispatchQty": "Dispatch Qty.",
                                 "qtyRecieved": "Recieved Qty.",
-                                "qtyMissing": "Missing Qty."
+                                "qtyMissing": "Missing Qty.",
+                                "batch": "Batch",
+                                "expiry": "Expiry"
                             }
                         }
                     }
@@ -560,7 +563,9 @@
                                 "itemName": "Item name",
                                 "qtyReceived": "Qty. Recieved",
                                 "qtyAccepted": "Qty. Accepted",
-                                "qtyRejected": "Qty. Rejected"
+                                "qtyRejected": "Qty. Rejected",
+                                "batch": "Batch",
+                                "expiry": "Expiry"
                             }
                         }
                     }

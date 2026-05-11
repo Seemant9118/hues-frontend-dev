@@ -22,6 +22,7 @@ import { MinusCircle, PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import { useStockContext } from '@/context/StockContext';
 import { useStocksColumns } from './stockColumns';
 
 const PAGE_LIMIT = 10;
@@ -42,6 +43,7 @@ const Stocks = () => {
     'stocks.emptyStateComponent.subItems.subItem4',
   ];
   const { hasPermission } = usePermission();
+  const { setStockData } = useStockContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchCycle, setSearchCycle] = useState(0);
   const [stocksList, setStocksList] = useState(null);
@@ -97,6 +99,7 @@ const Stocks = () => {
 
   useEffect(() => {
     const source = stocksQuery.data;
+
     if (!source?.pages?.length) return;
 
     // Flatten all pages
@@ -108,7 +111,7 @@ const Stocks = () => {
     // (same inventory can exist in multiple buckets)
     const uniqueStocksListData = Array.from(
       new Map(
-        flattened.map((item) => [`${item.inventoryid}-${item.bucketid}`, item]),
+        flattened.map((item, index) => [`${item.productid}-${index}`, item]),
       ).values(),
     );
 
@@ -126,7 +129,9 @@ const Stocks = () => {
   const stocksColumns = useStocksColumns();
 
   const onRowClick = (row) => {
-    return router.push(`/dashboard/inventory/stocks/${row.inventoryid}`);
+    setStockData(row);
+
+    return router.push(`/dashboard/inventory/stocks/${row?.productId}`);
   };
 
   return (

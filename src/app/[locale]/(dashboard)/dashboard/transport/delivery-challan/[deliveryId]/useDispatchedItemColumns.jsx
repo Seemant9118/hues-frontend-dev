@@ -73,5 +73,25 @@ export const useDispatchedItemColumns = () => {
         return formattedAmount(amount);
       },
     },
+
+    /* Batch Number */
+    {
+      id: 'batchNo',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={translations('batch')} />
+      ),
+      cell: ({ row }) =>
+        row.original?.batchNo || row.original?.metaData?.batchNo || '--',
+    },
+
+    /* Expiry Date */
+    {
+      id: 'expiryDate',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={translations('expiry')} />
+      ),
+      cell: ({ row }) =>
+        row.original?.expiryDate || row.original?.metaData?.expiryDate || '--',
+    },
   ];
 };

@@ -5,23 +5,39 @@ import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader'
 
 export const useQCItemsColumns = () => {
   return [
-    /* SKU ID */
-    {
-      accessorKey: 'skuId',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="SKU ID" />
-      ),
-      cell: ({ row }) => row.original?.metaData?.productDetails?.skuId || '--',
-    },
-
     /* Item Name */
     {
       accessorKey: 'itemName',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Item Name" />
+        <DataTableColumnHeader column={column} title="Item Name / SKU" />
       ),
-      cell: ({ row }) =>
-        row.original?.metaData?.productDetails?.productName || '--',
+      cell: ({ row }) => (
+        <div className="flex flex-col gap-1">
+          <span className="font-medium">
+            {row.original?.metaData?.productDetails?.productName}
+          </span>
+          <span className="text-grey-400 text-xs">
+            {row.original?.metaData?.productDetails?.skuId}
+          </span>
+        </div>
+      ),
+    },
+
+    // batch number
+    {
+      accessorKey: 'batchNumber',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Batch" />
+      ),
+      cell: ({ row }) => row.original?.batchNo || '--',
+    },
+    // expiry date
+    {
+      accessorKey: 'expiryDate',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Expiry Date" />
+      ),
+      cell: ({ row }) => row.original?.expiryDate || '--',
     },
 
     /* QC Received */

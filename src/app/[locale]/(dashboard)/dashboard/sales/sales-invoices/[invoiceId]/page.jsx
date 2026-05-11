@@ -146,6 +146,8 @@ const ViewInvoice = () => {
     gstPerUnit: invoice?.gstPerUnit,
     unitPrice: invoice?.unitPrice,
     totalAmount: invoice?.totalAmount,
+    batchNo: invoice?.batchNo,
+    expiryDate: invoice?.expiryDate,
   }));
 
   // fetch payment details
@@ -180,8 +182,8 @@ const ViewInvoice = () => {
   });
 
   const debitNoteRawStatus =
-    invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status !==
-    'NOT_RAISED';
+    invoiceDetails?.invoiceDetails?.invoiceMetaData?.debitNote?.status ===
+    'RAISED';
   const debitNoteStatus = debitNoteRawStatus ? (
     <ConditionalRenderingStatus status={debitNoteRawStatus} />
   ) : null;

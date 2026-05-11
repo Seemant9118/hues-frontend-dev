@@ -190,6 +190,7 @@ const ProfileInfoPopUp = ({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          title="View Enterprise Profile"
           debounceTime={0}
           variant="ghost"
           aria-label={translations(ctaName)}

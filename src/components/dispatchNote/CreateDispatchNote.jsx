@@ -135,6 +135,8 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
         unitPrice = 0,
         gstPerUnit = 0,
         unitId,
+        batchNo,
+        expiryDate,
       } = item;
 
       const calculatedDispatchedQty =
@@ -150,6 +152,8 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
 
       return {
         ...orderItemId.productDetails, // product details
+        batchNo,
+        expiryDate,
         productType: orderItemId.productType,
         orderItemId: orderItemId.id,
         invoiceItemId: id,

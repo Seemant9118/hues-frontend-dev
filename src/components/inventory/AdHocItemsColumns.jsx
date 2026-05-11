@@ -15,6 +15,20 @@ export const AddHocItemsColumns = ({ onEdit, onDelete }) => [
     ),
   },
   {
+    accessorKey: 'batchNo',
+    header: 'Batch / Expiry',
+    cell: ({ row }) => (
+      <div className="flex flex-col">
+        <span>{row.original.batchNo || '--'}</span>
+        {row.original.expiryDate && (
+          <span className="text-[10px] text-muted-foreground">
+            Exp: {row.original.expiryDate}
+          </span>
+        )}
+      </div>
+    ),
+  },
+  {
     accessorKey: 'quantity',
     header: 'Qty',
   },

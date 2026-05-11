@@ -1,32 +1,45 @@
 'use client';
 
 import { stockApis } from '@/api/inventories/stocks/stocksApi';
-import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import {
+  convertSnakeToTitleCase,
+  getEnterpriseId,
+} from '@/appUtils/helperFunctions';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import { DataTable } from '@/components/table/data-table';
+import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import InfiniteDataTable from '@/components/table/infinite-data-table';
+import Loading from '@/components/ui/Loading';
+import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { useStockContext } from '@/context/StockContext';
 import useMetaData from '@/hooks/useMetaData';
 import { getStockDetails } from '@/services/Inventories_Services/Stocks_Services/Stocks_Services';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
-import Loading from '@/components/ui/Loading';
-import { useStockItemColumns } from './useStockItemColumns';
+import { Badge } from '@/components/ui/badge';
 import emptyImg from '../../../../../../../../public/Empty.png';
+import { useStockItemColumns } from './useStockItemColumns';
 
 const PAGE_LIMIT = 10;
+
 const ViewStock = () => {
   useMetaData('Hues! - Stock Details', 'HUES Stock Details');
   const translations = useTranslations('stocks.stockDetails');
   const enterpriseId = getEnterpriseId();
   const router = useRouter();
   const params = useParams();
-  const [tab, setTab] = useState('ledger');
+
+  const { getStockData } = useStockContext();
+  const stockData = getStockData(params.id);
+
+  const [tab, setTab] = useState('overview');
   const [stockLedger, setStockLedger] = useState(null);
   const [paginationData, setPaginationData] = useState([]);
 
@@ -49,12 +62,74 @@ const ViewStock = () => {
     setTab(tab);
   };
 
+  const inventoryItemIds =
+    stockData?.batches?.map((item) => item.inventoryId) || [];
+
+  // overview component data
+  const overviewData = {
+    productName: stockData?.productName,
+    skuId: stockData?.skuId,
+    bucketType: stockData?.bucketType,
+    availableQuantity: stockData?.availableQuantity,
+    unitPrice: stockData?.unitPrice,
+    totalPrice: stockData?.totalPrice,
+  };
+  const customRender = {
+    bucketType: () => {
+      return (
+        <Badge variant="secondary">
+          {convertSnakeToTitleCase(stockData?.bucketType)}
+        </Badge>
+      );
+    },
+  };
+  const overviewLabelMap = {
+    productName: 'Product Name',
+    skuId: 'SKU ID',
+    bucketType: 'Bucket',
+    availableQuantity: 'Available Quantity',
+    unitPrice: 'Unit Price',
+    totalPrice: 'Total Price',
+  };
+
+  // DataTable - Batches
+  const batches = stockData?.batches || [];
+  const batchColumns = [
+    {
+      accessorKey: 'batchNo',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Batch No" />
+      ),
+      cell: ({ row }) => row.original.batchNo || 'Not Available',
+    },
+    {
+      accessorKey: 'expiryDate',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Expiry Date" />
+      ),
+      cell: ({ row }) => row.original.expiryDate || 'Not Available',
+    },
+    {
+      accessorKey: 'availableQuantity',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Available Quantity" />
+      ),
+      cell: ({ row }) => row.original.availableQuantity || 0,
+    },
+  ];
+
+  // api to fetch ledger data
   const stocksDetailsQuery = useInfiniteQuery({
-    queryKey: [stockApis.getStockDetails.endpointKey, params.id],
+    queryKey: [
+      stockApis.getStockDetails.endpointKey,
+      params.id,
+      inventoryItemIds,
+    ],
     queryFn: async ({ pageParam = 1 }) => {
       return getStockDetails({
         enterpriseId,
-        inventoryItemId: params.id,
+        productId: params.id,
+        inventoryItemIds,
         page: pageParam,
         limit: PAGE_LIMIT,
       });
@@ -68,7 +143,6 @@ const ViewStock = () => {
     refetchOnMount: false, // don’t refetch on remount
     refetchOnWindowFocus: false, // already correct
   });
-
   useEffect(() => {
     const source = stocksDetailsQuery.data;
     if (!source?.pages?.length) return;
@@ -96,7 +170,7 @@ const ViewStock = () => {
     <ProtectedWrapper permissionCode={'permission:item-masters-view'}>
       <Wrapper className="flex min-h-screen flex-col py-2">
         {/* Headers */}
-        <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
+        <section className="sticky top-0 z-10 flex items-center justify-between bg-white">
           <div className="flex items-center gap-1">
             <button
               onClick={() => router.push(`/dashboard/inventory/stocks`)}
@@ -110,12 +184,31 @@ const ViewStock = () => {
         </section>
 
         {/* Content */}
-        <Tabs value={tab} onValueChange={onTabChange} defaultValue={'ledger'}>
+        <Tabs value={tab} onValueChange={onTabChange} defaultValue={'overview'}>
           <TabsList className="border">
-            <TabsTrigger value="ledger">
-              {translations('tabs.tab1.title')}
-            </TabsTrigger>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="ledger">Ledger</TabsTrigger>
           </TabsList>
+          <TabsContent
+            value="overview"
+            className="flex flex-1 flex-col gap-2 overflow-hidden"
+          >
+            <Overview
+              sectionClass="grid grid-cols-3 gap-3"
+              data={overviewData}
+              labelMap={overviewLabelMap}
+              customRender={customRender}
+            />
+
+            <div className="flex flex-col gap-2">
+              <h3 className="text-lg font-bold">Batches</h3>
+              <DataTable
+                columns={batchColumns}
+                data={batches}
+                id="batch-table"
+              />
+            </div>
+          </TabsContent>
           <TabsContent
             value="ledger"
             className="flex flex-1 flex-col overflow-hidden"

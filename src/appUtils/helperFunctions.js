@@ -51,6 +51,7 @@ export const getStylesForSelectComponent = () => {
   return {
     control: (base, state) => ({
       ...base,
+      borderRadius: '8px',
       minHeight: '40px',
       borderColor: state.isFocused ? '#3B90F2' : base.borderColor,
       boxShadow: 'none',
@@ -65,8 +66,13 @@ export const getStylesForSelectComponent = () => {
         : state.isFocused
           ? '#e0e7ff' // focused (light)
           : 'white',
-      color: state.isSelected ? 'white' : 'black',
-      cursor: 'pointer',
+      color: state.isSelected
+        ? 'white'
+        : state.isDisabled
+          ? '#9ca3af'
+          : 'black',
+      cursor: state.isDisabled ? 'not-allowed' : 'pointer',
+      opacity: state.isDisabled ? 0.6 : 1,
     }),
 
     singleValue: (base) => ({

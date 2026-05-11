@@ -39,7 +39,7 @@ function InputWithSelect({
   }, [unit, units, onUnitChange]);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2">
       {name && (
         <Label htmlFor={id}>
           {name} {required && <span className="text-red-600">*</span>}
@@ -70,7 +70,7 @@ function InputWithSelect({
             }}
           >
             <SelectTrigger
-              className={`${selectWidth} h-8 border-0 bg-transparent shadow-none focus:ring-0`}
+              className={`${selectWidth} h-9 border-0 bg-transparent shadow-none focus:ring-0`}
             >
               <SelectValue placeholder={unitPlaceholder || 'select'} />
             </SelectTrigger>

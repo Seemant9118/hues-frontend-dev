@@ -9,6 +9,7 @@ import {
 } from '@/context/SidebarLayoutContext';
 import { UserProvider } from '@/context/UserContext';
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext';
+import { StockProvider } from '@/context/StockContext';
 import { parseJwt } from '@/appUtils/helperFunctions';
 import AuthInitializer from '@/components/wrappers/AuthInitializer';
 import useClarityTracking from '@/hooks/useClarityTracking';
@@ -63,7 +64,9 @@ export default function DashBoardLayout({ children }) {
         <FeatureFlagProvider>
           <UserProvider>
             <SidebarLayoutProvider>
-              <DashboardShell>{children}</DashboardShell>
+              <StockProvider>
+                <DashboardShell>{children}</DashboardShell>
+              </StockProvider>
             </SidebarLayoutProvider>
           </UserProvider>
         </FeatureFlagProvider>

@@ -290,6 +290,10 @@ const ViewDelivery = () => {
       rate: item?.invoiceItem?.unitPrice ?? 0,
 
       amount: Number(item?.amount ?? 0),
+
+      batchNo: item?.invoiceItem?.batchNo ?? '--',
+
+      expiryDate: item?.invoiceItem?.expiryDate ?? '--',
     }));
   };
   const formattedDispatchedItems = mapDispatchDetailsForItems(dispatchDetails);
@@ -843,7 +847,8 @@ const ViewDelivery = () => {
         },
       },
 
-      items: meta.items.map((item) => ({
+      items: meta.items?.map((item) => ({
+        // ...item,
         dispatchNoteItemId: item.id,
 
         acceptQuantity: item.dispatchedQuantity ?? 0,
@@ -856,6 +861,8 @@ const ViewDelivery = () => {
 
         metadata: {
           productDetails: item.invoiceItem?.orderItemId?.productDetails || {},
+          batchNo: item?.invoiceItem?.batchNo,
+          expiryDate: item?.invoiceItem?.expiryDate,
         },
       })),
     };
@@ -863,7 +870,6 @@ const ViewDelivery = () => {
 
   const handleSendPOD = () => {
     const payload = buildPODPayload(dispatchDetails);
-
     sendPODMutation.mutate({ data: payload });
   };
 

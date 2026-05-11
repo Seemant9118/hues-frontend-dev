@@ -21,6 +21,8 @@ import {
   adHocStockOut,
 } from '@/services/Inventories_Services/Stocks_Services/Stocks_Services';
 import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
+import { GetProductBatchList } from '@/services/Inventories_Services/Goods_Inventories/ProductBatch_Services';
+import moment from 'moment';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
@@ -57,6 +59,9 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
     totalGstAmount: 0, // qty * gstAmountPerUnit
     totalAmount: 0, // amount + totalGstAmount
     isQcOkay: true,
+    batch: null,
+    batches: [],
+    expiryDate: '',
   });
 
   const [formData, setFormData] = useState({
@@ -65,6 +70,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [productBatchesMap, setProductBatchesMap] = useState({});
 
   const reasonOptions = isStockIn
     ? [
@@ -86,8 +92,25 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
     );
   }, [formData.adjustmentReason]);
 
-  const isItemAlreadyAdded = (itemId) =>
-    formData.items?.some((item) => item.itemId === itemId);
+  const isItemAlreadyAdded = (itemId, batchId = null) => {
+    // 1. If specific batchId provided (checking for batch dropdown)
+    if (batchId) {
+      return formData.items?.some(
+        (item) => item.itemId === itemId && item.batch?.id === batchId,
+      );
+    }
+
+    // 2. Checking for the product itself (initial item dropdown)
+    const batchesForThisItem = productBatchesMap[itemId];
+    if (batchesForThisItem && batchesForThisItem.length > 0) {
+      const addedBatchesCount = formData.items?.filter(
+        (item) => item.itemId === itemId && item.batch,
+      ).length;
+      return addedBatchesCount >= batchesForThisItem.length;
+    }
+
+    return formData.items?.some((item) => item.itemId === itemId);
+  };
 
   // Fetch goods list
   const { data: goods } = useQuery({
@@ -215,6 +238,21 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
   const handleAddItem = () => {
     if (!validateItem()) return;
 
+    // Check for duplicates before adding
+    const isDuplicate = isItemAlreadyAdded(
+      selectedItem.productId,
+      selectedItem.batch?.id,
+    );
+
+    if (isDuplicate) {
+      toast.error(
+        selectedItem.batch
+          ? 'This batch is already added.'
+          : 'This item is already added.',
+      );
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       items: [
@@ -234,6 +272,12 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
           totalAmount: selectedItem.totalAmount,
 
           isQcOkay: selectedItem.isQcOkay,
+          batch: selectedItem.batch,
+          batches: selectedItem.batches,
+          batchNo: selectedItem.batch?.batchNo || null,
+          expiryDate: selectedItem.expiryDate
+            ? moment(selectedItem.expiryDate).format('YYYY-MM-DD')
+            : null,
         },
       ],
     }));
@@ -255,6 +299,9 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
       totalGstAmount: 0,
       totalAmount: 0,
       isQcOkay: true, // reset to default
+      batch: null,
+      batches: [],
+      expiryDate: '',
     });
 
     setErrors({});
@@ -283,6 +330,9 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
       totalAmount: itemToEdit.totalAmount,
       ...calculateAmounts(itemToEdit),
       isQcOkay: itemToEdit.isQcOkay ?? true,
+      batch: itemToEdit.batch || null,
+      batches: itemToEdit.batches || [],
+      expiryDate: itemToEdit.expiryDate || '',
     });
 
     // Remove it from table
@@ -345,6 +395,8 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
         totalGstAmount: Number(item.totalGstAmount),
         totalAmount: Number(item.totalAmount),
         isQcOkay: item.isQcOkay,
+        batchNo: item.batchNo || null,
+        expiryDate: item.expiryDate || null,
       })),
     };
 
@@ -442,7 +494,32 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
                         totalAmount: 0,
                         totalGstAmount: 0,
                         isQcOkay: true,
+                        batch: null,
+                        batches: [],
+                        expiryDate: '',
                       });
+
+                      if (meta.skuId) {
+                        GetProductBatchList({
+                          searchString: meta.skuId,
+                        })
+                          .then((res) => {
+                            const batches = res?.data?.data?.data || [];
+                            setSelectedItem((prev) => ({ ...prev, batches }));
+
+                            // Store batches map to check if all batches are added
+                            setProductBatchesMap((prev) => ({
+                              ...prev,
+                              [value]: batches,
+                            }));
+                          })
+                          .catch((err) => {
+                            toast.error(
+                              err?.response?.data?.message ||
+                                'Error fetching batches',
+                            );
+                          });
+                      }
                     }}
                   />
 
@@ -496,6 +573,56 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
                   {errors.targetBucketId && (
                     <ErrorBox msg={errors.targetBucketId} />
                   )}
+                </div>
+              </div>
+
+              {/* Batch Select */}
+              <div className="flex w-full max-w-xs flex-col gap-2">
+                <Label className="flex gap-1">Select Batch</Label>
+
+                <div className="flex flex-col gap-1 text-sm">
+                  <ReactSelect
+                    name="batch"
+                    value={
+                      selectedItem.batch
+                        ? {
+                            value: selectedItem.batch.id,
+                            label: `${selectedItem.batch.batchNo} & ${moment(selectedItem.batch.expiryDate).format('DD/MM/YYYY')}`,
+                          }
+                        : null
+                    }
+                    className="w-full"
+                    placeholder="Select Batch"
+                    options={selectedItem.batches?.map((b) => ({
+                      value: b.id,
+                      label: (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-semibold">
+                            Batch: {b.batchNo}
+                          </span>
+                          <span className="text-xs text-neutral-500">
+                            Expiry: {moment(b.expiryDate).format('DD/MM/YYYY')}
+                          </span>
+                        </div>
+                      ),
+                      original: b,
+                      disabled: isItemAlreadyAdded(
+                        selectedItem.productId,
+                        b.id,
+                      ),
+                    }))}
+                    isOptionDisabled={(option) => option.disabled}
+                    styles={getStylesForSelectComponent()}
+                    isDisabled={!selectedItem.productId}
+                    onChange={(selectedOption) => {
+                      const batchData = selectedOption?.original;
+                      setSelectedItem((prev) => ({
+                        ...prev,
+                        batch: batchData,
+                        expiryDate: batchData?.expiryDate || '',
+                      }));
+                    }}
+                  />
                 </div>
               </div>
 
@@ -639,6 +766,9 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
                     totalGstAmount: 0,
                     totalAmount: 0,
                     isQcOkay: true,
+                    batch: null,
+                    batches: [],
+                    expiryDate: '',
                   });
                   setErrors({});
                 }}

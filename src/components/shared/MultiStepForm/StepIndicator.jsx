@@ -3,7 +3,7 @@ import { Check } from 'lucide-react';
 
 export default function StepIndicator({ steps, currentStep, onStepClick }) {
   return (
-    <div className="mt-4 flex w-full items-start justify-between px-2">
+    <div className="mt-2 flex w-full items-start justify-between px-2">
       {steps.map((step, index) => {
         const isCompleted = index < currentStep;
         const isCurrent = index === currentStep;

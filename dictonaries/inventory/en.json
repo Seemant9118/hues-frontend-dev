@@ -482,5 +482,69 @@
                 "height": "Height"
             }
         }
+    },
+    "batch": {
+        "title": "Product Batch",
+        "emptyStateComponent": {
+            "heading": "Efficiently manage product batches with secure, editable, and trackable batch listings for accurate inventory control.",
+            "subItems": {
+                "subItem1": {
+                    "value": "Create and manage batches for your SKUs with ease"
+                },
+                "subItem2": {
+                    "value": "Track manufacturing and expiry dates for compliance"
+                },
+                "subItem3": {
+                    "value": "Toggle batch status to control availability"
+                },
+                "subItem4": {
+                    "value": "Search and filter batches by SKU or Batch Number"
+                }
+            }
+        },
+        "ctas": {
+            "searchPlaceholder": "Search by SKU or Batch No",
+            "add": "Add Batch",
+            "export": "Export"
+        },
+        "table": {
+            "header": {
+                "skuId": "SKU ID",
+                "batchNo": "Batch Number",
+                "manufactureDate": "Mfg Date",
+                "expiryDate": "Expiry Date",
+                "status": "Status",
+                "addedOn": "Added On"
+            },
+            "columnActions": {
+                "edit": "Edit",
+                "delete": {
+                    "cta": "Delete",
+                    "cancel": "Cancel",
+                    "infoText": "You're about to remove batch {name}. Sure?",
+                    "successMsg": "Batch deleted successfully"
+                }
+            }
+        },
+        "addBatch": {
+            "title1": "Add Batch",
+            "title2": "Edit Batch",
+            "label": {
+                "skuId": "SKU ID",
+                "batchNo": "Batch Number",
+                "manufactureDate": "Manufacturing Date",
+                "expiryDate": "Expiry Date",
+                "isActive": "Is Active"
+            },
+            "ctas": {
+                "cancel": "Cancel",
+                "create": "Create Batch",
+                "update": "Update Batch"
+            },
+            "messages": {
+                "createSuccess": "Batch created successfully",
+                "updateSuccess": "Batch updated successfully"
+            }
+        }
     }
 }
