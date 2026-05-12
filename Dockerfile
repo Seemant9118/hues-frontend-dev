@@ -8,6 +8,10 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY . .
 COPY --from=deps /app/node_modules ./node_modules
+
+# Increase heap size to 4GB
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 RUN npm run build && \
     cp -r public .next/standalone/ && \
     cp -r .next/static .next/standalone/.next/
