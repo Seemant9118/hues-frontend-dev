@@ -101,13 +101,13 @@ function Goods() {
     getNextPageParam: (lastPage, allPages) => {
       const totalPages = lastPage?.data?.data?.totalPages;
       if (!totalPages) return undefined;
-      const nextPage = allPages.length + 1;
+      const nextPage = (allPages?.length || 0) + 1;
       return nextPage <= totalPages ? nextPage : undefined;
     },
     enabled:
       isMounted &&
       Boolean(enterpriseId) &&
-      searchTerm.trim().length === 0 &&
+      (searchTerm || '').trim().length === 0 &&
       Boolean(hasPermission('permission:item-masters-view')),
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
@@ -125,10 +125,10 @@ function Goods() {
     getNextPageParam: (lastPage, allPages) => {
       const totalPages = lastPage?.data?.data?.totalPages;
       if (!totalPages) return undefined;
-      const nextPage = allPages.length + 1;
+      const nextPage = (allPages?.length || 0) + 1;
       return nextPage <= totalPages ? nextPage : undefined;
     },
-    enabled: isMounted && searchTerm.trim().length > 0,
+    enabled: isMounted && (searchTerm || '').trim().length > 0,
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
@@ -150,7 +150,7 @@ function Goods() {
 
     setProductGoods(uniqueGoodsData || []);
 
-    if (!source?.pages?.length) return;
+    if (!source.pages?.length) return;
 
     const lastPage = source.pages[source.pages.length - 1]?.data?.data;
 

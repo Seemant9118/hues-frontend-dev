@@ -27,6 +27,7 @@ export const getStocksItems = ({
   limit,
   filter,
   searchString,
+  productId,
 }) => {
   const endpoint = stockApis.getStocksItems.endpoint.replace(
     ':enterpriseId',
@@ -38,6 +39,7 @@ export const getStocksItems = ({
     limit,
     ...(filter ? { bucketName: filter } : {}),
     ...(searchString !== undefined && { searchString }),
+    ...(productId && { productId }),
   };
 
   return APIinstance.get(endpoint, { params });

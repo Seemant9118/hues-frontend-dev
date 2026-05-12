@@ -1169,7 +1169,7 @@ const CreateB2BInvoice = ({
                 </div>
 
                 {/* Price */}
-                <div className="flex w-32 flex-col gap-1.5">
+                <div className="flex w-28 flex-col gap-1.5">
                   <Label>
                     {translations('form.label.price')}
                     <span className="text-red-500">*</span>
@@ -1270,7 +1270,7 @@ const CreateB2BInvoice = ({
                 )}
 
                 {/* Total Amount */}
-                <div className="flex w-28 flex-1 flex-col gap-1.5">
+                <div className="flex w-44 flex-col gap-1.5">
                   <Label>Total Amount</Label>
                   <Input
                     disabled

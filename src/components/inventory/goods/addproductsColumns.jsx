@@ -19,7 +19,7 @@ export const useAddedProductColumns = ({
       cell: ({ row }) => (
         <span
           onClick={() => {
-            router.push(`/dashboard/inventory/goods/${row.id}`);
+            router.push(`/dashboard/inventory/goods/${row.original.id}`);
           }}
           className="cursor-pointer font-medium text-gray-800 hover:text-primary hover:underline"
         >

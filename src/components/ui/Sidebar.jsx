@@ -31,6 +31,7 @@ import {
   NotebookTabs,
   NotepadText,
   Package,
+  PackagePlus,
   PanelLeftClose,
   PanelLeftOpen,
   PencilRuler,
@@ -186,8 +187,13 @@ const Sidebar = () => {
         subTab: [
           {
             name: 'sidebar.subTabs.goods',
-            icon: <Boxes size={ICON_SIZE} />,
+            icon: <PackagePlus size={ICON_SIZE} />,
             path: '/dashboard/inventory/goods',
+          },
+          {
+            name: 'sidebar.subTabs.batch',
+            icon: <Cuboid size={ICON_SIZE} />,
+            path: '/dashboard/inventory/batch',
           },
           {
             name: 'sidebar.subTabs.transactions',
@@ -204,16 +210,11 @@ const Sidebar = () => {
             icon: <ShieldCheck size={ICON_SIZE} />,
             path: '/dashboard/inventory/qc',
           },
-          {
-            name: 'sidebar.subTabs.batch',
-            icon: <Cuboid size={ICON_SIZE} />,
-            path: '/dashboard/inventory/batch',
-          },
         ],
       },
       hasPermission(PERMISSIONS.ITEM_MASTERS) && {
         name: 'sidebar.itemMaster-services',
-        icon: <Cuboid size={ICON_SIZE} />,
+        icon: <Boxes size={ICON_SIZE} />,
         path: '/dashboard/inventory/services',
         subTab: [
           {

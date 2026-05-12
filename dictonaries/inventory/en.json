@@ -110,6 +110,12 @@
             "tabs": {
                 "tab1": {
                     "title": "Overview"
+                },
+                "tab2": {
+                    "title": "Stock Details"
+                },
+                "tab3": {
+                    "title": "Batches"
                 }
             },
             "overview_labels": {
@@ -134,6 +140,11 @@
                 "length": "Length",
                 "breadth": "Breadth",
                 "height": "Height"
+            },
+            "messages": {
+                "noBatches": "No batches found for this product",
+                "noStocks": "No stock records found for this product",
+                "quickStockIn": "Quick Stock In"
             }
         }
     },
@@ -484,7 +495,7 @@
         }
     },
     "batch": {
-        "title": "Product Batch",
+        "title": "Batch Master",
         "emptyStateComponent": {
             "heading": "Efficiently manage product batches with secure, editable, and trackable batch listings for accurate inventory control.",
             "subItems": {

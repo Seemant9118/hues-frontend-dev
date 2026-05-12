@@ -3,6 +3,7 @@
 import { stockApis } from '@/api/inventories/stocks/stocksApi';
 import {
   convertSnakeToTitleCase,
+  formattedAmount,
   getEnterpriseId,
 } from '@/appUtils/helperFunctions';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
@@ -71,8 +72,8 @@ const ViewStock = () => {
     skuId: stockData?.skuId,
     bucketType: stockData?.bucketType,
     availableQuantity: stockData?.availableQuantity,
-    unitPrice: stockData?.unitPrice,
-    totalPrice: stockData?.totalPrice,
+    unitPrice: formattedAmount(stockData?.unitPrice),
+    totalPrice: formattedAmount(stockData?.totalPrice),
   };
   const customRender = {
     bucketType: () => {

@@ -484,9 +484,9 @@ const CreateB2CInvoice = ({
         />
       </div>
 
-      <>
+      <div className="flex flex-1 flex-col gap-6 overflow-y-auto pt-4">
         {/* Customer section */}
-        <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm transition-all">
+        <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-5 shadow-sm">
           <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
             {/* Invoice Date */}
             <div className="flex flex-col gap-1.5">
@@ -685,7 +685,7 @@ const CreateB2CInvoice = ({
         </section>
 
         {/* Add Items Section */}
-        <section className="flex flex-col gap-6 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <section className="space-y-4 rounded-lg border border-neutral-200 bg-neutral-50/30 p-5">
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-end gap-4">
               {/* Item Type */}
@@ -1204,69 +1204,68 @@ const CreateB2CInvoice = ({
           data={order.orderItems}
           columns={createSalesInvoiceColumns}
         />
-
-        {/* Summary Footer Section */}
-        <div className="sticky bottom-0 z-20 -mx-4 mt-6 border-t border-neutral-200 bg-white p-3 px-8 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-6">
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
-                  {translations('form.footer.gross_amount')}
-                </span>
-                <span className="text-sm font-medium text-neutral-700">
-                  ₹{' '}
-                  {grossAmt.toLocaleString('en-IN', {
-                    minimumFractionDigits: 2,
-                  })}
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
-                  {translations('form.footer.tax_amount')}
-                </span>
-                <span className="text-sm font-medium text-neutral-700">
-                  ₹{' '}
-                  {totalGstAmt.toLocaleString('en-IN', {
-                    minimumFractionDigits: 2,
-                  })}
-                </span>
-              </div>
-
-              <div className="h-8 w-[1px] bg-neutral-200"></div>
-
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-primary/70">
-                  Grand Total
-                </span>
-                <span className="text-sm font-bold text-primary">
-                  ₹{' '}
-                  {totalAmtWithGst.toLocaleString('en-IN', {
-                    minimumFractionDigits: 2,
-                  })}
-                </span>
-              </div>
+      </div>
+      {/* Summary Footer Section */}
+      <div className="sticky bottom-0 z-20 -mx-4 border-t border-neutral-200 bg-white p-3 px-8 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                {translations('form.footer.gross_amount')}
+              </span>
+              <span className="text-sm font-medium text-neutral-700">
+                ₹{' '}
+                {grossAmt.toLocaleString('en-IN', {
+                  minimumFractionDigits: 2,
+                })}
+              </span>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Button size="sm" onClick={onCancel} variant="outline">
-                {translations('form.ctas.cancel')}
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => handleSubmit(order)}
-                disabled={invoiceMutation.isPending}
-              >
-                {invoiceMutation.isPending ? (
-                  <Loading />
-                ) : (
-                  translations('form.ctas.create')
-                )}
-              </Button>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                {translations('form.footer.tax_amount')}
+              </span>
+              <span className="text-sm font-medium text-neutral-700">
+                ₹{' '}
+                {totalGstAmt.toLocaleString('en-IN', {
+                  minimumFractionDigits: 2,
+                })}
+              </span>
+            </div>
+
+            <div className="h-8 w-[1px] bg-neutral-200"></div>
+
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary/70">
+                Grand Total
+              </span>
+              <span className="text-sm font-bold text-primary">
+                ₹{' '}
+                {totalAmtWithGst.toLocaleString('en-IN', {
+                  minimumFractionDigits: 2,
+                })}
+              </span>
             </div>
           </div>
+
+          <div className="flex items-center gap-3">
+            <Button size="sm" onClick={onCancel} variant="outline">
+              {translations('form.ctas.cancel')}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => handleSubmit(order)}
+              disabled={invoiceMutation.isPending}
+            >
+              {invoiceMutation.isPending ? (
+                <Loading />
+              ) : (
+                translations('form.ctas.create')
+              )}
+            </Button>
+          </div>
         </div>
-      </>
+      </div>
     </Wrapper>
   );
 };

@@ -7,32 +7,42 @@ export const usePODColumnsItems = () => {
   const t = useTranslations('transport.pods.podsDetails.tabs.tab1.table');
 
   return [
-    /* Sr. No */
-    {
-      id: 'sr',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Sr." />
-      ),
-      cell: ({ row }) => row.index + 1,
-    },
-
-    /* SKU ID */
-    {
-      id: 'skuId',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('header.skuId')} />
-      ),
-      cell: ({ row }) => row.original?.metaData?.productDetails?.skuId || '--',
-    },
-
-    /* Item Name */
+    /* Item Name / SKU */
     {
       id: 'itemName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('header.itemName')} />
       ),
+      cell: ({ row }) => (
+        <div className="flex flex-col gap-1">
+          <span className="font-medium">
+            {row.original?.metaData?.productDetails?.productName}
+          </span>
+          <span className="text-grey-400 text-xs">
+            {row.original?.metaData?.productDetails?.skuId}
+          </span>
+        </div>
+      ),
+    },
+
+    /* Batch Number */
+    {
+      id: 'batchNo',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('header.batch')} />
+      ),
       cell: ({ row }) =>
-        row.original?.metaData?.productDetails?.productName || '--',
+        row.original?.batchNo || row.original?.metaData?.batchNo || '--',
+    },
+
+    /* Expiry Date */
+    {
+      id: 'expiryDate',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('header.expiry')} />
+      ),
+      cell: ({ row }) =>
+        row.original?.expiryDate || row.original?.metaData?.expiryDate || '--',
     },
 
     /* Qty Received */
@@ -77,26 +87,6 @@ export const usePODColumnsItems = () => {
         const rejectQty = row.original?.rejectQuantity || 0;
         return rejectQty;
       },
-    },
-
-    /* Batch Number */
-    {
-      id: 'batchNo',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('header.batch')} />
-      ),
-      cell: ({ row }) =>
-        row.original?.batchNo || row.original?.metaData?.batchNo || '--',
-    },
-
-    /* Expiry Date */
-    {
-      id: 'expiryDate',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('header.expiry')} />
-      ),
-      cell: ({ row }) =>
-        row.original?.expiryDate || row.original?.metaData?.expiryDate || '--',
     },
   ];
 };

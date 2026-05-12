@@ -42,7 +42,7 @@
             "vendors": "Vendors",
             "customers": "Customers",
             "gst": "GST",
-            "batch": "Product Batch"
+            "batch": "Batch Master"
         }
     }
 }

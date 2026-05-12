@@ -1075,6 +1075,16 @@
                     },
                     "section2": {
                         "title": "Dimensions"
+                    },
+                    "section3": {
+                        "title": "Product Attributes",
+                        "labels": {
+                            "attributeKey": "Attribute Key",
+                            "attributeValue": "Attribute Value"
+                        },
+                        "ctas": {
+                            "add": "Add Attribute"
+                        }
                     }
                 },
                 "tradePromotions": {

@@ -502,7 +502,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
 
   return (
     <Wrapper className="relative flex h-full flex-col py-2">
-      <div className="flex items-end gap-0.5 pb-4">
+      <div className="flex items-end gap-0.5">
         <SubHeader name={name} />
       </div>
 
@@ -588,7 +588,6 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="hues">Hues</SelectItem>
                     <SelectItem value="tally">Tally</SelectItem>
                     <SelectItem value="other">Other ERP</SelectItem>
                   </SelectContent>
@@ -1205,7 +1204,7 @@ const CreatePurchaseInvoice = ({ onCancel, name, cta, isOrder }) => {
           />
 
           {/* Sticky Summary Footer */}
-          <div className="sticky bottom-0 z-20 mt-6 flex items-center justify-between border-t border-neutral-200 bg-white py-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+          <div className="sticky bottom-0 z-20 mt-6 flex items-center justify-between border-t border-neutral-200 bg-white py-4">
             <div className="flex items-center gap-8">
               {/* Gross Amount */}
               {isGstApplicable(isGstApplicableForSelectedVendor) && (
