@@ -107,8 +107,10 @@ const ViewItem = () => {
     },
     initialPageParam: 1,
     getNextPageParam: (_lastGroup, groups) => {
-      const nextPage = groups.length + 1;
-      return nextPage <= _lastGroup.data.data.totalPages ? nextPage : undefined;
+      const totalPages = _lastGroup?.data?.data?.totalPages;
+      if (!totalPages) return undefined;
+      const nextPage = (groups?.length || 0) + 1;
+      return nextPage <= totalPages ? nextPage : undefined;
     },
     enabled: activeTab === 'stocks' && !!enterpriseId,
   });
@@ -117,7 +119,9 @@ const ViewItem = () => {
     (page) => page?.data?.data?.data || [],
   );
   const lastStockPage =
-    stocksQuery.data?.pages[stocksQuery.data.pages.length - 1]?.data?.data;
+    stocksQuery.data?.pages?.length > 0
+      ? stocksQuery.data?.pages[stocksQuery.data.pages.length - 1]?.data?.data
+      : null;
 
   // Batches Query
   const batchQuery = useInfiniteQuery({
@@ -132,7 +136,7 @@ const ViewItem = () => {
     getNextPageParam: (lastPage, allPages) => {
       const data = lastPage?.data?.data;
       const totalItems = data?.totalItems || 0;
-      const nextSkip = allPages.length * 10;
+      const nextSkip = (allPages?.length || 0) * 10;
       return nextSkip < totalItems ? nextSkip : undefined;
     },
     enabled: activeTab === 'batches' && !!itemDetails?.skuId,
@@ -177,7 +181,7 @@ const ViewItem = () => {
 
   const taxComplianceData = {
     hsnCode: itemDetails?.hsnCode,
-    gstPercentage: `${itemDetails?.gstPercentage}%`,
+    gstPercentage: `${itemDetails?.gstPercentage ?? 0}%`,
   };
   const taxComplianceLabel = {
     hsnCode: translations('overview_labels.hsnCode'),

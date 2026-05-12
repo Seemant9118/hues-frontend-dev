@@ -100,7 +100,11 @@ const ItemMasterBuilder = () => {
       source.pages.flatMap((page) => page?.data?.data?.data ?? []) ?? [];
 
     const uniqueGoodsData = Array.from(
-      new Map(flattened.map((item) => [item.id, item])).values(),
+      new Map(
+        flattened
+          .filter((item) => item && item.id)
+          .map((item) => [item.id, item]),
+      ).values(),
     );
 
     setItemTypes(uniqueGoodsData || []);
@@ -124,7 +128,7 @@ const ItemMasterBuilder = () => {
       setIsFetchedDataModalOpen(true);
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error?.response?.data?.message || 'Something went wrong');
     },
   });
 
@@ -147,7 +151,7 @@ const ItemMasterBuilder = () => {
       queryClient.invalidateQueries([goodsApi.getItemTypes.endpointKey]);
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error?.response?.data?.message || 'Something went wrong');
     },
   });
 

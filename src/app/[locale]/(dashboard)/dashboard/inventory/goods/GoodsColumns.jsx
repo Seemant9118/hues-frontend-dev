@@ -145,7 +145,7 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
       ),
       cell: ({ row }) => {
         const value = row.getValue('gstPercentage');
-        return `${value} %`;
+        return `${value ?? 0} %`;
       },
     },
     {

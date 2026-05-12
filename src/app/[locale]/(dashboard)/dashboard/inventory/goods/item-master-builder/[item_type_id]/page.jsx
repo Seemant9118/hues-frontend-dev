@@ -212,9 +212,12 @@ export default function ItemTypeDetails() {
           </section>
           {/* item type info */}
           <ItemTypeHeader
-            title={itemTypeDetails?.goodsHsnMaster?.category?.categoryName}
+            title={
+              itemTypeDetails?.goodsHsnMaster?.category?.categoryName ||
+              'Loading...'
+            }
             status="Active"
-            hsn={itemTypeDetails?.goodsHsnMaster?.hsnCode}
+            hsn={itemTypeDetails?.goodsHsnMaster?.hsnCode || '-'}
             categoryPath={[
               itemTypeDetails?.goodsHsnMaster?.category?.categoryName ?? '',
               itemTypeDetails?.goodsHsnMaster?.subCategory?.subCategoryName ??

@@ -108,7 +108,7 @@ function Goods() {
       isMounted &&
       Boolean(enterpriseId) &&
       (searchTerm || '').trim().length === 0 &&
-      Boolean(hasPermission('permission:item-masters-view')),
+      Boolean(hasPermission?.('permission:item-masters-view')),
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
@@ -150,8 +150,7 @@ function Goods() {
 
     setProductGoods(uniqueGoodsData || []);
 
-    if (!source.pages?.length) return;
-
+    if (!source.pages || source.pages.length === 0) return;
     const lastPage = source.pages[source.pages.length - 1]?.data?.data;
 
     setPaginationData({
