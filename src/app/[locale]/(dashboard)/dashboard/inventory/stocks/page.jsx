@@ -18,16 +18,17 @@ import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import { getStocksItems } from '@/services/Inventories_Services/Stocks_Services/Stocks_Services';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle, PencilLine } from 'lucide-react';
+import { MinusCircle, PlusCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import { useStockContext } from '@/context/StockContext';
 import { useStocksColumns } from './stockColumns';
 
 const PAGE_LIMIT = 10;
 
 const Stocks = () => {
-  useMetaData('Hues! - Stocks', 'HUES Stocks');
+  useMetaData('Hues! - Stock', 'HUES Stock');
   const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
@@ -42,6 +43,7 @@ const Stocks = () => {
     'stocks.emptyStateComponent.subItems.subItem4',
   ];
   const { hasPermission } = usePermission();
+  const { setStockData } = useStockContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchCycle, setSearchCycle] = useState(0);
   const [stocksList, setStocksList] = useState(null);
@@ -97,6 +99,7 @@ const Stocks = () => {
 
   useEffect(() => {
     const source = stocksQuery.data;
+
     if (!source?.pages?.length) return;
 
     // Flatten all pages
@@ -108,7 +111,7 @@ const Stocks = () => {
     // (same inventory can exist in multiple buckets)
     const uniqueStocksListData = Array.from(
       new Map(
-        flattened.map((item) => [`${item.inventoryid}-${item.bucketid}`, item]),
+        flattened.map((item, index) => [`${item.productid}-${index}`, item]),
       ).values(),
     );
 
@@ -126,7 +129,9 @@ const Stocks = () => {
   const stocksColumns = useStocksColumns();
 
   const onRowClick = (row) => {
-    return router.push(`/dashboard/inventory/stocks/${row.inventoryid}`);
+    setStockData(row);
+
+    return router.push(`/dashboard/inventory/stocks/${row?.productId}`);
   };
 
   return (
@@ -139,32 +144,33 @@ const Stocks = () => {
       ) : (
         <>
           {!isAddingAdHocStockIn && !isAddingAdHocStockOut && (
-            <Wrapper className="h-screen">
+            <Wrapper>
               <SubHeader name={translations('title')}>
                 <div className="flex items-center justify-center gap-2">
                   <DebouncedInput
                     value={searchTerm}
                     delay={400}
                     onDebouncedChange={handleSearchChange}
-                    placeholder="Search Stocks"
+                    placeholder="Search Stock..."
                   />
 
                   <ActionsDropdown
-                    label={'Ad-Hoc'}
+                    label="Adjust Inventory"
+                    // variant="outline"
                     actions={[
                       {
-                        key: 'stockIn',
-                        label: 'Stock In',
-                        icon: CheckCircle,
-                        className: 'text-green-600',
+                        key: 'add-stock',
+                        label: 'Stock-In',
+                        icon: PlusCircle,
                         onClick: () => {
                           setIsAddingAdHocStockIn(true);
                         },
+                        className: 'text-primary',
                       },
                       {
-                        key: 'stockOut',
-                        label: 'Stock Out',
-                        icon: PencilLine,
+                        key: 'reduce-stock',
+                        label: 'Stock Correction',
+                        icon: MinusCircle,
                         onClick: () => {
                           setIsAddingAdHocStockOut(true);
                         },
@@ -371,7 +377,7 @@ const Stocks = () => {
           {isAddingAdHocStockIn && !isAddingAdHocStockOut && (
             <AdHocStock
               isStockIn={true}
-              name={'AdHoc - (Stock In)'}
+              name={'Stock In'}
               onClose={() => {
                 setIsAddingAdHocStockIn((prev) => !prev);
                 queryClient.invalidateQueries([
@@ -384,7 +390,7 @@ const Stocks = () => {
           {isAddingAdHocStockOut && !isAddingAdHocStockIn && (
             <AdHocStock
               isStockIn={false}
-              name={'AdHoc - (Stock Out)'}
+              name={'Stock Correction'}
               onClose={() => {
                 setIsAddingAdHocStockOut((prev) => !prev);
                 queryClient.invalidateQueries([

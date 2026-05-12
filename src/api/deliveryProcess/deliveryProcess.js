@@ -4,7 +4,7 @@ export const deliveryProcess = {
     endpointKey: 'create_dispatch_note',
   },
   getDispatchNotes: {
-    endpoint: `/dispatchnote/list/`,
+    endpoint: `/dispatchnote/list`,
     endpointKey: 'get_dispatch_notes_by_invoice',
   },
   getDispatchNote: {
@@ -50,6 +50,10 @@ export const deliveryProcess = {
   getEWBs: {
     endpoint: `/dispatchnote/eway-bills/list-by-dispatch-note`,
     endpointKey: 'get_ewbs',
+  },
+  createInwardDispatchNote: {
+    endpoint: `dispatchnote/create-internal-logistics`,
+    endpointKey: 'create_inward_dispatch_note',
   },
 
   // delivery challan
@@ -116,6 +120,10 @@ export const deliveryProcess = {
   previewGRN: {
     endpoint: `/grn/document/`,
     endpointKey: 'preview_grn',
+  },
+  adHocCreateGRN: {
+    endpoint: `/grn/create/from-invoice`,
+    endpointKey: 'adhoc_create_grn',
   },
   // getItemsToCreateDebitNote: {
   //   endpoint: `/grn/debit-notes/grn-items/`,

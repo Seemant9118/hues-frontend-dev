@@ -138,7 +138,7 @@ export function getEnterpriseDetailsForPanVerify(data) {
 }
 
 // 27. gstVerify
-export function gstVerify(data) {
+export function gstVerify({ data }) {
   return APIinstance.post(userAuth.gstVerify.endpoint, data);
 }
 

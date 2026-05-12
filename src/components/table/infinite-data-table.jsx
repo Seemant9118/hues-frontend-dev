@@ -29,6 +29,9 @@ export default function InfiniteDataTable({
   totalPages,
   currFetchedPage,
   onRowClick,
+  rowSelection,
+  onRowSelectionChange,
+  getRowId,
 }) {
   const tableContainerRef = useRef(null);
   const [sorting, setSorting] = useState([]);
@@ -46,12 +49,19 @@ export default function InfiniteDataTable({
   const table = useReactTable({
     data: data || [],
     columns,
-    state: { sorting, columnFilters },
+    state: {
+      sorting,
+      columnFilters,
+      ...(rowSelection !== undefined && { rowSelection }),
+    },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    ...(onRowSelectionChange !== undefined && { onRowSelectionChange }),
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getRowId,
+    manualPagination: true,
   });
 
   const { rows } = table.getRowModel();
@@ -69,7 +79,9 @@ export default function InfiniteDataTable({
       <div
         ref={tableContainerRef}
         id={id}
-        className="infinite-datatable-scrollable-body scrollBarStyles h-[80dvh] overflow-auto rounded-sm"
+        className={
+          'infinite-datatable-scrollable-body scrollBarStyles overflow-auto rounded-sm sm:h-[75dvh]'
+        }
       >
         <div className="inline-block min-w-full align-middle">
           <Table>
@@ -108,9 +120,13 @@ export default function InfiniteDataTable({
               {rows.length > 0 && (
                 <>
                   {/* Top spacer */}
-                  <TableRow aria-hidden className="pointer-events-none">
+                  <TableRow
+                    key="top-spacer"
+                    aria-hidden
+                    className="pointer-events-none"
+                  >
                     <TableCell
-                      colSpan={columns.length}
+                      colSpan={columns?.length || 1}
                       className="border-0 bg-transparent p-0"
                       style={{
                         height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0,
@@ -153,9 +169,13 @@ export default function InfiniteDataTable({
                   })}
 
                   {/* Bottom spacer */}
-                  <TableRow aria-hidden className="pointer-events-none">
+                  <TableRow
+                    key="bottom-spacer"
+                    aria-hidden
+                    className="pointer-events-none"
+                  >
                     <TableCell
-                      colSpan={columns.length}
+                      colSpan={columns?.length || 1}
                       className="border-0 bg-transparent p-0"
                       style={{
                         height:
@@ -169,11 +189,14 @@ export default function InfiniteDataTable({
 
               {/* Infinite scroll trigger */}
               {rows.length > 0 && hasNextPage && (
-                <TableRow>
-                  <TableCell colSpan={columns.length}>
+                <TableRow key="infinite-scroll-trigger">
+                  <TableCell
+                    colSpan={columns?.length || 1}
+                    className="border-0 p-0"
+                  >
                     <div
                       ref={loadMoreRef}
-                      className="py-4 text-center text-sm text-muted-foreground"
+                      className="flex items-center justify-center py-8 text-sm text-muted-foreground"
                     >
                       {isFetching
                         ? 'Loading more data...'

@@ -1,6 +1,6 @@
 {
     "goods": {
-        "title": "Goods",
+        "title": "Item Master",
         "emptyStateComponent": {
             "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
             "subItems": {
@@ -18,6 +18,7 @@
                 }
             }
         },
+        "bannerText": "Stock in Hand for newly added Items is Zero initially. Manually Stock-in quantity before adding them to Offers.",
         "ctas": {
             "searchPlaceholder": "Search items",
             "export": "Export",
@@ -67,6 +68,10 @@
         },
         "table": {
             "header": {
+                "prodType": "Product Type",
+                "itemType": "Item Type",
+                "category": "Category",
+                "products": "Product(s) Added",
                 "product": "Product",
                 "manufacturer": "Manufacturer",
                 "hsnCode": "HSN Code",
@@ -84,13 +89,16 @@
                     "cancel": "Cancel",
                     "infoText": "You're about to remove {name} from inventory. Sure?",
                     "successMsg": "Deleted successfully"
+                },
+                "addProduct": {
+                    "cta": "Add Product"
                 }
             }
         },
         "goodDetails": {
             "title": {
-                "items": "Goods",
-                "item_details": "Good Details"
+                "items": "Item Master",
+                "item_details": "Details"
             },
             "ctas": {
                 "edit": "Edit",
@@ -102,6 +110,12 @@
             "tabs": {
                 "tab1": {
                     "title": "Overview"
+                },
+                "tab2": {
+                    "title": "Stock Details"
+                },
+                "tab3": {
+                    "title": "Batches"
                 }
             },
             "overview_labels": {
@@ -126,11 +140,242 @@
                 "length": "Length",
                 "breadth": "Breadth",
                 "height": "Height"
+            },
+            "messages": {
+                "noBatches": "No batches found for this product",
+                "noStocks": "No stock records found for this product",
+                "quickStockIn": "Quick Stock In"
+            }
+        }
+    },
+    "stockTracker": {
+        "title": "Stock Movements",
+        "emptyStateComponent": {
+            "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
+            "subItems": {
+                "subItem1": {
+                    "value": "Bulk upload and tweak your product info with ease"
+                },
+                "subItem2": {
+                    "value": "Add fresh items for a squeaky-clean inventory"
+                },
+                "subItem3": {
+                    "value": "Digitally sign your stock to keep things secure and compliant"
+                },
+                "subItem4": {
+                    "value": "Need a paper trail? Export your signed inventory to PDF in a click"
+                }
+            }
+        },
+        "tabs": {
+            "tab1": {
+                "title": "All"
+            },
+            "tab2": {
+                "title": "Inward"
+            },
+            "tab3": {
+                "title": "Outward"
+            }
+        },
+        "table": {
+            "header": {
+                "product": "Product",
+                "manufacturer": "Manufacturer",
+                "hsnCode": "HSN Code",
+                "rate": "Rate",
+                "costPrice": "Cost Price",
+                "salesPrice": "Sales Price",
+                "mrp": "MRP",
+                "gst": "GST (%)",
+                "addedOn": "Added On"
+            },
+            "columnActions": {
+                "edit": "Edit",
+                "delete": {
+                    "cta": "Delete",
+                    "cancel": "Cancel",
+                    "infoText": "You're about to remove {name} from inventory. Sure?",
+                    "successMsg": "Deleted successfully"
+                }
+            }
+        },
+        "stockDetails": {
+            "title1": "Stock Movements",
+            "title2": "Stock Movement Details",
+            "overview": {
+                "labels": {
+                    "transactionId": "Transaction ID",
+                    "docType": "Doc Type",
+                    "docId": "Doc ID",
+                    "invoiceId": "Invoice ID",
+                    "clientName": "Client Name",
+                    "vendorName": "Vendor Name"
+                }
+            },
+            "tabs": {
+                "tab1": {
+                    "title": "Overview"
+                }
+            }
+        }
+    },
+    "stocks": {
+        "title": "Stock in Hand",
+        "emptyStateComponent": {
+            "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
+            "subItems": {
+                "subItem1": {
+                    "value": "Bulk upload and tweak your product info with ease"
+                },
+                "subItem2": {
+                    "value": "Add fresh items for a squeaky-clean inventory"
+                },
+                "subItem3": {
+                    "value": "Digitally sign your stock to keep things secure and compliant"
+                },
+                "subItem4": {
+                    "value": "Need a paper trail? Export your signed inventory to PDF in a click"
+                }
+            }
+        },
+        "tabs": {
+            "tab1": {
+                "title": "All"
+            },
+            "tab2": {
+                "title": "Raw Materials"
+            },
+            "tab3": {
+                "title": "Intermediates Goods"
+            },
+            "tab4": {
+                "title": "Finished Goods"
+            },
+            "tab5": {
+                "title": "QC"
+            },
+            "tab6": {
+                "title": "Rejected Goods"
+            }
+        },
+        "table": {
+            "header": {
+                "product": "Product",
+                "manufacturer": "Manufacturer",
+                "hsnCode": "HSN Code",
+                "rate": "Rate",
+                "costPrice": "Cost Price",
+                "salesPrice": "Sales Price",
+                "mrp": "MRP",
+                "gst": "GST (%)",
+                "addedOn": "Added On"
+            },
+            "columnActions": {
+                "edit": "Edit",
+                "delete": {
+                    "cta": "Delete",
+                    "cancel": "Cancel",
+                    "infoText": "You're about to remove {name} from inventory. Sure?",
+                    "successMsg": "Deleted successfully"
+                }
+            }
+        },
+        "stockDetails": {
+            "title1": "Stock in Hand",
+            "title2": "Stock Details",
+            "overview": {
+                "labels": {
+                    "stockId": "Stock ID",
+                    "docType": "Doc Type",
+                    "grnId": "GRN ID",
+                    "invoiceId": "Invoice ID",
+                    "clientName": "Client Name",
+                    "vendorName": "Vendor Name"
+                }
+            },
+            "tabs": {
+                "tab1": {
+                    "title": "Ledger"
+                }
+            }
+        }
+    },
+    "qc": {
+        "title": "Quality Control",
+        "emptyStateComponent": {
+            "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
+            "subItems": {
+                "subItem1": {
+                    "value": "Bulk upload and tweak your product info with ease"
+                },
+                "subItem2": {
+                    "value": "Add fresh items for a squeaky-clean inventory"
+                },
+                "subItem3": {
+                    "value": "Digitally sign your stock to keep things secure and compliant"
+                },
+                "subItem4": {
+                    "value": "Need a paper trail? Export your signed inventory to PDF in a click"
+                }
+            }
+        },
+        "table": {
+            "header": {
+                "product": "Product",
+                "manufacturer": "Manufacturer",
+                "hsnCode": "HSN Code",
+                "rate": "Rate",
+                "costPrice": "Cost Price",
+                "salesPrice": "Sales Price",
+                "mrp": "MRP",
+                "gst": "GST (%)",
+                "addedOn": "Added On"
+            },
+            "columnActions": {
+                "edit": "Edit",
+                "delete": {
+                    "cta": "Delete",
+                    "cancel": "Cancel",
+                    "infoText": "You're about to remove {name} from inventory. Sure?",
+                    "successMsg": "Deleted successfully"
+                }
+            }
+        },
+        "tabs": {
+            "tab1": {
+                "label": "All"
+            },
+            "tab2": {
+                "label": "QC Ongoing"
+            },
+            "tab3": {
+                "label": "QC Okay"
+            },
+            "tab4": {
+                "label": "QC Pending"
+            }
+        },
+        "qcDetails": {
+            "title1": "Quality Control",
+            "title2": "Quality Control Item",
+            "overview": {
+                "labels": {
+                    "grnId": "GRN ID",
+                    "invoiceId": "Invoice ID",
+                    "vendorName": "Vendor Name",
+                    "status": "Staus"
+                }
+            },
+            "tabs": {
+                "tab1": {
+                    "title": "Overview"
+                }
             }
         }
     },
     "services": {
-        "title": "Services",
+        "title": "Service Master",
         "emptyStateComponent": {
             "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
             "subItems": {
@@ -188,6 +433,7 @@
             "header": {
                 "serviceName": "Service Name",
                 "sac": "SAC",
+                "serviceCode": "Service Code",
                 "description": "Description",
                 "rate": "Rate",
                 "salesPrice": "Sales Price",
@@ -208,8 +454,9 @@
         },
         "serviceDetails": {
             "title": {
-                "items": "Service",
-                "item_details": "Service Details"
+                "items": "Item Master",
+                "item_details": "Details",
+                "edit_item": "Edit Service"
             },
             "ctas": {
                 "edit": "Edit",
@@ -247,35 +494,37 @@
             }
         }
     },
-    "qc": {
-        "title": "Quality Checks",
+    "batch": {
+        "title": "Batch Master",
         "emptyStateComponent": {
-            "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
+            "heading": "Efficiently manage product batches with secure, editable, and trackable batch listings for accurate inventory control.",
             "subItems": {
                 "subItem1": {
-                    "value": "Bulk upload and tweak your product info with ease"
+                    "value": "Create and manage batches for your SKUs with ease"
                 },
                 "subItem2": {
-                    "value": "Add fresh items for a squeaky-clean inventory"
+                    "value": "Track manufacturing and expiry dates for compliance"
                 },
                 "subItem3": {
-                    "value": "Digitally sign your stock to keep things secure and compliant"
+                    "value": "Toggle batch status to control availability"
                 },
                 "subItem4": {
-                    "value": "Need a paper trail? Export your signed inventory to PDF in a click"
+                    "value": "Search and filter batches by SKU or Batch Number"
                 }
             }
         },
+        "ctas": {
+            "searchPlaceholder": "Search by SKU or Batch No",
+            "add": "Add Batch",
+            "export": "Export"
+        },
         "table": {
             "header": {
-                "product": "Product",
-                "manufacturer": "Manufacturer",
-                "hsnCode": "HSN Code",
-                "rate": "Rate",
-                "costPrice": "Cost Price",
-                "salesPrice": "Sales Price",
-                "mrp": "MRP",
-                "gst": "GST (%)",
+                "skuId": "SKU ID",
+                "batchNo": "Batch Number",
+                "manufactureDate": "Mfg Date",
+                "expiryDate": "Expiry Date",
+                "status": "Status",
                 "addedOn": "Added On"
             },
             "columnActions": {
@@ -283,193 +532,29 @@
                 "delete": {
                     "cta": "Delete",
                     "cancel": "Cancel",
-                    "infoText": "You're about to remove {name} from inventory. Sure?",
-                    "successMsg": "Deleted successfully"
+                    "infoText": "You're about to remove batch {name}. Sure?",
+                    "successMsg": "Batch deleted successfully"
                 }
             }
         },
-        "tabs": {
-            "tab1": {
-                "label":"All"
+        "addBatch": {
+            "title1": "Add Batch",
+            "title2": "Edit Batch",
+            "label": {
+                "skuId": "SKU ID",
+                "batchNo": "Batch Number",
+                "manufactureDate": "Manufacturing Date",
+                "expiryDate": "Expiry Date",
+                "isActive": "Is Active"
             },
-            "tab2": {
-                "label":"QC Ongoing"
+            "ctas": {
+                "cancel": "Cancel",
+                "create": "Create Batch",
+                "update": "Update Batch"
             },
-            "tab3": {
-                "label":"QC Okay"
-            },
-            "tab4": {
-                "label":"QC Pending"
-            }
-        },
-        "qcDetails": {
-            "title1": "Quality Checks",
-            "title2": "Quality Check Item",
-            "overview": {
-                "labels": {
-                    "grnId": "GRN ID",
-                    "invoiceId": "Invoice ID",
-                    "vendorName": "Vendor Name",
-                    "status": "Staus"
-                }
-            },
-            "tabs": {
-                "tab1": {
-                    "title": "Overview"
-                }
-            }
-        }
-    },
-    "transactions": {
-        "title": "Transactions",
-        "emptyStateComponent": {
-            "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
-            "subItems": {
-                "subItem1": {
-                    "value": "Bulk upload and tweak your product info with ease"
-                },
-                "subItem2": {
-                    "value": "Add fresh items for a squeaky-clean inventory"
-                },
-                "subItem3": {
-                    "value": "Digitally sign your stock to keep things secure and compliant"
-                },
-                "subItem4": {
-                    "value": "Need a paper trail? Export your signed inventory to PDF in a click"
-                }
-            }
-        },
-        "tabs": {
-            "tab1": {
-                "title": "All"
-            },
-            "tab2": {
-                "title": "Inward"
-            },
-            "tab3": {
-                "title": "Outward"
-            }
-        },
-        "table": {
-            "header": {
-                "product": "Product",
-                "manufacturer": "Manufacturer",
-                "hsnCode": "HSN Code",
-                "rate": "Rate",
-                "costPrice": "Cost Price",
-                "salesPrice": "Sales Price",
-                "mrp": "MRP",
-                "gst": "GST (%)",
-                "addedOn": "Added On"
-            },
-            "columnActions": {
-                "edit": "Edit",
-                "delete": {
-                    "cta": "Delete",
-                    "cancel": "Cancel",
-                    "infoText": "You're about to remove {name} from inventory. Sure?",
-                    "successMsg": "Deleted successfully"
-                }
-            }
-        },
-        "transactionDetails": {
-            "title1": "Transactions",
-            "title2": "Transaction Details",
-            "overview": {
-                "labels": {
-                    "transactionId": "Transaction ID",
-                    "docType": "Doc Type",
-                    "docId": "Doc ID",
-                    "invoiceId": "Invoice ID",
-                    "clientName": "Client Name",
-                    "vendorName": "Vendor Name"
-                }
-            },
-            "tabs": {
-                "tab1": {
-                    "title": "Overview"
-                }
-            }
-        }
-    },
-    "stocks": {
-        "title": "Stocks",
-        "emptyStateComponent": {
-            "heading": "Revolutionize stock management with secure, editable, and shareable product listings for perfect cataloging.",
-            "subItems": {
-                "subItem1": {
-                    "value": "Bulk upload and tweak your product info with ease"
-                },
-                "subItem2": {
-                    "value": "Add fresh items for a squeaky-clean inventory"
-                },
-                "subItem3": {
-                    "value": "Digitally sign your stock to keep things secure and compliant"
-                },
-                "subItem4": {
-                    "value": "Need a paper trail? Export your signed inventory to PDF in a click"
-                }
-            }
-        },
-        "tabs": {
-            "tab1": {
-                "title": "All"
-            },
-            "tab2": {
-                "title": "Raw Materials"
-            },
-            "tab3": {
-                "title": "Intermediates Goods"
-            },
-            "tab4": {
-                "title": "Finished Goods"
-            },
-            "tab5": {
-                "title": "QC"
-            },
-            "tab6":{
-                "title": "Rejected Goods"
-            }
-        },
-        "table": {
-            "header": {
-                "product": "Product",
-                "manufacturer": "Manufacturer",
-                "hsnCode": "HSN Code",
-                "rate": "Rate",
-                "costPrice": "Cost Price",
-                "salesPrice": "Sales Price",
-                "mrp": "MRP",
-                "gst": "GST (%)",
-                "addedOn": "Added On"
-            },
-            "columnActions": {
-                "edit": "Edit",
-                "delete": {
-                    "cta": "Delete",
-                    "cancel": "Cancel",
-                    "infoText": "You're about to remove {name} from inventory. Sure?",
-                    "successMsg": "Deleted successfully"
-                }
-            }
-        },
-        "stockDetails": {
-            "title1": "Stocks",
-            "title2": "Stock Details",
-            "overview": {
-                "labels": {
-                    "stockId": "Stock ID",
-                    "docType": "Doc Type",
-                    "grnId": "GRN ID",
-                    "invoiceId": "Invoice ID",
-                    "clientName": "Client Name",
-                    "vendorName": "Vendor Name"
-                }
-            },
-            "tabs": {
-                "tab1": {
-                    "title": "Ledger"
-                }
+            "messages": {
+                "createSuccess": "Batch created successfully",
+                "updateSuccess": "Batch updated successfully"
             }
         }
     }

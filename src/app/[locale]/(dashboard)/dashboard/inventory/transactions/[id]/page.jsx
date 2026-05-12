@@ -20,8 +20,8 @@ import React, { useState } from 'react';
 import { useTransactionItemsColumns } from './transactionItemColumns';
 
 const ViewTransaction = () => {
-  useMetaData('Hues! - Transaction Details', 'HUES Transactions Details');
-  const translations = useTranslations('transactions.transactionDetails');
+  useMetaData('Hues! - Stock Details', 'HUES Stock Details');
+  const translations = useTranslations('stockTracker.stockDetails');
   const router = useRouter();
   const params = useParams();
   const [tab, setTab] = useState('overview');

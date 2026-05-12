@@ -3,6 +3,7 @@
 import { dashboardApis } from '@/api/dashboard/dashboardApi';
 import { invitation } from '@/api/invitation/Invitation';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import InfoBanner from '@/components/auth/InfoBanner';
 import { AnalyticsCard } from '@/components/dashboard/AnalyticsCard';
 import PendingInvitesModal from '@/components/Modals/PendingInvitesModal';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -20,6 +21,7 @@ import { getReceivedInvitation } from '@/services/Invitation_Service/Invitation_
 import { useQuery } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 const summaryMapper = (summary) => ({
@@ -55,13 +57,14 @@ export default function Home() {
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
+  const router = useRouter();
   const { hasPermission } = usePermission();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [salestab, setSalesTab] = useState('totalAmount');
   const [purchaseTab, setPurchaseTab] = useState('totalAmount');
-  const [salesDataGranularity, setSalesDataGranularity] = useState('DAILY');
+  const [salesDataGranularity, setSalesDataGranularity] = useState('MONTHLY');
   const [purchaseDataGranularity, setPurchaseDataGranularity] =
-    useState('DAILY');
+    useState('MONTHLY');
   const fromDate = new Date('2025/04/01');
   const toDate = new Date();
   const [salesDateRange, setSalesDateRange] = useState([fromDate, toDate]);
@@ -206,9 +209,39 @@ export default function Home() {
 
   return (
     <ProtectedWrapper permissionCode="permission:view-dashboard">
-      <div className="flex h-full flex-col gap-5">
+      <div className="flex h-full flex-col gap-3">
         <SubHeader name={translations('title')}></SubHeader>
 
+        {/* Banner */}
+        <InfoBanner
+          showSupportLink={false}
+          text={
+            <>
+              Build your{' '}
+              <span
+                className="cursor-pointer font-semibold underline-offset-2 hover:underline"
+                onClick={() => router.push('/dashboard/inventory/goods')}
+              >
+                Inventory
+              </span>
+              , add your{' '}
+              <span
+                className="cursor-pointer font-semibold underline-offset-2 hover:underline"
+                onClick={() => router.push('/dashboard/clients')}
+              >
+                Clients
+              </span>
+              , and start your{' '}
+              <span
+                className="cursor-pointer font-semibold underline-offset-2 hover:underline"
+                onClick={() => router.push('/dashboard/sales/sales-orders')}
+              >
+                Sales
+              </span>
+              —three quick steps to get Hues working for you.
+            </>
+          }
+        />
         {/* Invitation modal */}
         {enterpriseId &&
           isEnterpriseOnboardingComplete &&
@@ -262,7 +295,7 @@ export default function Home() {
                 subItems={keys}
               />
             ) : (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <AnalyticsCard
                   title={translations('analytics.sales')}
                   tab={salestab}

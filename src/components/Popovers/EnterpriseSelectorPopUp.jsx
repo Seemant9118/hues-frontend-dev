@@ -16,12 +16,13 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import Tooltips from '../auth/Tooltips';
 import Loading from '../ui/Loading';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import SearchInput from '../ui/SearchInput';
 
 const DEBOUNCE_DELAY = 500;
 
-export default function EnterpriseSelectorPopUp() {
+export default function EnterpriseSelectorPopUp({ collapsed = false }) {
   const [open, setOpen] = useState(false);
   const switchedEnterpriseName = LocalStorageService.get(
     'switchedEnterpriseName',
@@ -138,20 +139,27 @@ export default function EnterpriseSelectorPopUp() {
   }, [searchTerm]);
 
   return (
-    <div className="flex w-full items-center justify-between">
+    <div
+      className={cn(
+        'flex w-full items-center justify-between',
+        collapsed && 'justify-center',
+      )}
+    >
       {/* Selected label (non-clickable) */}
-      <span
-        variant="ghost"
-        className={cn(
-          'flex flex-1 items-center justify-start gap-2.5 rounded-sm border-none p-3 font-normal text-[#363940]',
-          selected && 'text-primary',
-        )}
-      >
-        <Box size={16} />
-        <span className="max-w-[140px] truncate text-sm">
-          {capitalize(selected) || 'View as Enterprise'}
+      {!collapsed && (
+        <span
+          variant="ghost"
+          className={cn(
+            'flex flex-1 items-center justify-start gap-2.5 rounded-sm border-none p-3 font-normal text-[#363940]',
+            selected && 'text-primary',
+          )}
+        >
+          <Box size={16} />
+          <span className="max-w-[140px] truncate text-sm">
+            {capitalize(selected) || 'View as Enterprise'}
+          </span>
         </span>
-      </span>
+      )}
 
       {/* Arrow icon triggers the popover */}
       <Popover open={open} onOpenChange={setOpen}>
@@ -170,31 +178,35 @@ export default function EnterpriseSelectorPopUp() {
             content="Revert back to admin view"
           />
         ) : (
-          <Tooltips
-            trigger={
+          <Tooltip>
+            <TooltipTrigger asChild>
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={
-                    open
-                      ? 'h-6 w-6 p-0 text-primary'
-                      : 'h-6 w-6 p-0 text-gray-600 hover:text-primary'
-                  }
+                  aria-label="Search enterprise"
+                  className={cn(
+                    'h-6 w-6 p-0 text-gray-600 hover:text-primary',
+                    open && 'text-primary',
+                    collapsed && 'h-8 w-8',
+                  )}
                   debounceTime={0}
                 >
                   <ArrowRight size={16} />
                 </Button>
               </PopoverTrigger>
-            }
-            content="Search and select an enterprise to view as"
-          />
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Search and select an enterprise to view as
+            </TooltipContent>
+          </Tooltip>
         )}
 
         {/* Let Radix handle positioning */}
         <PopoverContent
           side="right"
           align="start"
+          sideOffset={12}
           className="flex max-h-[300px] w-[350px] flex-col gap-5 border bg-gray-100 p-3 shadow-md"
         >
           <SearchInput

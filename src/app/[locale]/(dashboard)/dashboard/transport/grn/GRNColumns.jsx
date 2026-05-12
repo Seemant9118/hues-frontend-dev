@@ -54,7 +54,7 @@ export const useGrnColumns = () => {
         const sellerName = row.original?.metaData?.sellerDetails?.name;
 
         // if iamBuyer then show my vendorName (seller)
-        return iamBuyer ? sellerName : buyerName;
+        return iamBuyer ? sellerName || 'Self' : buyerName || 'Self';
       },
     },
 

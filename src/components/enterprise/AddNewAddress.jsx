@@ -21,6 +21,7 @@ import Loading from '../ui/Loading';
 import { Checkbox } from '../ui/checkbox';
 
 export default function AddNewAddress({
+  clientId,
   isLegAddressAdding = false,
   isAddressAdding,
   setIsAddressAdding,
@@ -32,6 +33,7 @@ export default function AddNewAddress({
   setEditingAddress,
   editingAddressId,
   setEditingAddressId,
+  dataToAddNewPOB,
 }) {
   const queryClient = useQueryClient();
   const [errorMsg, setErrorMsg] = useState('');
@@ -323,6 +325,7 @@ export default function AddNewAddress({
 
               const payload = {
                 ...address,
+                ...(clientId && { clientId }),
                 ...(isEditing &&
                   editingAddressId && {
                     addressId: editingAddressId,
@@ -330,10 +333,11 @@ export default function AddNewAddress({
                 ...(isLegAddressAdding && {
                   addressType: 'LEG_ADDRESS',
                 }),
+                ...(dataToAddNewPOB || {}),
               };
 
               const mutationPayload = enterpriseId
-                ? { id: enterpriseId, data: payload }
+                ? { data: payload }
                 : { data: payload };
 
               addAddressMutation.mutate(mutationPayload);

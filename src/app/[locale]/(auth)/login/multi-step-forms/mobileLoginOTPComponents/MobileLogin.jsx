@@ -112,7 +112,7 @@ const MobileLogin = ({
   };
 
   return (
-    <div className="flex w-full max-w-md flex-col items-center justify-start gap-8 sm:gap-10">
+    <div className="flex w-full max-w-md flex-col items-center justify-start gap-4 sm:gap-6">
       {/* Title and Subtitle */}
       <div className="flex w-full flex-col gap-4">
         <h1 className="text-center text-2xl font-bold text-[#121212]">

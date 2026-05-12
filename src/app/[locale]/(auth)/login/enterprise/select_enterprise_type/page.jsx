@@ -1,7 +1,7 @@
 'use client';
 
 import { validateEnterpriseType } from '@/appUtils/ValidationUtils';
-import ExplantoryText from '@/components/auth/ExplantoryText';
+import InfoBanner from '@/components/auth/InfoBanner';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
 import RadioSelect from '@/components/ui/RadioSelect';
@@ -94,8 +94,11 @@ const SelectEnterprisePage = () => {
         </div>
 
         <div className="flex w-full flex-col gap-2">
-          {/* Explanatory Information */}
-          <ExplantoryText text={translations('information')} />
+          {/* banner */}
+          <InfoBanner
+            text={translations('information')}
+            showSupportLink={false}
+          />
           <Button size="sm" type="submit" className="w-full bg-[#288AF9]">
             {translations('buttons.proceed')}
           </Button>

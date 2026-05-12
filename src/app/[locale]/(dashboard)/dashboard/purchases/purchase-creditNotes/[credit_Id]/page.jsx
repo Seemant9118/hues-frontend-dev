@@ -7,6 +7,7 @@ import {
 } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
+import AccessDenied from '@/components/shared/AccessDenied';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { MergerDataTable } from '@/components/table/merger-data-table';
@@ -67,11 +68,15 @@ const ViewCreditNote = () => {
   };
 
   // get creditNote
-  const { data: creditNoteDetails } = useQuery({
+  const { data: creditNoteDetails, error } = useQuery({
     queryKey: [CreditNoteApi.getCreditNote.endpointKey, creditNoteId],
     queryFn: () => getCreditNote({ id: creditNoteId }),
     select: (creditNote) => creditNote.data.data,
     enabled: hasPermission('permission:sales-view'),
+    retry: (failureCount, error) => {
+      if (error?.response?.status === 403) return false;
+      return failureCount < 3;
+    },
   });
 
   // overviw component data
@@ -313,63 +318,67 @@ const ViewCreditNote = () => {
 
   return (
     <ProtectedWrapper permissionCode="permission:sales-view">
-      <Wrapper className="h-full py-2">
-        {/* Header */}
-        <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
-          {/* breadcrumbs */}
-          <OrderBreadCrumbs possiblePagesBreadcrumbs={debitNoteBreadCrumbs} />
+      {error?.response?.status === 403 ? (
+        <AccessDenied />
+      ) : (
+        <Wrapper className="h-full py-2">
+          {/* Header */}
+          <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
+            {/* breadcrumbs */}
+            <OrderBreadCrumbs possiblePagesBreadcrumbs={debitNoteBreadCrumbs} />
 
-          {/* preview */}
-          <Tooltips
-            trigger={
-              <Button
-                onClick={handlePreview}
-                size="sm"
-                variant="outline"
-                className="font-bold"
-              >
-                <Eye size={14} />
-              </Button>
-            }
-            content={translations('preview.tootips-content')}
-          />
-        </section>
-
-        <Tabs
-          value={tabs}
-          onValueChange={onTabChange}
-          defaultValue={'overview'}
-        >
-          <section className="flex items-center justify-between gap-2">
-            <TabsList className="border">
-              <TabsTrigger value="overview">
-                {translations('tabs.tab1.title')}
-              </TabsTrigger>
-            </TabsList>
+            {/* preview */}
+            <Tooltips
+              trigger={
+                <Button
+                  onClick={handlePreview}
+                  size="sm"
+                  variant="outline"
+                  className="font-bold"
+                >
+                  <Eye size={14} />
+                </Button>
+              }
+              content={translations('preview.tootips-content')}
+            />
           </section>
 
-          <TabsContent value="overview">
-            <div className="flex flex-col gap-4">
-              {/* OVERVIEW SECTION */}
-              <Overview
-                collapsible={false}
-                data={overviewData}
-                labelMap={overviewLabels}
-                customRender={customRender}
-              />
+          <Tabs
+            value={tabs}
+            onValueChange={onTabChange}
+            defaultValue={'overview'}
+          >
+            <section className="flex items-center justify-between gap-2">
+              <TabsList className="border">
+                <TabsTrigger value="overview">
+                  {translations('tabs.tab1.title')}
+                </TabsTrigger>
+              </TabsList>
+            </section>
 
-              {/* comment */}
-              <CommentBox contextId={creditNoteId} context={'CREDIT_NOTE'} />
+            <TabsContent value="overview">
+              <div className="flex flex-col gap-4">
+                {/* OVERVIEW SECTION */}
+                <Overview
+                  collapsible={false}
+                  data={overviewData}
+                  labelMap={overviewLabels}
+                  customRender={customRender}
+                />
 
-              <MergerDataTable
-                id="buyer-seller-table"
-                columns={creditNoteItemsColumns}
-                data={mergedRows}
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
-      </Wrapper>
+                {/* comment */}
+                <CommentBox contextId={creditNoteId} context={'CREDIT_NOTE'} />
+
+                <MergerDataTable
+                  id="buyer-seller-table"
+                  columns={creditNoteItemsColumns}
+                  data={mergedRows}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </Wrapper>
+      )}
     </ProtectedWrapper>
   );
 };

@@ -27,6 +27,7 @@ export const getStocksItems = ({
   limit,
   filter,
   searchString,
+  productId,
 }) => {
   const endpoint = stockApis.getStocksItems.endpoint.replace(
     ':enterpriseId',
@@ -38,6 +39,7 @@ export const getStocksItems = ({
     limit,
     ...(filter ? { bucketName: filter } : {}),
     ...(searchString !== undefined && { searchString }),
+    ...(productId && { productId }),
   };
 
   return APIinstance.get(endpoint, { params });
@@ -45,20 +47,25 @@ export const getStocksItems = ({
 
 export const getStockDetails = ({
   enterpriseId,
-  inventoryItemId,
+  productId,
+  inventoryItemIds,
   page,
   limit,
 }) => {
   const endpoint = stockApis.getStockDetails.endpoint
     .replace(':enterpriseId', enterpriseId)
-    .replace(':inventoryItemId', inventoryItemId);
+    .replace(':productId', productId);
+
+  const payload = {
+    inventoryItemIds: inventoryItemIds || [],
+  };
 
   const params = {
     ...(page && { page }),
     ...(limit && { limit }),
   };
 
-  return APIinstance.get(endpoint, { params });
+  return APIinstance.post(endpoint, payload, { params });
 };
 
 export const adHocStockIn = ({ enterpriseId, data }) => {

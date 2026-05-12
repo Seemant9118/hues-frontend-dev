@@ -7,15 +7,23 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin(); // withNextIntl is a Next.js plugin
 
 const nextConfig = {
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve.alias.canvas = false;
-
+    if (isServer) {
+      config.externals.push({
+        archiver: 'archiver',
+        exceljs: 'exceljs',
+      });
+    }
     return config;
   },
   images: {
     domains: [
       `hues-${process.env.NEXT_PUBLIC_NODE_ENV}.s3.ap-south-1.amazonaws.com`,
     ],
+  },
+  experimental: {
+    serverComponentsExternalPackages: ['@gorules/jdm-editor', '@gorules/zen-engine'],
   },
   output: 'standalone',
 };

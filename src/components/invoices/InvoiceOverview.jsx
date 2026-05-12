@@ -25,7 +25,10 @@ const InvoiceOverview = ({
   hasDebitNote,
   type,
   date,
+  grossAmount,
+  gstAmount,
   amount,
+  roundOffAmount,
   amountPaid = 0,
 }) => {
   const translations = useTranslations('components.invoice_overview');
@@ -33,7 +36,9 @@ const InvoiceOverview = ({
   const pathName = usePathname();
   const isSalesDetailPage = pathName.includes('/sales-invoices');
 
-  const paymentProgressPercent = (amountPaid / amount) * 100;
+  const adjustment = roundOffAmount - amount;
+
+  const paymentProgressPercent = (amountPaid / (roundOffAmount || 1)) * 100;
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -117,15 +122,46 @@ const InvoiceOverview = ({
                 className="w-1/2 bg-[#F3F3F3]"
                 value={paymentProgressPercent}
               />
-              <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amountPaid)} of ${formattedAmount(amount)}`}</p>
+              <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amountPaid)} of ${formattedAmount(roundOffAmount)}`}</p>
             </section>
           ) : (
-            <section className="flex flex-col">
-              <p className="text-sm text-gray-600">
-                {translations('label.total_amount')}
-              </p>
-              <p className="font-bold">{`${formattedAmount(amount)}`}</p>
-            </section>
+            <>
+              <section className="flex flex-col">
+                <p className="text-sm text-gray-600">
+                  {translations('label.gross_amount')}
+                </p>
+                <p className="font-bold">{`${formattedAmount(grossAmount)}`}</p>
+              </section>
+              <section className="flex flex-col">
+                <p className="text-sm text-gray-600">
+                  {translations('label.gst_amount')}
+                </p>
+                <p className="font-bold">{`${formattedAmount(gstAmount)}`}</p>
+              </section>
+              <section className="flex flex-col">
+                <p className="text-sm text-gray-600">
+                  {translations('label.total_amount')}
+                </p>
+                <p className="font-bold">{`${formattedAmount(amount)}`}</p>
+              </section>
+              <section className="flex flex-col">
+                <p className="text-sm text-gray-600">
+                  {translations('label.round_off')}
+                </p>
+                <p
+                  className={`font-bold ${adjustment > 0 ? 'text-green-600' : adjustment < 0 ? 'text-red-600' : ''}`}
+                >
+                  {adjustment > 0 ? '+' : ''}
+                  {formattedAmount(adjustment)}
+                </p>
+              </section>
+              <section className="flex flex-col">
+                <p className="text-sm text-gray-600">
+                  {translations('label.round_off_amount')}
+                </p>
+                <p className="font-bold text-primary">{`${formattedAmount(roundOffAmount)}`}</p>
+              </section>
+            </>
           )}
 
           <section className="flex flex-col">
@@ -190,7 +226,7 @@ const InvoiceOverview = ({
                     <p className="text-sm text-gray-600">
                       {translations('label.total_amount')}
                     </p>
-                    <p className="font-bold">{`${formattedAmount(amount)}`}</p>
+                    <p className="font-bold">{`${formattedAmount(roundOffAmount)}`}</p>
                   </section>
                 )}
               </section>
@@ -268,15 +304,46 @@ const InvoiceOverview = ({
                     className="w-1/2 bg-[#F3F3F3]"
                     value={paymentProgressPercent}
                   />
-                  <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amountPaid)} of ${formattedAmount(amount)}`}</p>
+                  <p className="text-xs font-bold text-[#A5ABBD]">{`${formattedAmount(amountPaid)} of ${formattedAmount(roundOffAmount)}`}</p>
                 </section>
               ) : (
-                <section className="flex flex-col gap-3">
-                  <p className="text-sm text-gray-600">
-                    {translations('label.total_amount')}
-                  </p>
-                  <p className="font-bold">{`${formattedAmount(amount)}`}</p>
-                </section>
+                <>
+                  <section className="flex flex-col gap-3">
+                    <p className="text-sm text-gray-600">
+                      {translations('label.gross_amount')}
+                    </p>
+                    <p className="font-bold">{`${formattedAmount(grossAmount)}`}</p>
+                  </section>
+                  <section className="flex flex-col gap-3">
+                    <p className="text-sm text-gray-600">
+                      {translations('label.gst_amount')}
+                    </p>
+                    <p className="font-bold">{`${formattedAmount(gstAmount)}`}</p>
+                  </section>
+                  <section className="flex flex-col gap-3">
+                    <p className="text-sm text-gray-600">
+                      {translations('label.total_amount')}
+                    </p>
+                    <p className="font-bold">{`${formattedAmount(amount)}`}</p>
+                  </section>
+                  <section className="flex flex-col gap-3">
+                    <p className="text-sm text-gray-600">
+                      {translations('label.round_off')}
+                    </p>
+                    <p
+                      className={`font-bold ${adjustment > 0 ? 'text-green-600' : adjustment < 0 ? 'text-red-600' : ''}`}
+                    >
+                      {adjustment > 0 ? '+' : ''}
+                      {formattedAmount(adjustment)}
+                    </p>
+                  </section>
+                  <section className="flex flex-col gap-3">
+                    <p className="text-sm text-gray-600">
+                      {translations('label.round_off_amount')}
+                    </p>
+                    <p className="font-bold text-primary">{`${formattedAmount(roundOffAmount)}`}</p>
+                  </section>
+                </>
               )}
 
               <section className="flex flex-col">

@@ -24,19 +24,19 @@ import { useTrasnsactionsColumns } from './transactionColumns';
 const PAGE_LIMIT = 10;
 
 const Transactions = () => {
-  useMetaData('Hues! - Transactions', 'HUES Transactions');
+  useMetaData('Hues! - Stock Tracker', 'HUES Stock Tracker');
 
   const enterpriseId = getEnterpriseId();
   const isEnterpriseOnboardingComplete = LocalStorageService.get(
     'isEnterpriseOnboardingComplete',
   );
 
-  const translations = useTranslations('transactions');
+  const translations = useTranslations('stockTracker');
   const keys = [
-    'transactions.emptyStateComponent.subItems.subItem1',
-    'transactions.emptyStateComponent.subItems.subItem2',
-    'transactions.emptyStateComponent.subItems.subItem3',
-    'transactions.emptyStateComponent.subItems.subItem4',
+    'stockTracker.emptyStateComponent.subItems.subItem1',
+    'stockTracker.emptyStateComponent.subItems.subItem2',
+    'stockTracker.emptyStateComponent.subItems.subItem3',
+    'stockTracker.emptyStateComponent.subItems.subItem4',
   ];
   const { hasPermission } = usePermission();
   const router = useRouter();
@@ -135,7 +135,7 @@ const Transactions = () => {
                 value={searchTerm}
                 delay={400}
                 onDebouncedChange={handleSearchChange}
-                placeholder="Search Transactions"
+                placeholder="Search Stocks..."
               />
             </div>
           </SubHeader>

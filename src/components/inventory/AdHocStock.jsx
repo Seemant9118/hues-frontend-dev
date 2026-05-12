@@ -1,21 +1,32 @@
 'use client';
 
 import { goodsApi } from '@/api/inventories/goods/goods';
+import { qcApis } from '@/api/inventories/qc/qc';
 import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import {
   getEnterpriseId,
   getStylesForSelectComponent,
 } from '@/appUtils/helperFunctions';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { GetAllProductGoods } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
-import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
-import ReactSelect from 'react-select';
+import { getBuckets } from '@/services/Inventories_Services/QC_Services/QC_Services';
 import {
   adHocStockIn,
   adHocStockOut,
 } from '@/services/Inventories_Services/Stocks_Services/Stocks_Services';
+import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
+import { GetProductBatchList } from '@/services/Inventories_Services/Goods_Inventories/ProductBatch_Services';
+import moment from 'moment';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import ReactSelect from 'react-select';
 import { toast } from 'sonner';
 import { DataTable } from '../table/data-table';
 import { Button } from '../ui/button';
@@ -31,28 +42,48 @@ import { AddHocItemsColumns } from './AdHocItemsColumns';
 const AdHocStock = ({ isStockIn, name, onClose }) => {
   const enterpriseId = getEnterpriseId();
   const [isAdding, setIsAdding] = useState(false);
+
   const [selectedItem, setSelectedItem] = useState({
     productId: null,
+    productType: 'GOODS',
+    productName: '',
+    skuId: '',
+    hsnCode: '',
+    targetBucketId: '', // NEW
     quantity: '',
+    unitId: null,
     unitPrice: '',
     gstPerUnit: '',
     gstPerUnitAmount: 0,
     amount: 0, // qty * unitPrice
     totalGstAmount: 0, // qty * gstAmountPerUnit
     totalAmount: 0, // amount + totalGstAmount
+    isQcOkay: true,
+    batch: null,
+    batches: [],
+    expiryDate: '',
   });
+
   const [formData, setFormData] = useState({
-    adjustmentReason: '',
+    adjustmentReason: !isStockIn ? 'MANUAL_CORRECTION' : '',
     items: [],
   });
-  const [errors, setErrors] = useState({});
 
-  const reasonOptions = [
-    { label: 'Damage', value: 'DAMAGE' },
-    { label: 'Count Difference', value: 'COUNT_DIFFERENCE' },
-    { label: 'Expiry', value: 'EXPIRY' },
-    { label: 'Manual Correction', value: 'MANUAL_CORRECTION' },
-  ];
+  const [errors, setErrors] = useState({});
+  const [productBatchesMap, setProductBatchesMap] = useState({});
+
+  const reasonOptions = isStockIn
+    ? [
+        { label: 'Manual Correction', value: 'MANUAL_CORRECTION' },
+        { label: 'Initial Setup', value: 'INITIAL_SETUP' },
+      ]
+    : [
+        { label: 'Manual Correction', value: 'MANUAL_CORRECTION' },
+
+        // { label: 'Damage', value: 'DAMAGE' },
+        // { label: 'Count Difference', value: 'COUNT_DIFFERENCE' },
+        // { label: 'Expiry', value: 'EXPIRY' },
+      ];
 
   const selectedReasonOption = useMemo(() => {
     return (
@@ -61,9 +92,27 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
     );
   }, [formData.adjustmentReason]);
 
-  const isItemAlreadyAdded = (itemId) =>
-    formData.items?.some((item) => item.itemId === itemId);
+  const isItemAlreadyAdded = (itemId, batchId = null) => {
+    // 1. If specific batchId provided (checking for batch dropdown)
+    if (batchId) {
+      return formData.items?.some(
+        (item) => item.itemId === itemId && item.batch?.id === batchId,
+      );
+    }
 
+    // 2. Checking for the product itself (initial item dropdown)
+    const batchesForThisItem = productBatchesMap[itemId];
+    if (batchesForThisItem && batchesForThisItem.length > 0) {
+      const addedBatchesCount = formData.items?.filter(
+        (item) => item.itemId === itemId && item.batch,
+      ).length;
+      return addedBatchesCount >= batchesForThisItem.length;
+    }
+
+    return formData.items?.some((item) => item.itemId === itemId);
+  };
+
+  // Fetch goods list
   const { data: goods } = useQuery({
     queryKey: [goodsApi.getAllProductGoods.endpointKey],
     queryFn: () =>
@@ -71,6 +120,15 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
         id: enterpriseId,
       }),
     select: (res) => res?.data?.data?.data || [],
+    enabled: !!enterpriseId,
+  });
+
+  // Fetch buckets list
+  const { data: bucketOptions = [], isLoading: isBucketLoading } = useQuery({
+    queryKey: [qcApis.bucketOptions.endpointKey, enterpriseId],
+    queryFn: () => getBuckets({ enterpriseId }),
+    select: (res) => res?.data?.data || [],
+    enabled: !!enterpriseId,
   });
 
   const GoodsOptions = useMemo(() => {
@@ -114,11 +172,11 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
   const { data: units } = useQuery({
     queryKey: [stockInOutAPIs.getUnits.endpointKey],
     queryFn: getUnits,
-    select: (data) => data.data.data,
+    select: (data) => data?.data?.data,
     enabled: !!enterpriseId,
   });
 
-  const round2 = (num) => Number(num.toFixed(2));
+  const round2 = (num) => Number(Number(num || 0).toFixed(2));
 
   const calculateAmounts = (item) => {
     const qty = Number(item.quantity) || 0;
@@ -127,7 +185,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
 
     const amount = round2(qty * price);
 
-    // GST per unit calculated from percentage
+    // GST amount per unit from % (₹)
     const gstAmountPerUnit = round2((price * gstPerUnit) / 100);
 
     const totalGstAmount = round2(qty * gstAmountPerUnit);
@@ -135,8 +193,8 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
 
     return {
       amount,
-      gstPerUnit, // percentage (no rounding needed)
-      gstAmountPerUnit, // ₹ per unit
+      gstPerUnit,
+      gstAmountPerUnit,
       totalGstAmount,
       totalAmount,
     };
@@ -166,6 +224,8 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
     const errs = {};
 
     if (!selectedItem.productId) errs.item = 'Item is required';
+    if (!selectedItem.targetBucketId)
+      errs.targetBucketId = 'Bucket is required';
     if (!selectedItem.quantity || selectedItem.quantity <= 0)
       errs.quantity = 'Quantity must be greater than 0';
     if (!selectedItem.unitPrice || selectedItem.unitPrice <= 0)
@@ -178,25 +238,46 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
   const handleAddItem = () => {
     if (!validateItem()) return;
 
+    // Check for duplicates before adding
+    const isDuplicate = isItemAlreadyAdded(
+      selectedItem.productId,
+      selectedItem.batch?.id,
+    );
+
+    if (isDuplicate) {
+      toast.error(
+        selectedItem.batch
+          ? 'This batch is already added.'
+          : 'This item is already added.',
+      );
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       items: [
         ...prev.items,
         {
-          // identifiers
           itemId: selectedItem.productId,
+          targetBucketId: Number(selectedItem.targetBucketId),
           productName: selectedItem.productName,
           skuId: selectedItem.skuId,
 
-          // pricing
           quantity: selectedItem.quantity,
           unitPrice: selectedItem.unitPrice,
-          gstPerUnit: selectedItem.gstPerUnit, // GST %
+          gstPerUnit: selectedItem.gstPerUnit,
 
-          // calculated values
           amount: selectedItem.amount,
           totalGstAmount: selectedItem.totalGstAmount,
           totalAmount: selectedItem.totalAmount,
+
+          isQcOkay: selectedItem.isQcOkay,
+          batch: selectedItem.batch,
+          batches: selectedItem.batches,
+          batchNo: selectedItem.batch?.batchNo || null,
+          expiryDate: selectedItem.expiryDate
+            ? moment(selectedItem.expiryDate).format('YYYY-MM-DD')
+            : null,
         },
       ],
     }));
@@ -204,14 +285,23 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
     // reset form
     setSelectedItem({
       productId: null,
+      productType: 'GOODS',
       productName: '',
       skuId: '',
+      hsnCode: '',
+      targetBucketId: '',
       quantity: '',
+      unitId: null,
       unitPrice: '',
       gstPerUnit: '',
+      gstPerUnitAmount: 0,
       amount: 0,
       totalGstAmount: 0,
       totalAmount: 0,
+      isQcOkay: true, // reset to default
+      batch: null,
+      batches: [],
+      expiryDate: '',
     });
 
     setErrors({});
@@ -219,24 +309,33 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
 
   const handleEditItem = (index) => {
     const itemToEdit = formData.items[index];
-
     if (!itemToEdit) return;
 
-    // 1️⃣ Load item into form
+    // Load item into form
     setSelectedItem({
       productId: itemToEdit.itemId,
+      productType: 'GOODS',
       productName: itemToEdit.productName,
       skuId: itemToEdit.skuId,
+      hsnCode: itemToEdit.hsnCode || '',
+      targetBucketId: itemToEdit.targetBucketId
+        ? String(itemToEdit.targetBucketId)
+        : '',
       quantity: itemToEdit.quantity,
+      unitId: itemToEdit.unitId || null,
       unitPrice: itemToEdit.unitPrice,
       gstPerUnit: itemToEdit.gstPerUnit,
       amount: itemToEdit.amount,
       totalGstAmount: itemToEdit.totalGstAmount,
       totalAmount: itemToEdit.totalAmount,
       ...calculateAmounts(itemToEdit),
+      isQcOkay: itemToEdit.isQcOkay ?? true,
+      batch: itemToEdit.batch || null,
+      batches: itemToEdit.batches || [],
+      expiryDate: itemToEdit.expiryDate || '',
     });
 
-    // 2️⃣ Remove it from table
+    // Remove it from table
     setFormData((prev) => ({
       ...prev,
       items: prev.items.filter((_, i) => i !== index),
@@ -253,27 +352,26 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
   const adHocStockInMutation = useMutation({
     mutationFn: adHocStockIn,
     onSuccess: () => {
-      toast.success('Ad Hoc Stock in Successfully');
+      toast.success('Stock in Successfully');
       onClose();
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error?.response?.data?.message || 'Something went wrong');
     },
   });
 
   const adHocStockOutMutation = useMutation({
     mutationFn: adHocStockOut,
     onSuccess: () => {
-      toast.success('Ad Hoc Stock out Successfully');
+      toast.success('Stock out Successfully');
       onClose();
     },
     onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
+      toast.error(error?.response?.data?.message || 'Something went wrong');
     },
   });
 
   const handleSubmit = () => {
-    // reset previous errors
     setErrors({});
 
     if (!formData.adjustmentReason) {
@@ -290,11 +388,15 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
       adjustmentReason: formData.adjustmentReason,
       items: formData.items.map((item) => ({
         itemId: item.itemId,
+        targetBucketId: item.targetBucketId, //  NEW
         quantity: Number(item.quantity),
         unitPrice: Number(item.unitPrice),
         gstAmountPerUnit: Number(item.gstPerUnit),
         totalGstAmount: Number(item.totalGstAmount),
         totalAmount: Number(item.totalAmount),
+        isQcOkay: item.isQcOkay,
+        batchNo: item.batchNo || null,
+        expiryDate: item.expiryDate || null,
       })),
     };
 
@@ -311,19 +413,20 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
   });
 
   return (
-    <Wrapper className="flex flex-col gap-4">
+    <Wrapper className="flex h-full min-h-screen flex-col">
       {!isAdding && (
         <>
           <SubHeader name={name} />
+
           {/* Adjustment reason */}
           <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
             <div className="grid grid-cols-4 gap-2">
-              {/* Adjustment reason */}
               <div className="flex w-full max-w-xs flex-col gap-2">
                 <Label className="flex gap-1">
                   Adjustment Reason
                   <span className="text-red-600">*</span>
                 </Label>
+
                 <div className="flex flex-col gap-1 text-sm">
                   <ReactSelect
                     value={selectedReasonOption}
@@ -333,12 +436,9 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
                     placeholder="Select adjustment Reason"
                     onChange={(opt) => {
                       if (!opt) return;
-
-                      const { value } = opt;
-
                       setFormData((prev) => ({
                         ...prev,
-                        adjustmentReason: value,
+                        adjustmentReason: opt.value,
                       }));
                     }}
                   />
@@ -350,15 +450,17 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
               </div>
             </div>
           </div>
+
           {/* Items */}
           <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
             <div className="grid grid-cols-4 gap-2">
-              {/* Items/Service */}
+              {/* Item */}
               <div className="flex w-full max-w-xs flex-col gap-2">
                 <Label className="flex gap-1">
                   Item
                   <span className="text-red-600">*</span>
                 </Label>
+
                 <div className="flex flex-col gap-1 text-sm">
                   <ReactSelect
                     value={selectedOption}
@@ -382,22 +484,149 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
                         productName: meta.productName,
                         skuId: meta.skuId,
                         hsnCode: meta.hsnCode,
+                        targetBucketId: '', // reset bucket when selecting new item
                         quantity: '',
                         unitId: null,
                         unitPrice: meta.unitPrice,
                         gstPerUnit: meta.gstPercentage,
+                        gstPerUnitAmount: 0,
                         amount: 0,
                         totalAmount: 0,
                         totalGstAmount: 0,
+                        isQcOkay: true,
+                        batch: null,
+                        batches: [],
+                        expiryDate: '',
                       });
+
+                      if (meta.skuId) {
+                        GetProductBatchList({
+                          searchString: meta.skuId,
+                        })
+                          .then((res) => {
+                            const batches = res?.data?.data?.data || [];
+                            setSelectedItem((prev) => ({ ...prev, batches }));
+
+                            // Store batches map to check if all batches are added
+                            setProductBatchesMap((prev) => ({
+                              ...prev,
+                              [value]: batches,
+                            }));
+                          })
+                          .catch((err) => {
+                            toast.error(
+                              err?.response?.data?.message ||
+                                'Error fetching batches',
+                            );
+                          });
+                      }
                     }}
                   />
 
-                  {errors.items && <ErrorBox msg={errors.items} />}
+                  {(errors.items || errors.item) && (
+                    <ErrorBox msg={errors.items || errors.item} />
+                  )}
                 </div>
               </div>
 
-              {/* Items/Service Quantity */}
+              {/* Bucket Select */}
+              <div className="flex w-full max-w-xs flex-col gap-2">
+                <Label className="flex gap-1">
+                  Select Bucket
+                  <span className="text-red-600">*</span>
+                </Label>
+
+                <div className="flex flex-col gap-1">
+                  <Select
+                    value={selectedItem.targetBucketId}
+                    onValueChange={(value) => {
+                      setSelectedItem((prev) => ({
+                        ...prev,
+                        targetBucketId: value,
+                      }));
+                    }}
+                    disabled={isBucketLoading}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select Bucket" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      {isBucketLoading ? (
+                        <SelectItem value="loading" disabled>
+                          Loading buckets...
+                        </SelectItem>
+                      ) : !bucketOptions?.length ? (
+                        <SelectItem value="no-data" disabled>
+                          No buckets found
+                        </SelectItem>
+                      ) : (
+                        bucketOptions.map((bucket) => (
+                          <SelectItem key={bucket.id} value={String(bucket.id)}>
+                            {bucket.displayName}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+
+                  {errors.targetBucketId && (
+                    <ErrorBox msg={errors.targetBucketId} />
+                  )}
+                </div>
+              </div>
+
+              {/* Batch Select */}
+              <div className="flex w-full max-w-xs flex-col gap-2">
+                <Label className="flex gap-1">Select Batch</Label>
+
+                <div className="flex flex-col gap-1 text-sm">
+                  <ReactSelect
+                    name="batch"
+                    value={
+                      selectedItem.batch
+                        ? {
+                            value: selectedItem.batch.id,
+                            label: `${selectedItem.batch.batchNo} & ${moment(selectedItem.batch.expiryDate).format('DD/MM/YYYY')}`,
+                          }
+                        : null
+                    }
+                    className="w-full"
+                    placeholder="Select Batch"
+                    options={selectedItem.batches?.map((b) => ({
+                      value: b.id,
+                      label: (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-semibold">
+                            Batch: {b.batchNo}
+                          </span>
+                          <span className="text-xs text-neutral-500">
+                            Expiry: {moment(b.expiryDate).format('DD/MM/YYYY')}
+                          </span>
+                        </div>
+                      ),
+                      original: b,
+                      disabled: isItemAlreadyAdded(
+                        selectedItem.productId,
+                        b.id,
+                      ),
+                    }))}
+                    isOptionDisabled={(option) => option.disabled}
+                    styles={getStylesForSelectComponent()}
+                    isDisabled={!selectedItem.productId}
+                    onChange={(selectedOption) => {
+                      const batchData = selectedOption?.original;
+                      setSelectedItem((prev) => ({
+                        ...prev,
+                        batch: batchData,
+                        expiryDate: batchData?.expiryDate || '',
+                      }));
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Quantity */}
               <div className="flex flex-col gap-1">
                 <InputWithSelect
                   id="quantity"
@@ -411,21 +640,21 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
                   onValueChange={handleQuantityChange}
                   unit={selectedItem.unitId}
                   onUnitChange={(val) => {
-                    setSelectedItem((prev) => {
-                      const updated = { ...prev, unitId: Number(val) };
-                      return updated;
-                    });
+                    setSelectedItem((prev) => ({
+                      ...prev,
+                      unitId: Number(val),
+                    }));
                   }}
-                  units={units?.quantity} // todo : units for services...
+                  units={units?.quantity}
                   unitPlaceholder="Select unit"
                   min={0}
-                  step="any" // <-- allows decimals
+                  step="any"
                 />
 
                 {errors.quantity && <ErrorBox msg={errors.quantity} />}
               </div>
 
-              {/* Items/Service Price */}
+              {/* Price */}
               <div className="flex flex-col gap-2">
                 <Label className="flex gap-1">
                   Price
@@ -445,77 +674,75 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
                     className="max-w-30"
                     onChange={handlePriceChange}
                   />
-
                   {errors.unitPrice && <ErrorBox msg={errors.unitPrice} />}
                 </div>
               </div>
 
-              {/* Items Amount */}
+              {/* Amount */}
               <div className="flex flex-col gap-2">
                 <Label className="flex gap-1">
                   Amount
                   <span className="text-red-600">*</span>
                 </Label>
                 <div className="flex flex-col gap-1">
-                  <Input
-                    disabled
-                    value={selectedItem.amount || ''}
-                    className="max-w-30"
-                  />
-                  {errors.totalAmount && <ErrorBox msg={errors.amount} />}
+                  <Input disabled value={selectedItem.amount || ''} />
                 </div>
               </div>
 
-              {/* Items Gst per unit */}
+              {/* GST */}
               <div className="flex flex-col gap-2">
                 <Label className="flex">
-                  GST
-                  <span className="text-xs"> (%)</span>
+                  GST <span className="text-xs"> (%)</span>
                   <span className="text-red-600">*</span>
                 </Label>
                 <div className="flex flex-col gap-1">
-                  <Input
-                    type="number"
-                    placeholder="GST per unit"
-                    disabled
-                    value={selectedItem.gstPerUnit || ''}
-                  />
-
-                  {errors.gstPerUnit && <ErrorBox msg={errors.gstPerUnit} />}
+                  <Input disabled value={selectedItem.gstPerUnit || ''} />
                 </div>
               </div>
 
+              {/* Tax Amount */}
               <div className="flex flex-col gap-2">
                 <Label className="flex gap-1">
                   Tax Amount
                   <span className="text-red-600">*</span>
                 </Label>
                 <div className="flex flex-col gap-1">
-                  <Input
-                    disabled
-                    value={selectedItem.totalGstAmount || ''}
-                    className="max-w-30"
-                  />
-                  {errors.totalGstAmount && (
-                    <ErrorBox msg={errors.totalGstAmount} />
-                  )}
+                  <Input disabled value={selectedItem.totalGstAmount || ''} />
                 </div>
               </div>
 
+              {/* Total Amount */}
               <div className="flex flex-col gap-2">
                 <Label className="flex gap-1">
                   Total Amount
                   <span className="text-red-600">*</span>
                 </Label>
                 <div className="flex flex-col gap-1">
-                  <Input
-                    disabled
-                    value={selectedItem?.totalAmount}
-                    className="max-w-30"
-                  />
-                  {errors.totalAmount && <ErrorBox msg={errors.totalAmount} />}
+                  <Input disabled value={selectedItem.totalAmount || ''} />
                 </div>
               </div>
+
+              {isStockIn && (
+                <div className="flex flex-col gap-1">
+                  <label className="flex items-center gap-2 text-sm font-medium">
+                    <input
+                      type="checkbox"
+                      checked={selectedItem.isQcOkay}
+                      onChange={(e) => {
+                        setSelectedItem((prev) => ({
+                          ...prev,
+                          isQcOkay: e.target.checked,
+                        }));
+                        setErrors((prev) => ({ ...prev, qcOkay: undefined }));
+                      }}
+                      className="h-4 w-4"
+                    />
+                    QC Okay <span className="text-red-600">*</span>
+                  </label>
+
+                  {errors.qcOkay && <ErrorBox msg={errors.qcOkay} />}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-4">
@@ -523,34 +750,44 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
                 size="sm"
                 variant="outline"
                 onClick={() => {
-                  // Reset selected item
                   setSelectedItem({
                     productId: null,
+                    productType: 'GOODS',
                     productName: '',
                     skuId: '',
+                    hsnCode: '',
+                    targetBucketId: '',
                     quantity: '',
+                    unitId: null,
                     unitPrice: '',
                     gstPerUnit: '',
                     gstPerUnitAmount: 0,
                     amount: 0,
                     totalGstAmount: 0,
                     totalAmount: 0,
+                    isQcOkay: true,
+                    batch: null,
+                    batches: [],
+                    expiryDate: '',
                   });
+                  setErrors({});
                 }}
               >
                 Cancel
               </Button>
+
               <Button
                 size="sm"
+                variant="blue_outline"
                 disabled={
                   !selectedItem.productId ||
+                  !selectedItem.targetBucketId ||
                   !selectedItem.quantity ||
                   selectedItem.quantity <= 0 ||
                   !selectedItem.unitPrice ||
                   selectedItem.unitPrice <= 0
                 }
                 onClick={handleAddItem}
-                variant="blue_outline"
               >
                 Add
               </Button>
@@ -560,21 +797,24 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
           {/* selected item table */}
           <DataTable data={formData?.items} columns={adHocItemsColumns} />
 
-          {/* add / cancel cta */}
-          <div className="sticky bottom-0 flex justify-end gap-2">
-            <Button size="sm" onClick={onClose} variant={'outline'}>
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              onClick={handleSubmit}
-              disabled={
-                adHocStockInMutation?.isPending ||
-                adHocStockOutMutation?.isPending
-              }
-            >
-              {isStockIn ? 'Complete Stock-in' : 'Complete Stock-out'}
-            </Button>
+          {/* submit */}
+          <div className="sticky bottom-0 z-10 border-t bg-white px-4 py-3">
+            <div className="flex justify-end gap-2">
+              <Button size="sm" onClick={onClose} variant="outline">
+                Cancel
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={handleSubmit}
+                disabled={
+                  adHocStockInMutation?.isPending ||
+                  adHocStockOutMutation?.isPending
+                }
+              >
+                {isStockIn ? 'Add Stock' : 'Complete Stock Correction'}
+              </Button>
+            </div>
           </div>
         </>
       )}

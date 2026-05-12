@@ -15,7 +15,7 @@ export const useStockItemColumns = () => {
       ),
       cell: ({ row }) => (
         <Badge variant="secondary">
-          {convertSnakeToTitleCase(row.original?.transactiontype) || '--'}
+          {convertSnakeToTitleCase(row.original?.transactionType) || '--'}
         </Badge>
       ),
     },
@@ -26,7 +26,7 @@ export const useStockItemColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Opening Balance" />
       ),
-      cell: ({ row }) => Math.round(Number(row.original?.openingbalance ?? 0)),
+      cell: ({ row }) => Math.round(Number(row.original?.openingBalance ?? 0)),
     },
 
     /* Closing Balance */
@@ -35,7 +35,7 @@ export const useStockItemColumns = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Closing Balance" />
       ),
-      cell: ({ row }) => Math.round(Number(row.original?.closingbalance ?? 0)),
+      cell: ({ row }) => Math.round(Number(row.original?.closingBalance ?? 0)),
     },
 
     /* Quantity */
@@ -54,19 +54,19 @@ export const useStockItemColumns = () => {
         <DataTableColumnHeader column={column} title="Operation Type" />
       ),
       cell: ({ row }) => {
-        const type = row.original?.operationtype;
+        const type = row.original?.operationType;
         return <ConditionalRenderingStatus status={type} />;
       },
     },
 
     /* Transferred Bucket */
     {
-      accessorKey: 'bucketname',
+      accessorKey: 'bucketName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Transferred Bucket" />
       ),
       cell: ({ row }) => (
-        <Badge variant="secondary">{row.original?.bucketname || '--'}</Badge>
+        <Badge variant="secondary">{row.original?.bucketName || '--'}</Badge>
       ),
     },
   ];

@@ -78,6 +78,17 @@
                             "udyam": "उद्योग (UDYAM)"
                         }
                     }
+                },
+                "tab3": {
+                    "title": "अधिकृत व्यक्ति",
+                    "content": {
+                        "overview_labels": {
+                            "name": "नाम",
+                            "email": "ईमेल",
+                            "phone": "फ़ोन नंबर",
+                            "address": "एंटरप्राइज़ पता"
+                        }
+                    }
                 }
             },
             "title1": "क्लाइंट्स",

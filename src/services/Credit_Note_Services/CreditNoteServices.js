@@ -1,10 +1,22 @@
 import { CreditNoteApi } from '@/api/creditNote/CreditNoteApi';
 import { APIinstance } from '@/services';
 
-export const getAllCreditNotes = ({ context, page, limit, debitNoteId }) => {
-  return APIinstance.get(
-    `${CreditNoteApi.getAllCreditNotes.endpoint}?page=${page}&limit=${limit}&context=${context}&debitNoteId=${debitNoteId}`,
-  );
+export const getAllCreditNotes = ({
+  context,
+  page,
+  limit,
+  debitNoteId,
+  returnPeriod,
+}) => {
+  if (returnPeriod) {
+    return APIinstance.get(
+      `${CreditNoteApi.getAllCreditNotes.endpoint}?page=${page}&limit=${limit}&context=${context}&debitNoteId=${debitNoteId}&returnPeriod=${returnPeriod}`,
+    );
+  } else {
+    return APIinstance.get(
+      `${CreditNoteApi.getAllCreditNotes.endpoint}?page=${page}&limit=${limit}&context=${context}&debitNoteId=${debitNoteId}`,
+    );
+  }
 };
 
 export const getCreditNote = ({ id }) => {

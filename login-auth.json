@@ -5,7 +5,107 @@
       "value": "en",
       "domain": "localhost",
       "path": "/",
-      "expires": 1777526235.013277,
+      "expires": 1809422257.598491,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "CLID",
+      "value": "cdc5b6f57746412ea2f256096faf4d73.20260504.20270504",
+      "domain": "www.clarity.ms",
+      "path": "/",
+      "expires": 1809422258.917396,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "_clck",
+      "value": "8oqdbx%5E2%5Eg5r%5E0%5E2315",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1809422259,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "MUID",
+      "value": "3A550370DE176ED13899143FDF116FA3",
+      "domain": ".bing.com",
+      "path": "/",
+      "expires": 1811582260.404898,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "MR",
+      "value": "0",
+      "domain": ".c.bing.com",
+      "path": "/",
+      "expires": 1778491060.404978,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "SRM_B",
+      "value": "3A550370DE176ED13899143FDF116FA3",
+      "domain": ".c.bing.com",
+      "path": "/",
+      "expires": 1811582260.405029,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "SM",
+      "value": "C",
+      "domain": ".c.clarity.ms",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "MUID",
+      "value": "3A550370DE176ED13899143FDF116FA3",
+      "domain": ".clarity.ms",
+      "path": "/",
+      "expires": 1811582259.548513,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "MR",
+      "value": "0",
+      "domain": ".c.clarity.ms",
+      "path": "/",
+      "expires": 1778491059.548563,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "ANONCHK",
+      "value": "0",
+      "domain": ".c.clarity.ms",
+      "path": "/",
+      "expires": 1777886859.548583,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "_clsk",
+      "value": "kadlr9%5E1777886262891%5E2%5E1%5Ez.clarity.ms%2Fcollect",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1777972662,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
@@ -21,11 +121,15 @@
         },
         {
           "name": "user_profile",
-          "value": "96"
+          "value": "258"
+        },
+        {
+          "name": "hues.sidebar.collapsed",
+          "value": "\"false\""
         },
         {
           "name": "isDirector",
-          "value": "false"
+          "value": "true"
         },
         {
           "name": "isPanVerified",
@@ -45,7 +149,7 @@
         },
         {
           "name": "invitationData",
-          "value": "undefined"
+          "value": "null"
         },
         {
           "name": "isAadhaarVerified",
@@ -53,11 +157,11 @@
         },
         {
           "name": "token",
-          "value": "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTYsInVzZXJJZCI6OTIsIm1vYmlsZV9udW1iZXIiOiI5NTMyNzUxNzcxIiwiZW50ZXJwcmlzZV9pZCI6NTIsImlhdCI6MTc0NTk5MDIzMSwiZXhwIjoxNzQ1OTkwODMxfQ.aqfREkGtKjm-j7c4iQoh3WtR46Xk18tZ7uuZfxVXebc\""
+          "value": "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjU4LCJ1c2VySWQiOjE5NSwibW9iaWxlX251bWJlciI6IjczMTc0MTQyNzQiLCJlbnRlcnByaXNlX2lkIjoxNTAsInJvbGVzIjpbIkRJUkVDVE9SIl0sImlhdCI6MTc3Nzg4NjI2MSwiZXhwIjoxNzc3ODg2ODYxfQ.I9kwouxRBltUfe5ju-WjkzTVmM7dxgk8tbrLM8YLChw\""
         },
         {
           "name": "refreshtoken",
-          "value": "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTYsInVzZXJJZCI6OTIsImlhdCI6MTc0NTk5MDIzMSwiZXhwIjoxNzQ2NTk1MDMxfQ.IE55XUdcPr9LmZx16gZFuFvwKHLLsSnjXglNFT1XbKs\""
+          "value": "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjU4LCJ1c2VySWQiOjE5NSwicm9sZXMiOlsiRElSRUNUT1IiXSwiaWF0IjoxNzc3ODg2MjYxLCJleHAiOjE3Nzg0OTEwNjF9.l_vcMgW6tGvN2zNZPrKZqjutuHjufRmV0yV_AzHZYLs\""
         },
         {
           "name": "isAssociateRequestAccepted",
@@ -65,11 +169,11 @@
         },
         {
           "name": "enterprise_Id",
-          "value": "52"
+          "value": "150"
         },
         {
           "name": "user_mobile_number",
-          "value": "\"9532751771\""
+          "value": "\"7317414274\""
         },
         {
           "name": "operation_type",

@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 
 import { LocalStorageService, SessionStorageService } from '@/lib/utils';
+import moment from 'moment';
 
 export const safeJsonParse = (value, fallback = []) => {
   if (!value) return fallback;
@@ -50,18 +51,37 @@ export const getStylesForSelectComponent = () => {
   return {
     control: (base, state) => ({
       ...base,
-      border: state.isFocused
-        ? '2.5px solid #298AFAFF' // Bold border when focused (color: blue)
-        : '1px solid #E2E8F0', // Default border
-      borderRadius: '9px',
-      boxShadow: 'none', // Removes focus outline shadow
-      height: '40px',
-      transition: 'border-color 0.2s', // Smooth transition for focus
+      borderRadius: '8px',
+      minHeight: '40px',
+      borderColor: state.isFocused ? '#3B90F2' : base.borderColor,
+      boxShadow: 'none',
+      '&:hover': {
+        borderColor: '#3B90F2',
+      },
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? '#3B90F2' // selected
+        : state.isFocused
+          ? '#e0e7ff' // focused (light)
+          : 'white',
+      color: state.isSelected
+        ? 'white'
+        : state.isDisabled
+          ? '#9ca3af'
+          : 'black',
+      cursor: state.isDisabled ? 'not-allowed' : 'pointer',
+      opacity: state.isDisabled ? 0.6 : 1,
+    }),
+
+    singleValue: (base) => ({
+      ...base,
+      color: '#111827',
     }),
     menu: (base) => ({
       ...base,
-      borderRadius: '9px',
-      zIndex: 10,
+      zIndex: 50,
     }),
     menuList: (base) => ({
       ...base,
@@ -94,14 +114,15 @@ export const getStylesForSelectComponent = () => {
 };
 
 // formatAmount in Indian Rupee currency
-export const formattedAmount = (amount, fallback = '-') => {
+export const formattedAmount = (amount, fallback = '₹0.00') => {
   const value = Number(amount);
 
-  if (!Number.isFinite(value)) return fallback;
+  if (Number.isNaN(value)) return fallback;
 
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value);
 };
@@ -143,6 +164,20 @@ export const debounce = (func, delay) => {
 export const isGstApplicable = (isHaveGst) => {
   if (isHaveGst) return true;
   else return false;
+};
+
+// vendor GST applicability check
+export const checkVendorGSTApplicability = (vendor) => {
+  if (!vendor) return false;
+
+  const vendorData = vendor?.vendor;
+  const invitationData = vendor?.invitation?.userDetails;
+
+  if (vendorData?.gsts?.length > 0) return true;
+  if (vendorData?.gstNumber) return true;
+  if (invitationData?.gstNumber) return true;
+
+  return false;
 };
 
 // Utility function to handle empty strings and undefined values
@@ -254,4 +289,80 @@ export const getQCDefectStatuses = (data) => {
     isShortQuantity && 'SHORT_QUANTITY',
     isUnsatisfactory && 'UNSATISFACTORY',
   ].filter(Boolean);
+};
+
+export const formattedMonthDate = (period) => {
+  if (!period) return '-';
+
+  const formattedPeriod = moment(period, 'MMYYYY', true).isValid()
+    ? moment(period, 'MMYYYY').format('MMMM YYYY')
+    : '-';
+
+  return formattedPeriod;
+};
+
+export const getCurrentFinancialYearPeriods = (date = new Date()) => {
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  const currentMonth = date.getMonth(); // 0 = Jan
+  const currentYear = date.getFullYear();
+
+  // FY starts in April
+  const fyStartYear = currentMonth >= 3 ? currentYear : currentYear - 1;
+
+  const periods = [];
+
+  const startMonth = 3; // April
+  const endMonth = currentMonth;
+  const endYear = currentMonth >= 3 ? currentYear : currentYear;
+
+  let m = startMonth;
+  let y = fyStartYear;
+
+  while (y < endYear || (y === endYear && m <= endMonth)) {
+    const monthNumber = String(m + 1).padStart(2, '0');
+
+    periods.push({
+      label: `${months[m]} ${y}`,
+      value: `${monthNumber}${y}`, // MMYYYY
+    });
+
+    m++;
+
+    if (m > 11) {
+      m = 0;
+      y++;
+    }
+  }
+
+  // Decreasing order (latest first)
+  return periods.reverse();
+};
+
+export const maskPanNumber = (pan = '') => {
+  if (!pan) return '-';
+
+  const value = String(pan).trim().toUpperCase();
+
+  // PAN format is usually 10 chars: AAAAA9999A
+  if (value.length < 6) return value; // fallback for invalid short input
+
+  const first3 = value.slice(0, 3);
+  const last1 = value.slice(-1);
+
+  const maskedMiddle = '*'.repeat(value.length - 4); // hide remaining middle chars
+  return `${first3}${maskedMiddle}${last1}`;
 };

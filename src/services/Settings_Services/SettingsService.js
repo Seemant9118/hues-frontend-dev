@@ -28,3 +28,19 @@ export const addUpdateAddress = ({ data }) => {
 export const uploadLogo = ({ data }) => {
   return APIinstance.post(`${settingsAPI.uploadLogo.endpoint}`, data);
 };
+
+export const updateEnterpriseData = ({ data }) => {
+  return APIinstance.post(settingsAPI.updateEnterpriseData.endpoint, data);
+};
+
+export const getGstSettings = ({ id }) => {
+  return APIinstance.get(`${settingsAPI.getGstSettings.endpoint}${id}`);
+};
+
+export const updateGst = ({ id, data }) => {
+  return APIinstance.put(`${settingsAPI.updateGst.endpoint}${id}`, data);
+};
+
+export const addWareHouse = ({ data }) => {
+  return APIinstance.post(settingsAPI.addWareHouse.endpoint, data);
+};

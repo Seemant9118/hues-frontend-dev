@@ -47,7 +47,7 @@ export default function AddGoodsMaster({
       ? String(goodsMasterToEdit.subCategoryId)
       : '',
     hsnCode: goodsMasterToEdit?.hsnCode || '',
-    chapter: goodsMasterToEdit?.chapter || '',
+    chapter: goodsMasterToEdit?.chapter || '1',
     gstRate: goodsMasterToEdit?.gstRate || '',
     fcm: !!goodsMasterToEdit?.fcm,
     rcm: !!goodsMasterToEdit?.rcm,
@@ -128,6 +128,8 @@ export default function AddGoodsMaster({
     if (!formData.subCategoryId)
       newErrors.subCategoryId = 'Sub category is required';
 
+    if (!formData.hsnCode) newErrors.hsnCode = 'HSN Code is required';
+
     if (!formData.gstRate) newErrors.gstRate = 'GST rate is required';
 
     if (Object.keys(newErrors).length > 0) {
@@ -148,6 +150,7 @@ export default function AddGoodsMaster({
       exemptedCategory: Boolean(formData.exemptedCategory),
       nilRatedCategory: Boolean(formData.nilRatedCategory),
       description: formData.description.trim() || null,
+      isDeleted: false,
     };
 
     if (goodsMasterToEdit) {
@@ -175,115 +178,120 @@ export default function AddGoodsMaster({
       </section>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Hues Item ID */}
-        <div>
-          <Label>Hues Item ID</Label>
-          <Input
-            placeholder="Enter hues item id"
-            value={formData.huesItemId}
-            onChange={(e) => handleChange('huesItemId', e.target.value)}
-          />
-          {errors.huesItemId && <ErrorBox msg={errors.huesItemId} />}
-        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {/* Hues Item ID */}
+          <div>
+            <Label>Hues Item ID</Label> <span className="text-red-500">*</span>
+            <Input
+              placeholder="Enter hues item id"
+              value={formData.huesItemId}
+              onChange={(e) => handleChange('huesItemId', e.target.value)}
+            />
+            {errors.huesItemId && <ErrorBox msg={errors.huesItemId} />}
+          </div>
 
-        {/* Item Name */}
-        <div>
-          <Label>Item Name</Label>
-          <Input
-            placeholder="Enter item name"
-            value={formData.itemName}
-            onChange={(e) => handleChange('itemName', e.target.value)}
-          />
-          {errors.itemName && <ErrorBox msg={errors.itemName} />}
-        </div>
+          {/* Item Name */}
+          <div>
+            <Label>Item Name</Label> <span className="text-red-500">*</span>
+            <Input
+              placeholder="Enter item name"
+              value={formData.itemName}
+              onChange={(e) => handleChange('itemName', e.target.value)}
+            />
+            {errors.itemName && <ErrorBox msg={errors.itemName} />}
+          </div>
 
-        {/* Category */}
-        <div>
-          <Label>Category</Label>
-          <Select
-            value={formData.categoryId}
-            onValueChange={(val) => {
-              const selectedCategory = categories.find(
-                (c) => String(c.id) === String(val),
-              );
+          {/* Category */}
+          <div>
+            <Label>Category</Label> <span className="text-red-500">*</span>
+            <Select
+              value={formData.categoryId}
+              onValueChange={(val) => {
+                const selectedCategory = categories.find(
+                  (c) => String(c.id) === String(val),
+                );
 
-              setFormData((prev) => ({
-                ...prev,
-                categoryId: val,
-                subCategoryId: '', // ✅ reset sub category
-                description:
-                  prev.description || selectedCategory?.description || '',
-              }));
+                setFormData((prev) => ({
+                  ...prev,
+                  categoryId: val,
+                  subCategoryId: '', // ✅ reset sub category
+                  description:
+                    prev.description || selectedCategory?.description || '',
+                }));
 
-              setErrors((prev) => ({
-                ...prev,
-                categoryId: '',
-                subCategoryId: '',
-              }));
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={String(cat.id)}>
-                  {cat.categoryName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errors.categoryId && <ErrorBox msg={errors.categoryId} />}
-        </div>
+                setErrors((prev) => ({
+                  ...prev,
+                  categoryId: '',
+                  subCategoryId: '',
+                }));
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={String(cat.id)}>
+                    {cat.categoryName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.categoryId && <ErrorBox msg={errors.categoryId} />}
+          </div>
 
-        {/* Sub Category */}
-        <div>
-          <Label>Sub Category</Label>
-          <Select
-            value={formData.subCategoryId}
-            onValueChange={(val) => {
-              const selectedSubCategory = selectedCategory?.subCategories?.find(
-                (sc) => String(sc.id) === String(val),
-              );
+          {/* Sub Category */}
+          <div>
+            <Label>Sub Category</Label> <span className="text-red-500">*</span>
+            <Select
+              value={formData.subCategoryId}
+              onValueChange={(val) => {
+                const selectedSubCategory =
+                  selectedCategory?.subCategories?.find(
+                    (sc) => String(sc.id) === String(val),
+                  );
 
-              setFormData((prev) => ({
-                ...prev,
-                subCategoryId: val,
-                description:
-                  prev.description ||
-                  selectedSubCategory?.description ||
-                  prev.description,
-              }));
+                setFormData((prev) => ({
+                  ...prev,
+                  subCategoryId: val,
+                  description:
+                    prev.description ||
+                    selectedSubCategory?.description ||
+                    prev.description,
+                }));
 
-              setErrors((prev) => ({
-                ...prev,
-                subCategoryId: '',
-              }));
-            }}
-            disabled={!subCategoryOptions.length}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select sub category" />
-            </SelectTrigger>
-            <SelectContent>
-              {subCategoryOptions.map((sub) => (
-                <SelectItem key={sub.id} value={String(sub.id)}>
-                  {sub.subCategoryName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errors.subCategoryId && <ErrorBox msg={errors.subCategoryId} />}
+                setErrors((prev) => ({
+                  ...prev,
+                  subCategoryId: '',
+                }));
+              }}
+              disabled={!subCategoryOptions.length}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select sub category" />
+              </SelectTrigger>
+              <SelectContent>
+                {subCategoryOptions.map((sub) => (
+                  <SelectItem key={sub.id} value={String(sub.id)}>
+                    {sub.subCategoryName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.subCategoryId && <ErrorBox msg={errors.subCategoryId} />}
+          </div>
         </div>
 
         {/* HSN / Chapter / GST */}
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <Label>HSN Code</Label>
+            <Label>HSN Code</Label> <span className="text-red-500">*</span>
             <Input
               value={formData.hsnCode}
               onChange={(e) => handleChange('hsnCode', e.target.value)}
+              placeholder="Enter HSN code"
             />
+            {errors.hsnCode && <ErrorBox msg={errors.hsnCode} />}
           </div>
 
           <div>
@@ -291,15 +299,17 @@ export default function AddGoodsMaster({
             <Input
               value={formData.chapter}
               onChange={(e) => handleChange('chapter', e.target.value)}
+              placeholder="Enter Chapter"
             />
           </div>
 
           <div>
-            <Label>GST Rate (%)</Label>
+            <Label>GST Rate (%)</Label> <span className="text-red-500">*</span>
             <Input
               type="number"
               value={formData.gstRate}
               onChange={(e) => handleChange('gstRate', e.target.value)}
+              placeholder="Enter GST rate"
             />
             {errors.gstRate && <ErrorBox msg={errors.gstRate} />}
           </div>
@@ -336,6 +346,7 @@ export default function AddGoodsMaster({
             rows={4}
             value={formData.description}
             onChange={(e) => handleChange('description', e.target.value)}
+            placeholder="Enter Description"
           />
         </div>
 

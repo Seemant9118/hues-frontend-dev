@@ -7,11 +7,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { updateBulkQc } from '@/services/Inventories_Services/QC_Services/QC_Services';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  getBuckets,
+  updateBulkQc,
+} from '@/services/Inventories_Services/QC_Services/QC_Services';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import RemarkBox from '../remarks/RemarkBox';
 import { Input } from '../ui/input';
 import {
   Table,
@@ -21,30 +32,70 @@ import {
   TableHeader,
   TableRow,
 } from '../ui/table';
-import RemarkBox from '../remarks/RemarkBox';
 
-export default function QCItemsDialog({ open, onClose, qcDetails }) {
+export default function QCItemsDialog({
+  enterpriseId,
+  open,
+  onClose,
+  qcDetails,
+}) {
   const queryClient = useQueryClient();
   const params = useSearchParams();
-  const [items, setItems] = useState(null);
+
+  const [items, setItems] = useState([]);
   const [remarks, setRemarks] = useState('');
   const [attachedFiles, setAttachedFiles] = useState([]);
 
+  // Fetch buckets
+  const { data: bucketOptions = [], isLoading: isBucketLoading } = useQuery({
+    queryKey: [qcApis.bucketOptions.endpointKey, enterpriseId],
+    queryFn: () => getBuckets({ enterpriseId }),
+    select: (res) => res?.data?.data || [],
+    enabled: !!enterpriseId,
+  });
+
+  const allowedAcceptedBucketTypes = ['RAW_MATERIALS', 'FINISHED_GOODS'];
+  const allowedRejectedBucketTypes = ['REJECTED'];
+
+  const formattedAcceptedBucketOptions =
+    (bucketOptions || [])
+      .filter((b) => allowedAcceptedBucketTypes.includes(b.bucketType))
+      .map((bucket) => ({
+        value: bucket.id,
+        label: bucket.displayName,
+      })) || [];
+
+  const formattedRejectedBucketOptions =
+    (bucketOptions || [])
+      .filter((b) => allowedRejectedBucketTypes.includes(b.bucketType))
+      .map((bucket) => ({
+        value: bucket.id,
+        label: bucket.displayName,
+      })) || [];
+
+  // Map QC items
   useEffect(() => {
-    if (!qcDetails?.items?.length) return;
+    if (!qcDetails?.items?.length) {
+      setItems([]);
+      return;
+    }
 
     const mappedItems = qcDetails.items.map((item) => ({
       id: item.id,
       skuId: item.metaData?.productDetails?.skuId,
       productName: item.metaData?.productDetails?.productName,
       totalQuantity: item.totalQuantity,
-      qcStatus: item.qcStatus || 'QC_PENDING',
-      qcResult: item.qcResult,
-      remarks: item.qcRemarks || '',
+
       acceptedQty: item.qcPassedQuantity || 0,
       rejectedQty: item.qcFailedQuantity || 0,
-      pendingQty: item.qcPendingQuantity || 0,
-      isShortQuantity: item.qcStatus === 'SHORT_QUANTITY',
+
+      acceptedTargetBucketId: item.targetBucketId
+        ? String(item.targetBucketId)
+        : '',
+
+      rejectedTargetBucketId: item.rejectedTargetBucketId
+        ? String(item.rejectedTargetBucketId)
+        : '',
     }));
 
     setItems(mappedItems);
@@ -55,15 +106,14 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
       prev.map((item) => {
         if (item.id !== itemId) return item;
 
-        // TEXT FIELD (remarks)
-        if (field === 'remarks') {
-          return {
-            ...item,
-            remarks: value,
-          };
+        // bucket manual selection
+        if (
+          field === 'acceptedTargetBucketId' ||
+          field === 'rejectedTargetBucketId'
+        ) {
+          return { ...item, [field]: value };
         }
 
-        // NUMBER FIELDS (acceptedQty / rejectedQty)
         const numericValue = Math.max(0, Number(value) || 0);
 
         const otherQty =
@@ -71,23 +121,38 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
             ? item.rejectedQty || 0
             : item.acceptedQty || 0;
 
-        const maxAllowed = Math.max(0, (item.totalQuantity || 0) - otherQty);
+        const maxAllowed = Math.max(0, item.totalQuantity - otherQty);
 
         const finalValue = Math.min(numericValue, maxAllowed);
 
-        return {
+        const updatedItem = {
           ...item,
           [field]: finalValue,
         };
+
+        // Auto-select rejected bucket
+        if (field === 'rejectedQty') {
+          if (finalValue > 0 && formattedRejectedBucketOptions.length === 1) {
+            updatedItem.rejectedTargetBucketId = String(
+              formattedRejectedBucketOptions[0].value,
+            );
+          }
+
+          if (finalValue === 0) {
+            updatedItem.rejectedTargetBucketId = '';
+          }
+        }
+
+        return updatedItem;
       }),
     );
   };
-
   const saveQCMutation = useMutation({
     mutationFn: updateBulkQc,
     onSuccess: () => {
       toast.success('QC added successfully');
       onClose();
+
       queryClient.invalidateQueries([
         qcApis.getQCDetailsWithGRNs.endpointKey,
         params.id,
@@ -99,7 +164,7 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
   });
 
   const handleSaveQC = () => {
-    if (!items.length) {
+    if (!items?.length) {
       toast.info('No data to update');
       return;
     }
@@ -125,7 +190,14 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
         qcCompletedQuantity,
         qcPassedQuantity: Number(item.acceptedQty || 0),
         qcFailedQuantity: Number(item.rejectedQty || 0),
-        qcRemarks: item.remarks || '',
+
+        targetBucketId: item.acceptedTargetBucketId
+          ? Number(item.acceptedTargetBucketId)
+          : null,
+
+        rejectedTargetBucketId: item.rejectedTargetBucketId
+          ? Number(item.rejectedTargetBucketId)
+          : null,
       };
     });
 
@@ -137,12 +209,11 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl">
+      <DialogContent className="max-w-6xl">
         <DialogHeader>
           <DialogTitle>Quality Check Items</DialogTitle>
         </DialogHeader>
 
-        {/* 👉 Your table goes here */}
         <div className="scrollBarStyles max-h-[70vh] overflow-auto">
           <div className="overflow-x-auto">
             <Table className="w-full text-sm">
@@ -150,10 +221,11 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
                 <TableRow>
                   <TableHead>SKU ID</TableHead>
                   <TableHead>Item Name</TableHead>
-                  <TableHead>QC Received</TableHead>
+                  <TableHead>Item Received</TableHead>
                   <TableHead>QC Accepted</TableHead>
+                  <TableHead>Accepted Bucket</TableHead>
                   <TableHead>QC Rejected</TableHead>
-                  {/* <TableHead>Remark</TableHead> */}
+                  <TableHead>Rejected Bucket</TableHead>
                 </TableRow>
               </TableHeader>
 
@@ -165,22 +237,17 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  items?.map((item) => (
+                  items.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">
                         {item.skuId || '-'}
                       </TableCell>
 
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <span className="font-medium">
-                            {item.productName || '-'}
-                          </span>
-                        </div>
-                      </TableCell>
+                      <TableCell>{item.productName || '-'}</TableCell>
 
                       <TableCell>{item.totalQuantity ?? '-'}</TableCell>
 
+                      {/* Accepted Qty */}
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button
@@ -198,19 +265,18 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
                           >
                             −
                           </Button>
+
                           <Input
                             type="number"
-                            min={0}
-                            max={item.totalQuantity}
                             value={item.acceptedQty}
                             onChange={(e) =>
                               updateItemField(
                                 item.id,
                                 'acceptedQty',
-                                Number(e.target.value),
+                                e.target.value,
                               )
                             }
-                            className="w-[100px]"
+                            className="w-[70px]"
                           />
 
                           <Button
@@ -234,6 +300,41 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
                         </div>
                       </TableCell>
 
+                      {/* Accepted Bucket */}
+                      <TableCell>
+                        {item.acceptedQty > 0 ? (
+                          <Select
+                            value={item.acceptedTargetBucketId}
+                            onValueChange={(value) =>
+                              updateItemField(
+                                item.id,
+                                'acceptedTargetBucketId',
+                                value,
+                              )
+                            }
+                            disabled={isBucketLoading}
+                          >
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Select Bucket" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              {formattedAcceptedBucketOptions.map((bucket) => (
+                                <SelectItem
+                                  key={bucket.value}
+                                  value={String(bucket.value)}
+                                >
+                                  {bucket.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          '-'
+                        )}
+                      </TableCell>
+
+                      {/* Rejected Qty */}
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button
@@ -251,19 +352,18 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
                           >
                             −
                           </Button>
+
                           <Input
                             type="number"
-                            min={0}
-                            max={item.totalQuantity}
                             value={item.rejectedQty}
                             onChange={(e) =>
                               updateItemField(
                                 item.id,
                                 'rejectedQty',
-                                Number(e.target.value),
+                                e.target.value,
                               )
                             }
-                            className="w-[100px]"
+                            className="w-[70px]"
                           />
 
                           <Button
@@ -287,16 +387,29 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
                         </div>
                       </TableCell>
 
-                      {/* <TableCell>
-                        <Input
-                          placeholder="Add remark..."
-                          value={item.remarks}
-                          onChange={(e) =>
-                            updateItemField(item.id, 'remarks', e.target.value)
-                          }
-                          className="max-w-[220px]"
-                        />
-                      </TableCell> */}
+                      {/* Rejected Bucket */}
+                      <TableCell>
+                        {item.rejectedQty > 0 ? (
+                          <Select value={item.rejectedTargetBucketId} disabled>
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Rejected Items" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              {formattedRejectedBucketOptions.map((bucket) => (
+                                <SelectItem
+                                  key={bucket.value}
+                                  value={String(bucket.value)}
+                                >
+                                  {bucket.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          '-'
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -319,6 +432,7 @@ export default function QCItemsDialog({ open, onClose, qcDetails }) {
           <Button size="sm" variant="outline" onClick={onClose}>
             Cancel
           </Button>
+
           <Button size="sm" onClick={handleSaveQC}>
             Save QC
           </Button>

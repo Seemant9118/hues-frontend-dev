@@ -83,6 +83,11 @@
                     "record_payment": "Log payment",
                     "generate_invoice": "Invoice",
                     "stock-out": "Stock out",
+                    "withdraw": {
+                        "cta": "Withdraw",
+                        "successMsg": "Order withdrawn successfully",
+                        "errorMsg": "Oops! Something didn’t go as planned Try again?"
+                    },
                     "view": {
                         "placeholder": "Preview Order"
                     },
@@ -193,9 +198,11 @@
                     "date": "Date",
                     "customers_type": "Type",
                     "customers": "Name",
+                    "roundOff_amount": "Invoice Total",
                     "status": "Status",
-                    "order_id": "Order ID",
-                    "total_amount": "Total Amount"
+                    "match_status": "Match Status",
+                    "gst_feeds": "GST Feeds",
+                    "order_id": "Order ID"
                 }
             },
             "invoice_details": {
@@ -232,7 +239,10 @@
                                     "item": "Item",
                                     "quantity": "Quantity",
                                     "rate": "Rate",
-                                    "total_amount": "Total Amount"
+                                    "gstPerUnit": "GST (%)",
+                                    "total_amount": "Total Amount",
+                                    "batch": "Batch",
+                                    "expiry": "Expiry"
                                 }
                             }
                         },

@@ -52,12 +52,12 @@ export default async function RootLayout({ children, params: { locale } }) {
   }
 
   return (
-    <html lang={locale} className={nanumPen.variable}>
+    <html lang={currLocale} className={nanumPen.variable}>
       <head>
         <ClarityScript />
       </head>
       <body>
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider locale={currLocale} messages={messages}>
           {/* Toast notifications */}
           <div className="absolute">
             <Toaster

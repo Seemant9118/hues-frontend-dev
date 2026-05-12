@@ -26,3 +26,12 @@ export const updateBulkQc = ({ data }) => {
 export const stockInFromQC = ({ data }) => {
   return APIinstance.put(`${qcApis.stockInQc.endpoint}`, data);
 };
+
+export const getBuckets = ({ enterpriseId }) => {
+  const endpoint = qcApis.bucketOptions.endpoint.replace(
+    ':enterpriseId',
+    enterpriseId,
+  );
+
+  return APIinstance.get(endpoint);
+};

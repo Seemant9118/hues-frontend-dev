@@ -98,7 +98,7 @@ export default function DatePickers({
 
   return (
     <DatePicker
-      className="absolute top-1/2 w-[400px] -translate-y-2/3 cursor-pointer bg-transparent focus:outline-none"
+      className="absolute top-1/2 w-[400px] -translate-y-2/3 cursor-pointer bg-transparent text-sm focus:outline-none"
       placeholderText={placeholderText || 'DD/MM/YYYY'}
       dateFormat={dateFormat}
       popperPlacement={popperPlacement}

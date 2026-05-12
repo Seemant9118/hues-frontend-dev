@@ -1,0 +1,185 @@
+{
+    "landingPage": {
+        "nav": {
+            "contactUs": "Contact Us",
+            "register": "Register"
+        },
+        "badge": {
+            "verified": "🔥 Verified by Users. Endorsed by Professionals. Compliant by Design"
+        },
+        "hero": {
+            "title": {
+                "redefining": "Redefining",
+                "erp": "ERP",
+                "for": "for a",
+                "digitalBharat": "Digital Bharat"
+            },
+            "description": "Hues isn’t just another ERP. It's your AI-powered command center for smarter business decisions, verifiable compliance, seamless collaboration — and peace of mind. Built on India’s Digital Public Infrastructure and hardened by blockchain.",
+            "cta": {
+                "tryForFree": "Try for Free"
+            },
+            "imageAlt": "ERP Dashboard Preview"
+        },
+        "whyChoose": {
+            "title": {
+                "why": "Why",
+                "choose": "Choose",
+                "hues": "Hues?"
+            },
+            "subtitle": "Experience the power of AI-driven ERP that adapts to your business needs",
+            "features": {
+                "verifiedOnboarding": {
+                    "title": "Verified Onboarding",
+                    "description": "Aadhaar and PAN-based KYC with live compliance checks."
+                },
+                "alwaysAuditReady": {
+                    "title": "Always Audit-Ready",
+                    "description": "MCA/GSTN trails, digital signatures, and tamper-proof logs — out of the box."
+                },
+                "aiAtEveryStep": {
+                    "title": "AI at Every Step",
+                    "description": "Auto-convert invoices, populate SKUs, detect fraud, and automate reconciliation."
+                }
+            }
+        },
+        "builtSecure": {
+            "title": {
+                "builtSecure": "Built Secure.",
+                "fromTheGroundUp": "From the Ground Up"
+            },
+            "subtitle": "Your data isn't just protected — it's governed.",
+            "imageAlt": "ERP Dashboard Preview",
+            "points": {
+                "smartAccessEngine": {
+                    "title": "Smart Access Engine",
+                    "description": "Unified RBAC + ABAC: Role-based simplicity with context-aware precision. Every access request is logged, justified, and audit-ready."
+                },
+                "policyDrivenControls": {
+                    "title": "Policy-Driven Controls",
+                    "description": "From who sees what to how long it’s stored — Hues enforces your SOPs automatically."
+                },
+                "noBackdoors": {
+                    "title": "No Backdoors. No Workarounds.",
+                    "description": "Zero-trust architecture means no data leaves without verified consent. Ever."
+                }
+            }
+        },
+        "onePlatform": {
+            "title": {
+                "onePlatform": "One Platform.",
+                "allYourBusiness": "All Your Business",
+                "needs": "Needs."
+            },
+            "subtitle": "Comprehensive business management tools powered by AI",
+            "cards": {
+                "vendorManagement": {
+                    "title": "Vendor Management",
+                    "description": "From onboarding to e-invoicing — track every touchpoint."
+                },
+                "salesPurchaseAutomation": {
+                    "title": "Sales & Purchase Automation",
+                    "description": "Real-time negotiation tools, SKU sync, offer/bid sharing."
+                },
+                "taxLegalCompliance": {
+                    "title": "Tax & Legal Compliance",
+                    "description": "DPDP, PMLA, GST, MCA — done.."
+                },
+                "builtInBiTools": {
+                    "title": " Built-in BI Tools",
+                    "description": "Live dashboards for Sales, Cash Flow, and Trial Balance"
+                }
+            }
+        },
+        "dataThatWorks": {
+            "title": {
+                "dataThatWorks": "Data That Works",
+                "forYou": "for you, with you"
+            },
+            "subtitle": "Your data is no longer static. Hues makes it:",
+            "bullets": {
+                "readable": "Readable: Convert Excel, PDF, or image-based forms into structured SKUs.",
+                "verifiable": "Verifiable: digital signature trails."
+            }
+        },
+        "audience": {
+            "title": {
+                "for": "For",
+                "enterprises": "Enterprises, MSMEs, Auditors",
+                "andEveryone": "and Everyone in Between"
+            },
+            "subtitle": "Experience the power of AI-driven ERP that adapts to your business needs",
+            "cards": {
+                "corporatesMsme": {
+                    "title": "Corporates & MSME",
+                    "description": "One-click onboarding, freemium access, and AI-driven insights."
+                },
+                "auditorsInvestors": {
+                    "title": "Auditors & Investors",
+                    "description": "No more PDFs — get clean, structured, traceable financial data."
+                }
+            }
+        },
+        "pricing": {
+            "title": {
+                "transparent": "Transparent",
+                "pricing": "Pricing.",
+                "startFor": "Start for ₹ 999/- month."
+            },
+            "benefits": {
+                "freemiumForever": "✅ Freemium forever for solo-preneurs.",
+                "zeroLockIn": "✅ Zero Lock-in",
+                "noOnboardingFees": "✅ No onboarding fees. No guesswork. Just value"
+            },
+            "imageAlt": "Pricing UI"
+        },
+        "movement": {
+            "quote": {
+                "joinTheMovement": "Join the Movement.",
+                "buildWithBharat": "Build with Bharat.",
+                "thousandsUsers": "Thousands of users. Billions in transactions.",
+                "trustedLine": "All tamper-proof, transparent, and trusted"
+            }
+        },
+        "contact": {
+            "sectionTitle": "Contact Us",
+            "contactForm": {
+                "title": {
+                    "getIn": "Get In",
+                    "touch": "Touch"
+                },
+                "emailLabel": "Email:",
+                "placeholders": {
+                    "name": "Your name",
+                    "email": "Your email",
+                    "phone": "Your phone",
+                    "message": "Your message"
+                },
+                "button": {
+                    "sendMessage": "Send Message"
+                },
+                "toast": {
+                    "success": "Message Send Successfully",
+                    "errorFallback": "We hit a snag! Please refresh or retry shortly"
+                },
+                "errors": {
+                    "nameRequired": "Name is required",
+                    "emailRequired": "Email is required",
+                    "emailInvalid": "Please enter a valid email",
+                    "phoneRequired": "Phone number is required",
+                    "phoneInvalid": "Please enter a 10 - digit mobileNumber number",
+                    "messageRequired": "Message is required"
+                }
+            }
+        },
+        "footer": {
+            "title": {
+                "joinTheMovement": "Join the Movement.",
+                "buildWithBharat": "Build with Bharat."
+            },
+            "subtitle": "Thousands of users. Billions in transactions. All tamper-proof, transparent, and trusted.",
+            "email": "support@paraphernalia.in",
+            "website": "hues.paratech.ai",
+            "closingLine": "✦ Built by IIT alumni. Powered by AI. Trusted by India’s backbone — its businesses."
+        }
+    }
+}

@@ -137,6 +137,11 @@ export const AdminAPIs = {
     endpointKey: 'get_goods_master',
   },
 
+  addProductType: {
+    endpoint: `/admin-panel/hsn-master/goods-hsn-master/add-missing-item/`,
+    endpointKey: 'add_prduct_type',
+  },
+
   createGoodsMaster: {
     endpoint: `/admin-panel/hsn-master/goods-hsn-master/add-item`,
     endpointKey: 'create_goods_master',
@@ -147,9 +152,34 @@ export const AdminAPIs = {
     endpointKey: 'update_goods_master',
   },
 
+  deleteGoodsMaster: {
+    endpoint: `/admin-panel/hsn-master/goods-hsn-master/delete-item/`,
+    endpointKey: 'delete_goods_master',
+  },
+
+  uploadGoodsMaster: {
+    endpoint: `/admin-panel/hsn-master/goods-hsn-master/upload-single`,
+    endpointKey: 'upload_goods_master',
+  },
+
+  downloadSampleFileGoodsMaster: {
+    endpoint: `/admin-panel/hsn-master/goods-hsn-master/downloadsamplefile`,
+    endpointKey: 'download_goods_master_sample',
+  },
+
+  approvedRejectGoodsMasterReq: {
+    endpoint: `/admin-panel/hsn-master/goods-hsn-master/approve-reject`,
+    endpointKey: 'approved_goods_req',
+  },
+
   getServicesMaster: {
     endpoint: `/admin-panel/hsn-master/services-sac-master/list`,
     endpointKey: 'get_goods_master',
+  },
+
+  getServicesMasterTypes: {
+    endpoint: `/admin-panel/hsn-master/service-types`,
+    endpointKey: 'get_services_master_types',
   },
 
   createServiceMaster: {
@@ -157,9 +187,24 @@ export const AdminAPIs = {
     endpointKey: 'get_goods_master',
   },
 
-  updateSerivceMaster: {
+  updateServiceMaster: {
     endpoint: `/admin-panel/hsn-master/services-sac-master/update-item`,
     endpointKey: 'update_service_master',
+  },
+
+  deleteServiceMaster: {
+    endpoint: `/admin-panel/hsn-master/services-sac-master/delete-item/`,
+    endpointKey: 'delete_service_master',
+  },
+
+  uploadServiceMaster: {
+    endpoint: `/admin-panel/hsn-master/services-sac-master/upload-single`,
+    endpointKey: 'upload_goods_master',
+  },
+
+  downloadSampleFileServiceMaster: {
+    endpoint: `/admin-panel/hsn-master/services-sac-master/downloadsamplefile`,
+    endpointKey: 'download_goods_master_sample',
   },
 
   getCategories: {
@@ -174,6 +219,10 @@ export const AdminAPIs = {
     endpoint: `/admin-panel/hsn-master/categories/`,
     endpointKey: 'update_category',
   },
+  deleteCategory: {
+    endpoint: `/admin-panel/hsn-master/categories/`,
+    endpointKey: 'delete_category',
+  },
 
   getSubCategories: {
     endpoint: `/admin-panel/hsn-master/sub-categories/category`,
@@ -187,5 +236,23 @@ export const AdminAPIs = {
   updateSubCategory: {
     endpoint: `/admin-panel/hsn-master/sub-categories/`,
     endpointKey: 'sub_Category_update',
+  },
+  deleteSubCategory: {
+    endpoint: `/admin-panel/hsn-master/sub-categories/`,
+    endpointKey: 'delete_sub_category',
+  },
+
+  // send message
+  sendMessage: {
+    endpoint: `/admin-panel/contact-us-messages/`,
+    endpointKey: 'send_message',
+  },
+  getContactedMessages: {
+    endpoint: `/admin-panel/contact-us-messages`,
+    endpointKey: 'get_messages',
+  },
+  getContactedMessage: {
+    endpoint: `/admin-panel/contact-us-messages/`,
+    endpointKey: 'get_message',
   },
 };

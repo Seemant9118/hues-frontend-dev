@@ -120,7 +120,7 @@ export default function AddCategory({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Category Name */}
         <div>
-          <Label>Category Name</Label>
+          <Label>Category Name</Label> <span className="text-red-500">*</span>
           <Input
             placeholder="Enter category name"
             value={formData.categoryName}

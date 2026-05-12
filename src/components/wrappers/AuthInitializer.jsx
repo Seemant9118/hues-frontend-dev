@@ -11,7 +11,7 @@ export default function AuthInitializer() {
 
   // api call to fetch roles and permissions
   const { data: rolesAndPermissions } = useQuery({
-    queryKey: rolesApi.getAllPermissions.endpointKey,
+    queryKey: [rolesApi.getAllPermissions.endpointKey],
     queryFn: getPermissions,
     select: (data) => data.data.data,
   });

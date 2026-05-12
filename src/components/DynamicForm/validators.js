@@ -10,6 +10,37 @@ export const validateDynamicForm = (schema, data) => {
   return errors;
 };
 
+export const validateBookingPreview = (data) => {
+  const errors = {};
+
+  if (!data?.legTo) {
+    errors.legTo = 'Leg To is required';
+  }
+
+  if (!data?.modeOfTransport) {
+    errors.modeOfTransport = 'Mode of transport is required';
+  }
+
+  if (!data?.bookingType) {
+    errors.bookingType = 'Booking type is required';
+  }
+
+  if (!data?.bookingNumber) {
+    errors.bookingNumber = 'Booking number is required';
+  }
+
+  if (!data?.bookingDate) {
+    errors.bookingDate = 'Booking date is required';
+  }
+
+  // transporterId required only if transporter selected (not self)
+  if (data?.transporterEnterpriseId && !data?.transporterId) {
+    errors.transporterId = 'Transporter ID is required';
+  }
+
+  return errors;
+};
+
 export const validateBookingRow = (formData) => {
   const requiredFields = ['bookingType', 'bookingNumber', 'bookingDate'];
 

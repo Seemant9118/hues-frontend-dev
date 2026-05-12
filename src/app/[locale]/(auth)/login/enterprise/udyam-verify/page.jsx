@@ -2,7 +2,7 @@
 
 import { userAuth } from '@/api/user_auth/Users';
 import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
-import ExplantoryText from '@/components/auth/ExplantoryText';
+import InfoBanner from '@/components/auth/InfoBanner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,8 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
+const INFO_BANNER_TEXT = `Verification of Udyam using govt resources may sometimes fail. Contact us if onboarding isn't completed`;
 
 const UdyamVerify = () => {
   const translations = useTranslations('auth.enterprise.udyamVerify');
@@ -74,7 +76,7 @@ const UdyamVerify = () => {
 
   return (
     <div className="flex h-full items-center justify-center">
-      <div className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md">
+      <div className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-4 rounded-md">
         <div className="flex flex-col gap-4">
           <h1 className="w-full text-center text-2xl font-bold text-[#121212]">
             {translations('title')}
@@ -83,6 +85,14 @@ const UdyamVerify = () => {
             {translations('subtitle')}
           </p>
         </div>
+
+        {verifyUdyamMutation?.isError && (
+          <InfoBanner
+            text={INFO_BANNER_TEXT}
+            variant="danger"
+            showSupportLink
+          />
+        )}
 
         <form
           className="grid w-full items-center gap-5"
@@ -103,9 +113,11 @@ const UdyamVerify = () => {
               />
             </div>
           </div>
-
-          {/* Explanatory Information */}
-          <ExplantoryText text={translations('information')} />
+          {/* banner */}
+          <InfoBanner
+            text={translations('information')}
+            showSupportLink={false}
+          />
 
           <div className="flex items-center gap-2 text-sm">
             <Checkbox

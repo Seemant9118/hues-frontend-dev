@@ -54,6 +54,10 @@ export const createInvoice = (data) => {
   return APIinstance.post(orderApi.createInvoice.endpoint, data);
 };
 
+export const createPurchaseInvoice = (data) => {
+  return APIinstance.post(orderApi.createPurchaseInvoice.endpoint, data);
+};
+
 export const generateInvoice = (id) => {
   return APIinstance.post(`${orderApi.generateInvoice.endpoint}${id}`);
 };
@@ -134,4 +138,8 @@ export const viewOrderinNewTab = async (id) => {
 
 export const remindOrder = (id) => {
   return APIinstance.post(`${orderApi.remindOrder.endpoint}${id}`);
+};
+
+export const previewOrderDocument = (data) => {
+  return APIinstance.post(orderApi.previewOrderDocument.endpoint, data);
 };

@@ -53,6 +53,7 @@
           "delivery_challan_no": "डिलीवरी चालान नंबर",
           "ewb": "ई-वे बिल",
           "dispatch_from": "डिस्पैच स्थान",
+          "dispatch_to": "डिस्पैच टू",
           "billing_from": "बिलिंग स्थान",
           "billing_address": "बिलिंग पता",
           "shipping_address": "शिपिंग पता"
@@ -69,7 +70,7 @@
             "edit": "संपादित करें",
             "share": "(ट्रांसपोर्टर के साथ साझा करें)",
             "readyForDispatch": "डिस्पैच के लिए तैयार",
-            "generateDC": "डिलीवरी चालान बनाएँ",
+            "generateDC": "डिलीवरी चालान जोड़ें",
             "addBooking": "ट्रांसपोर्ट बुकिंग जोड़ें",
             "generateEWayBill": "ई-वे बिल बनाएँ",
             "refreshEWayBill": "ई-वे बिल रिफ्रेश करें",
@@ -120,8 +121,8 @@
             }
           },
           "tab3": {
-            "title1": "ट्रांसपोर्ट बुकिंग",
-            "title2": "अभी तक कोई बुकिंग नहीं",
+            "title": "डिलीवरी चालान",
+            "title2": "अभी तक कोई डिलीवरी चालान नहीं है",
             "table": {
               "header": {
                 "type": "मोड",
@@ -139,30 +140,6 @@
             "emtpyStateComponent": {
               "title": "अभी तक कोई ट्रांसपोर्ट बुकिंग नहीं",
               "para": "आपने अभी तक कोई ट्रांसपोर्ट बुकिंग दर्ज नहीं की है। अपनी बुकिंग हिस्ट्री अपडेट रखने के लिए अभी शुरू करें।"
-            }
-          },
-          "tab4": {
-            "title": "ई-वे बिल",
-            "table": {
-              "header": {
-                "ewbNo": "ई-वे बिल नंबर",
-                "ewayBillDate": "ई-वे बिल तिथि",
-                "from": "से",
-                "to": "तक",
-                "totalValue": "कुल मूल्य",
-                "invoiceValue": "इनवॉइस मूल्य",
-                "transporter": "ट्रांसपोर्टर का नाम",
-                "status": "स्थिति",
-                "noValidDays": "मान्य दिन",
-                "vehicleType": "वाहन प्रकार"
-              },
-              "ctas": {
-                "viewDetails": "विवरण देखें"
-              }
-            },
-            "emtpyStateComponent": {
-              "title": "अभी तक कोई ई-वे बिल नहीं बनाया गया",
-              "para": "आपने अभी तक कोई ई-वे बिल दर्ज नहीं किया है। अपनी ई-वे बिल हिस्ट्री अपडेट रखने के लिए अभी शुरू करें।"
             }
           }
         },
@@ -272,7 +249,9 @@
           "dispatch_from": "डिस्पैच स्थान",
           "billing_from": "बिलिंग स्थान",
           "billing_address": "बिलिंग पता",
-          "shipping_address": "शिपिंग पता"
+          "shipping_address": "शिपिंग पता",
+          "legFrom": "प्रस्थान स्थान",
+          "legTo": "गंतव्य स्थान"
         },
         "overview_inputs": {
           "transporter": "ट्रांसपोर्टर चुनें",
@@ -490,9 +469,9 @@
               "header": {
                 "skuId": "SKU आईडी",
                 "itemName": "आइटम नाम",
-                "qtyReceived": "प्राप्त मात्रा",
-                "qtyAccepted": "स्वीकृत मात्रा",
-                "qtyRejected": "अस्वीकृत मात्रा"
+                "dispatchQty": "प्रेषित मात्रा",
+                "qtyRecieved": "प्राप्त मात्रा",
+                "qtyMissing": "अनुपस्थित मात्रा"
               }
             }
           }

@@ -28,7 +28,7 @@ export const getDispatchNotes = ({
     page,
     limit,
     ...(movement ? { movement } : {}),
-    ...(searchString !== undefined && { searchString }),
+    ...(searchString ? { searchString } : {}),
   };
   return APIinstance.get(baseUrl, { params });
 };
@@ -40,6 +40,13 @@ export const getDispatchNote = (id) => {
 export const previewDispatchNote = ({ id, data }) => {
   return APIinstance.post(
     `${deliveryProcess.previewDispatchNote.endpoint}${id}`,
+    data,
+  );
+};
+
+export const createInwardDispatchNote = ({ data }) => {
+  return APIinstance.post(
+    deliveryProcess.createInwardDispatchNote.endpoint,
     data,
   );
 };
@@ -202,6 +209,10 @@ export const getGRN = ({ id }) => {
 
 export const previewGRN = ({ id }) => {
   return APIinstance.post(`${deliveryProcess.previewGRN.endpoint}${id}`);
+};
+
+export const adhocCreateGRN = ({ data }) => {
+  return APIinstance.post(deliveryProcess.adHocCreateGRN.endpoint, data);
 };
 
 // export const getItemsToCreateDebitNote = ({ id }) => {

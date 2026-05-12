@@ -66,6 +66,7 @@ import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
 import useMetaData from '@/hooks/useMetaData';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { SalesTable } from '../../../sales/salestable/SalesTable';
 import { useDispatchedItemColumns } from './useDispatchedItemColumns';
@@ -83,6 +84,7 @@ const ViewDelivery = () => {
     'transport.delivery-challan.delivery_challan_details',
   );
 
+  const isEWBEnabled = useFeatureFlag('TRANSPORT.DELIVERY_CHALLAN.EWB');
   const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
@@ -131,13 +133,13 @@ const ViewDelivery = () => {
       id: 4,
       name: translations('title.createEWBA'),
       path: `/dashboard/transport/delivery-challan/${params.deliveryId}`,
-      show: isCreatingEWBA,
+      show: isEWBEnabled && isCreatingEWBA,
     },
     {
       id: 5,
       name: translations('title.createEWBB'),
       path: `/dashboard/transport/delivery-challan/${params.deliveryId}`,
-      show: isCreatingEWBB,
+      show: isEWBEnabled && isCreatingEWBB,
     },
   ];
   useEffect(() => {
@@ -288,6 +290,10 @@ const ViewDelivery = () => {
       rate: item?.invoiceItem?.unitPrice ?? 0,
 
       amount: Number(item?.amount ?? 0),
+
+      batchNo: item?.invoiceItem?.batchNo ?? '--',
+
+      expiryDate: item?.invoiceItem?.expiryDate ?? '--',
     }));
   };
   const formattedDispatchedItems = mapDispatchDetailsForItems(dispatchDetails);
@@ -328,10 +334,8 @@ const ViewDelivery = () => {
     dispatchFrom:
       dispatchDetails?.metaData?.dispatchFromAddress?.address || '-',
     billingFrom: dispatchDetails?.metaData?.billingFromAddress?.address || '-',
-    billingAddress:
-      capitalize(dispatchDetails?.metaData?.billingAddress?.address) || '-',
-    shippingAddress:
-      capitalize(dispatchDetails?.metaData?.shippingAddress?.address) || '-',
+    legFrom: capitalize(dispatchDetails?.transportBookings[0]?.legFrom) || '-',
+    legTo: capitalize(dispatchDetails?.transportBookings[0]?.legTo) || '-',
   };
   const overviewLabels = {
     deliveryChallanNo: translations('overview_labels.delivery_challan_no'),
@@ -346,8 +350,8 @@ const ViewDelivery = () => {
     EWB: translations('overview_labels.ewb'),
     dispatchFrom: translations('overview_labels.dispatch_from'),
     billingFrom: translations('overview_labels.billing_from'),
-    billingAddress: translations('overview_labels.billing_address'),
-    shippingAddress: translations('overview_labels.shipping_address'),
+    legFrom: translations('overview_labels.legFrom'),
+    legTo: translations('overview_labels.legTo'),
   };
 
   // overview custom label render
@@ -770,7 +774,6 @@ const ViewDelivery = () => {
     refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
-
   useEffect(() => {
     if (!data) return;
 
@@ -844,7 +847,8 @@ const ViewDelivery = () => {
         },
       },
 
-      items: meta.items.map((item) => ({
+      items: meta.items?.map((item) => ({
+        // ...item,
         dispatchNoteItemId: item.id,
 
         acceptQuantity: item.dispatchedQuantity ?? 0,
@@ -857,6 +861,8 @@ const ViewDelivery = () => {
 
         metadata: {
           productDetails: item.invoiceItem?.orderItemId?.productDetails || {},
+          batchNo: item?.invoiceItem?.batchNo,
+          expiryDate: item?.invoiceItem?.expiryDate,
         },
       })),
     };
@@ -864,7 +870,6 @@ const ViewDelivery = () => {
 
   const handleSendPOD = () => {
     const payload = buildPODPayload(dispatchDetails);
-
     sendPODMutation.mutate({ data: payload });
   };
 
@@ -980,14 +985,22 @@ const ViewDelivery = () => {
     dispatchDetails?.isEWBRequired &&
     !dispatchDetails?.metaData?.ewb;
   const showAddBookingCTA =
-    tab !== 'ewb' && tab !== 'pod' && tab !== 'items' && isSeller;
-  const showRequestPODCTA =
     tab !== 'ewb' &&
-    tab !== 'transports' &&
+    tab !== 'pod' &&
     tab !== 'items' &&
     isSeller &&
-    (!dispatchDetails?.isPodCreated ||
-      (dispatchDetails?.isPodCreated && isPODsRejected));
+    formattedDispatchedTransporterBookings?.length === 0;
+
+  const isRestrictedTabForRequestPODs = ['ewb', 'transports', 'items'].includes(
+    tab,
+  );
+  const canRequestPod =
+    !dispatchDetails?.isPodCreated && !!dispatchDetails?.enablePodCreation;
+  const canReRequestPod = !!dispatchDetails?.isPodCreated && !!isPODsRejected; // add enablePodCreation if needed
+  const showRequestPODCTA =
+    !isRestrictedTabForRequestPODs &&
+    isSeller &&
+    (canRequestPod || canReRequestPod);
 
   const showGenerateEWBCTA =
     tab !== 'transports' && tab !== 'pod' && tab !== 'items' && isSeller;
@@ -1047,9 +1060,11 @@ const ViewDelivery = () => {
                   <TabsTrigger value="transports">
                     {translations('tabs.tab3.title1')}
                   </TabsTrigger>
-                  <TabsTrigger value="ewb">
-                    {translations('tabs.tab4.title')}
-                  </TabsTrigger>
+                  {isEWBEnabled && (
+                    <TabsTrigger value="ewb">
+                      {translations('tabs.tab4.title')}
+                    </TabsTrigger>
+                  )}
                   <TabsTrigger value="pod">
                     {translations('tabs.tab5.title')}
                   </TabsTrigger>
@@ -1096,12 +1111,19 @@ const ViewDelivery = () => {
                       </Button>
                     )}
                   {/* generate e-way bill cta */}
-                  {showGenerateEWBCTA && (
-                    <Button size="sm" onClick={() => setIsCreatingEWBA(true)}>
-                      <PlusCircle size={14} />
-                      {translations('overview_inputs.ctas.generateEWayBill')}
-                    </Button>
-                  )}
+                  {isEWBEnabled && showGenerateEWBCTA ? (
+                    dispatchDetails?.isFirstVoucher ? (
+                      <Button size="sm" onClick={() => setIsCreatingEWBA(true)}>
+                        <PlusCircle size={14} />
+                        {translations('overview_inputs.ctas.generateEWayBill')}
+                      </Button>
+                    ) : (
+                      <Button size="sm" onClick={() => setIsCreatingEWBB(true)}>
+                        <PlusCircle size={14} />
+                        {translations('overview_inputs.ctas.updatePartB')}
+                      </Button>
+                    )
+                  ) : null}
                 </div>
               </section>
 
@@ -1131,7 +1153,7 @@ const ViewDelivery = () => {
                   />
                 )}
 
-                {isEWBRequired && (
+                {isEWBEnabled && isEWBRequired && (
                   <DynamicTextInfo
                     variant={totalAmount > 50000 ? 'danger' : 'warning'}
                     title={
@@ -1275,31 +1297,37 @@ const ViewDelivery = () => {
           />
         )}
 
-        {isCreatingEWBA && !isCreatingEWBB && !isAddingBooking && (
-          <CreateEWBA
-            dispatchNoteId={params.deliveryId}
-            overviewData={overviewData}
-            overviewLabels={overviewLabels}
-            customRender={customRender}
-            customLabelRender={customLabelRender}
-            dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
-            setIsCreatingEWB={setIsCreatingEWBA}
-            dispatchDetails={dispatchDetails?.metaData}
-          />
-        )}
-        {isCreatingEWBB && !isCreatingEWBA && !isAddingBooking && (
-          <CreateEWBB
-            dispatchNoteId={params.deliveryId}
-            overviewData={overviewData}
-            overviewLabels={overviewLabels}
-            customRender={customRender}
-            customLabelRender={customLabelRender}
-            dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
-            setIsCreatingEWB={setIsCreatingEWBB}
-            dispatchDetails={dispatchDetails?.metaData}
-            selectedTransportForUpdateB={selectedTransportForUpdateB}
-          />
-        )}
+        {isEWBEnabled &&
+          isCreatingEWBA &&
+          !isCreatingEWBB &&
+          !isAddingBooking && (
+            <CreateEWBA
+              dispatchNoteId={params.deliveryId}
+              overviewData={overviewData}
+              overviewLabels={overviewLabels}
+              customRender={customRender}
+              customLabelRender={customLabelRender}
+              dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
+              setIsCreatingEWB={setIsCreatingEWBA}
+              dispatchDetails={dispatchDetails?.metaData}
+            />
+          )}
+        {isEWBEnabled &&
+          isCreatingEWBB &&
+          !isCreatingEWBA &&
+          !isAddingBooking && (
+            <CreateEWBB
+              dispatchNoteId={params.deliveryId}
+              overviewData={overviewData}
+              overviewLabels={overviewLabels}
+              customRender={customRender}
+              customLabelRender={customLabelRender}
+              dispatchOrdersBreadCrumbs={dispatchOrdersBreadCrumbs}
+              setIsCreatingEWB={setIsCreatingEWBB}
+              dispatchDetails={dispatchDetails?.metaData}
+              selectedTransportForUpdateB={selectedTransportForUpdateB}
+            />
+          )}
       </Wrapper>
     </ProtectedWrapper>
   );

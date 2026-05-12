@@ -13,10 +13,17 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import Loading from '../ui/Loading';
 
-const AddAddress = ({ clientId, isModalOpen, setIsModalOpen }) => {
+const AddAddress = ({
+  clientId,
+  vendorId,
+  isModalOpen,
+  setIsModalOpen,
+  isPurchases,
+}) => {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     clientId,
+    ...(isPurchases && vendorId),
     pincode: '',
     city: '',
     state: '',

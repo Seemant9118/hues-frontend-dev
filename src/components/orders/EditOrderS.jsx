@@ -30,7 +30,15 @@ import {
 import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Trash2 } from 'lucide-react';
+import {
+  Calendar,
+  FileText,
+  List,
+  Package,
+  Plus,
+  Trash2,
+  User,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -664,523 +672,473 @@ const EditOrderS = ({ onCancel, cta, isOrder, orderId }) => {
   }
 
   return (
-    <Wrapper className="relative flex h-full flex-col py-2">
+    <Wrapper className="relative">
       <SubHeader name={translations('title.revise')} />
-      <section className="flex flex-col gap-4">
-        {/* offer type ✅ */}
-        <div className="grid grid-cols-4 gap-4 rounded-sm border border-neutral-200 p-4">
-          <div className="flex flex-col gap-2">
-            <Label>{translations('form.label.item_type')}</Label>
-            <div className="rounded-md border bg-gray-100 p-2 text-sm hover:cursor-not-allowed">
-              {capitalize(orderDetails?.invoiceType)}
-            </div>
-          </div>
-        </div>
-        {/* client/vendor ✅ */}
-        {isOfferType === 'GOODS' ? (
-          <div className="grid grid-cols-4 gap-4 rounded-sm border border-neutral-200 p-4">
-            <div className="flex flex-col gap-2">
-              <Label>
-                {cta === 'offer'
-                  ? translations('form.label.client')
-                  : translations('form.label.vendor')}
-              </Label>
-              <div className="max-w-md rounded-md border bg-gray-100 p-2 text-sm hover:cursor-not-allowed">
-                {cta === 'offer'
-                  ? orderDetails?.clientName
-                  : orderDetails?.vendorName}
-              </div>
-            </div>
-          </div>
-        ) : (
-          // service : client/vendor details
-          <div className="grid grid-cols-4 gap-4 rounded-sm border border-neutral-200 p-4">
-            <div className="flex flex-col gap-2">
-              <Label>
-                {cta === 'offer'
-                  ? translations('form.label.client')
-                  : translations('form.label.vendor')}
-              </Label>
-              <div className="max-w-md rounded-md border bg-gray-100 p-2.5 text-sm hover:cursor-not-allowed">
-                {cta === 'offer'
-                  ? orderDetails?.clientName
-                  : orderDetails?.vendorName}
-              </div>
-            </div>
 
+      <div className="flex flex-col gap-6">
+        {/* 1. Section: Order Details */}
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center gap-2 border-b border-neutral-100 pb-1">
+            <Package className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold text-neutral-800">
+              Order Details
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 gap-4 px-1 md:grid-cols-2 lg:grid-cols-2">
             <div className="flex flex-col gap-2">
-              <Label className="flex">Contact Person</Label>
-              <div className="flex flex-col gap-1">
-                <Input
-                  placeholder="+91 9273872628"
-                  value={order?.contactPerson || ''}
-                  onChange={(e) =>
-                    handleOrderChange('contactPerson', e.target.value)
-                  }
-                  className="max-w-30"
-                />
+              <Label className="text-sm font-medium">
+                {translations('form.label.item_type')}
+              </Label>
+              <div className="max-w-[300px] rounded-sm border border-neutral-100 bg-neutral-100 p-2 text-sm">
+                {capitalize(orderDetails?.invoiceType)}
               </div>
             </div>
-            {/* client/vendor mobile */}
-            <div className="flex flex-col gap-2">
-              <Label className="flex">
-                Mobile Number
-                <span className="text-red-600">*</span>
-              </Label>
-              <div className="flex flex-col gap-1">
-                <Input
-                  placeholder="+91 9273872628"
-                  value={order?.mobile || ''}
-                  onChange={(e) => handleOrderChange('mobile', e.target.value)}
-                  className="max-w-30"
-                />
-                {errorMsg.mobile && <ErrorBox msg={errorMsg.mobile} />}
+          </div>
+        </section>
+
+        {/* 2. Section: Client/Vendor Information */}
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
+            <User className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold text-neutral-800">
+              {cta === 'offer'
+                ? translations('form.label.client')
+                : translations('form.label.vendor')}
+            </h3>
+          </div>
+
+          <div className="px-1">
+            {isOfferType === 'GOODS' ? (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="flex flex-col gap-2">
+                  <Label className="text-sm font-medium">
+                    {cta === 'offer'
+                      ? translations('form.label.client')
+                      : translations('form.label.vendor')}
+                  </Label>
+                  <div className="rounded-sm border border-neutral-100 bg-neutral-100 p-2 text-sm">
+                    {cta === 'offer'
+                      ? orderDetails?.clientName
+                      : orderDetails?.vendorName}
+                  </div>
+                </div>
               </div>
-            </div>
-            {/* client/vendor email */}
-            <div className="flex flex-col gap-2">
-              <Label className="flex">
-                Email
-                <span className="text-red-600">*</span>
-              </Label>
-              <div className="flex flex-col gap-1">
-                <Input
-                  placeholder="client@example.com"
-                  value={order?.email || ''}
-                  onChange={(e) => handleOrderChange('email', e.target.value)}
-                  className="max-w-30"
-                />
-                {errorMsg.email && <ErrorBox msg={errorMsg.email} />}
+            ) : (
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+                <div className="flex flex-col gap-2">
+                  <Label className="text-sm font-medium">
+                    {cta === 'offer'
+                      ? translations('form.label.client')
+                      : translations('form.label.vendor')}
+                  </Label>
+                  <div className="rounded-md border border-neutral-100 bg-neutral-50 p-2 text-sm text-neutral-600">
+                    {cta === 'offer'
+                      ? orderDetails?.clientName
+                      : orderDetails?.vendorName}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label className="text-sm font-medium">Contact Person</Label>
+                  <Input
+                    placeholder="Enter contact person"
+                    value={order?.contactPerson || ''}
+                    onChange={(e) =>
+                      handleOrderChange('contactPerson', e.target.value)
+                    }
+                    className="border-neutral-200"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label className="text-sm font-medium">
+                    Mobile Number <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="flex flex-col gap-1">
+                    <Input
+                      placeholder="+91 0000000000"
+                      value={order?.mobile || ''}
+                      onChange={(e) =>
+                        handleOrderChange('mobile', e.target.value)
+                      }
+                      className="border-neutral-200"
+                    />
+                    {errorMsg.mobile && <ErrorBox msg={errorMsg.mobile} />}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label className="text-sm font-medium">
+                    Email <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="flex flex-col gap-1">
+                    <Input
+                      placeholder="email@example.com"
+                      value={order?.email || ''}
+                      onChange={(e) =>
+                        handleOrderChange('email', e.target.value)
+                      }
+                      className="border-neutral-200"
+                    />
+                    {errorMsg.email && <ErrorBox msg={errorMsg.email} />}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 lg:col-span-2">
+                  <Label className="text-sm font-medium">
+                    Billing Address <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="flex flex-col gap-1">
+                    <Input
+                      placeholder="Enter billing address"
+                      value={order?.billingAddressText || ''}
+                      onChange={(e) =>
+                        handleOrderChange('billingAddressText', e.target.value)
+                      }
+                      className="border-neutral-200"
+                    />
+                    {errorMsg.billingAddressText && (
+                      <ErrorBox msg={errorMsg.billingAddressText} />
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 lg:col-span-2">
+                  <Label className="text-sm font-medium">
+                    Service Location
+                  </Label>
+                  <Input
+                    placeholder="If different from billing"
+                    value={order?.serviceLocation || ''}
+                    onChange={(e) =>
+                      handleOrderChange('serviceLocation', e.target.value)
+                    }
+                    className="border-neutral-200"
+                  />
+                </div>
               </div>
-            </div>
-            {/* client/vendor billing address */}
-            <div className="flex flex-col gap-2">
-              <Label className="flex">
-                Billing Address
-                <span className="text-red-600">*</span>
-              </Label>
-              <div className="flex flex-col gap-1">
-                <Input
-                  placeholder="Enter billing address"
-                  value={order?.billingAddressText || ''}
-                  onChange={(e) =>
-                    handleOrderChange('billingAddressText', e.target.value)
-                  }
-                  className="max-w-30"
-                />
-                {errorMsg.billingAddressText && (
-                  <ErrorBox msg={errorMsg.billingAddressText} />
+            )}
+          </div>
+        </section>
+
+        {/* 3. Section: Add Item */}
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
+            <Plus className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold text-neutral-800">
+              {translations('title.sub_titles.add_item')}
+            </h3>
+          </div>
+
+          <div className="flex flex-col gap-6 px-1">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-5">
+              <div className="flex flex-col gap-2">
+                <Label className="text-sm font-medium">
+                  {translations('form.label.item')}{' '}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <div className="flex flex-col gap-1">
+                  <Select
+                    name="items"
+                    value={selectedOption}
+                    placeholder={translations('form.input.item.placeholder')}
+                    options={itemOptions}
+                    styles={getStylesForSelectComponent()}
+                    isOptionDisabled={(option) => option.disabled}
+                    isDisabled={
+                      (cta === 'offer' && order.buyerId == null) ||
+                      (cta === 'bid' && order.sellerEnterpriseId == null) ||
+                      order.invoiceType === ''
+                    }
+                    onChange={(selectedOption) => {
+                      const selectedItemData = selectedOption?.value;
+                      if (!selectedItemData) return;
+
+                      const isGstApplicableForPage = isPurchasePage
+                        ? isGstApplicable(isGstApplicableForPurchaseOrders)
+                        : isGstApplicable(isGstApplicableForSalesOrders);
+
+                      const gstPerUnit = isGstApplicableForPage
+                        ? Number(selectedItemData.gstPercentage) || 0
+                        : 0;
+
+                      const updatedItem = {
+                        ...selectedItem,
+                        productId: selectedItemData.id,
+                        productType: selectedItemData.productType,
+                        unitPrice:
+                          selectedItemData.salesPrice ??
+                          selectedItemData.rate ??
+                          selectedItemData.cataloguePrice ??
+                          0,
+                        gstPerUnit,
+                        ...(selectedItemData.productType === 'GOODS'
+                          ? {
+                              productName: selectedItemData.name,
+                              hsnCode: selectedItemData.hsnCode,
+                            }
+                          : {
+                              serviceName:
+                                selectedItemData.serviceName ||
+                                selectedItemData.name,
+                              sac: selectedItemData.sac,
+                            }),
+                      };
+
+                      setSelectedItem(updatedItem);
+                    }}
+                  />
+                  {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                {isOfferType === 'GOODS' ? (
+                  <InputWithSelect
+                    id="quantity"
+                    name={translations('form.label.quantity')}
+                    required={true}
+                    value={
+                      selectedItem.quantity == null ||
+                      selectedItem.quantity === 0
+                        ? ''
+                        : selectedItem.quantity
+                    }
+                    onValueChange={handleQuantityChange}
+                    unit={selectedItem.unitId}
+                    onUnitChange={(val) => {
+                      setSelectedItem((prev) => ({
+                        ...prev,
+                        unitId: Number(val),
+                      }));
+                    }}
+                    units={units?.quantity}
+                    unitPlaceholder="Unit"
+                    min={0}
+                    step="any"
+                  />
+                ) : (
+                  <InputWithSelect
+                    id="quantity"
+                    name={translations('form.label.quantity')}
+                    required={true}
+                    value={
+                      selectedItem.quantity == null ||
+                      selectedItem.quantity === 0
+                        ? ''
+                        : selectedItem.quantity
+                    }
+                    onValueChange={handleQuantityChange}
+                    unit={selectedItem.unit}
+                    onUnitChange={(val) => {
+                      setSelectedItem((prev) => ({ ...prev, unit: val }));
+                    }}
+                    units={unitForService}
+                    unitPlaceholder="Unit"
+                    min={0}
+                    step="any"
+                  />
                 )}
+                {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
               </div>
-            </div>
-            {/* client/vendor service location */}
-            <div className="flex flex-col gap-2">
-              <Label className="flex">Service Location</Label>
-              <div className="flex flex-col gap-1">
-                <Input
-                  placeholder="If different from billing"
-                  value={order?.serviceLocation || ''}
-                  onChange={(e) =>
-                    handleOrderChange('serviceLocation', e.target.value)
-                  }
-                  className="max-w-30"
-                />
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* Items/Service ✅  */}
-        <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
-          <div className="grid grid-cols-4 gap-2">
-            {/* Items/Service ✅ */}
-            <div className="flex w-full max-w-xs flex-col gap-2">
-              <Label className="flex gap-1">
-                {translations('form.label.item')}
-                <span className="text-red-600">*</span>
-              </Label>
-              <div className="flex flex-col gap-1">
-                <Select
-                  name="items"
-                  value={selectedOption}
-                  placeholder={translations('form.input.item.placeholder')}
-                  options={itemOptions}
-                  styles={getStylesForSelectComponent()}
-                  isOptionDisabled={(option) => option.disabled}
-                  isDisabled={
-                    (cta === 'offer' && order.buyerId == null) ||
-                    (cta === 'bid' && order.sellerEnterpriseId == null) ||
-                    order.invoiceType === ''
-                  }
-                  onChange={(selectedOption) => {
-                    const selectedItemData = selectedOption?.value;
-
-                    if (!selectedItemData) return;
-
-                    const isGstApplicableForPage = isPurchasePage
-                      ? isGstApplicable(isGstApplicableForPurchaseOrders)
-                      : isGstApplicable(isGstApplicableForSalesOrders);
-
-                    const gstPerUnit = isGstApplicableForPage
-                      ? Number(selectedItemData.gstPercentage) || 0
-                      : 0;
-
-                    // GOODS or SERVICE specific logic
-                    const updatedItem = {
-                      ...selectedItem,
-                      productId: selectedItemData.id,
-                      productType: selectedItemData.productType, // GOODS or SERVICE
-                      unitPrice:
-                        selectedItemData.salesPrice ??
-                        selectedItemData.rate ??
-                        selectedItemData.cataloguePrice ??
-                        0, // auto fallback
-
-                      gstPerUnit,
-                      ...(selectedItemData.productType === 'GOODS'
-                        ? {
-                            productName: selectedItemData.name,
-                            hsnCode: selectedItemData.hsnCode,
-                          }
-                        : {
-                            serviceName:
-                              selectedItemData.serviceName ||
-                              selectedItemData.name,
-                            sac: selectedItemData.sac,
-                          }),
-                    };
-
-                    // Persist local state
-                    setSelectedItem(updatedItem);
-                  }}
-                />
-
-                {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
-              </div>
-            </div>
-
-            {/* Items/Service Quantity ✅ */}
-            <div className="flex flex-col gap-1">
-              {isOfferType === 'GOODS' ? (
-                <InputWithSelect
-                  id="quantity"
-                  name={translations('form.label.quantity')}
-                  required={true}
-                  disabled={
-                    (cta === 'offer' && order.buyerId == null) ||
-                    order.sellerEnterpriseId == null
-                  }
-                  value={
-                    selectedItem.quantity == null || selectedItem.quantity === 0
-                      ? ''
-                      : selectedItem.quantity
-                  }
-                  onValueChange={handleQuantityChange}
-                  unit={selectedItem.unitId}
-                  onUnitChange={(val) => {
-                    setSelectedItem((prev) => {
-                      const updated = { ...prev, unitId: Number(val) };
-                      return updated;
-                    });
-                  }}
-                  units={units?.quantity} // todo : units for services...
-                  unitPlaceholder="Select unit"
-                  min={0}
-                  step="any" // <-- allows decimals
-                />
-              ) : (
-                <InputWithSelect
-                  id="quantity"
-                  name={translations('form.label.quantity')}
-                  required={true}
-                  disabled={
-                    (cta === 'offer' && order.buyerId == null) ||
-                    order.sellerEnterpriseId == null
-                  }
-                  value={
-                    selectedItem.quantity == null || selectedItem.quantity === 0
-                      ? ''
-                      : selectedItem.quantity
-                  }
-                  onValueChange={handleQuantityChange}
-                  unit={selectedItem.unit}
-                  onUnitChange={(val) => {
-                    setSelectedItem((prev) => {
-                      const updated = { ...prev, unit: val };
-                      return updated;
-                    });
-                  }}
-                  units={unitForService} // todo : units for services...
-                  unitPlaceholder="Select unit"
-                  min={0}
-                  step="any" // <-- allows decimals
-                />
-              )}
-
-              {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
-            </div>
-
-            {/* Items/Service Price ✅ */}
-            <div className="flex flex-col gap-2">
-              <Label className="flex gap-1">
-                {translations('form.label.price')}
-                <span className="text-red-600">*</span>
-              </Label>
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-2">
+                <Label className="text-sm font-medium">
+                  {translations('form.label.price')}{' '}
+                  <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   type="number"
                   placeholder="0.00"
                   min={1}
-                  disabled={
-                    (cta === 'offer' && order.buyerId == null) ||
-                    order.sellerEnterpriseId == null
-                  }
                   value={
                     selectedItem.unitPrice == null ||
                     selectedItem.unitPrice === 0
                       ? ''
                       : selectedItem.unitPrice
                   }
-                  className="max-w-30"
+                  className="border-neutral-200 font-semibold"
                   onChange={handlePriceChange}
                 />
-
                 {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
               </div>
-            </div>
 
-            {/* Items/Service Discount ✅ */}
-            {isOfferType === 'SERVICE' && (
-              <div className="flex flex-col gap-2">
-                <Label className="flex">
-                  {translations('form.label.discount')}
-                  <span className="text-xs"> (%)</span>
-                  <span className="text-red-600">*</span>
-                </Label>
-                <div className="flex flex-col gap-1">
+              {isOfferType === 'SERVICE' && (
+                <div className="flex flex-col gap-2">
+                  <Label className="text-sm font-medium">Discount (%)</Label>
                   <Input
-                    value={selectedItem.discountPercentage || 0}
-                    className="max-w-30"
+                    type="number"
+                    placeholder="0"
+                    min={0}
+                    max={100}
+                    value={selectedItem.discountPercentage || ''}
+                    className="border-neutral-200"
                     onChange={handleDiscountChange}
                   />
                   {errorMsg.discountPercentage && (
                     <ErrorBox msg={errorMsg.discountPercentage} />
                   )}
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Items/Service GST% ✅ */}
-            {isGstApplicable(
-              isPurchasePage
-                ? isGstApplicableForPurchaseOrders
-                : isGstApplicableForSalesOrders,
-            ) && (
               <div className="flex flex-col gap-2">
-                <Label className="flex">
-                  {translations('form.label.gst')}
-                  <span className="text-xs"> (%)</span>
-                  <span className="text-red-600">*</span>
+                <Label className="text-sm font-medium">
+                  {translations('form.label.value')}{' '}
+                  <span className="text-red-500">*</span>
                 </Label>
-                <div className="flex flex-col gap-1">
-                  <Input disabled value={selectedItem.gstPerUnit || ''} />
-                  {errorMsg.gstPerUnit && (
-                    <ErrorBox msg={errorMsg.gstPerUnit} />
-                  )}
-                </div>
-              </div>
-            )}
-            {/* Items/Service Value ✅ */}
-            <div className="flex flex-col gap-2">
-              <Label className="flex gap-1">
-                {isOrder === 'invoice'
-                  ? translations('form.label.invoice_value')
-                  : translations('form.label.value')}
-                <span className="text-red-600">*</span>
-              </Label>
-              <div className="flex flex-col gap-1">
                 <Input
                   disabled
-                  value={selectedItem.totalAmount || ''}
-                  className="max-w-30"
+                  value={selectedItem.totalAmount || '0.00'}
+                  className="border-neutral-100 bg-neutral-50"
                 />
-                {errorMsg.totalAmount && (
-                  <ErrorBox msg={errorMsg.totalAmount} />
-                )}
               </div>
+
+              {isGstApplicable(
+                isPurchasePage
+                  ? isGstApplicableForPurchaseOrders
+                  : isGstApplicableForSalesOrders,
+              ) && (
+                <>
+                  <div className="flex flex-col gap-2">
+                    <Label className="flex items-center text-sm font-medium">
+                      {translations('form.label.gst')}
+                      <span className="ml-1 text-xs text-neutral-400">(%)</span>
+                    </Label>
+                    <Input
+                      disabled
+                      value={selectedItem.gstPerUnit || '0'}
+                      className="border-neutral-100 bg-neutral-50"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label className="text-sm font-medium">
+                      {translations('form.label.tax_amount')}
+                    </Label>
+                    <Input
+                      disabled
+                      value={selectedItem.totalGstAmount || '0.00'}
+                      className="border-neutral-100 bg-neutral-50"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label className="text-sm font-medium text-primary">
+                      {translations('form.label.amount')}
+                    </Label>
+                    <Input
+                      disabled
+                      value={selectedItem?.finalAmount || '0.00'}
+                      className="border-blue-100 bg-blue-50/30 font-semibold text-primary"
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
-            {/* Items/Service Tax amount ✅ */}
-            {isGstApplicable(
-              isPurchasePage
-                ? isGstApplicableForPurchaseOrders
-                : isGstApplicableForSalesOrders,
-            ) && (
-              <div className="flex flex-col gap-2">
-                <Label className="flex gap-1">
-                  {translations('form.label.tax_amount')}
-                  <span className="text-red-600">*</span>
-                </Label>
-                <div className="flex flex-col gap-1">
-                  <Input
-                    disabled
-                    value={selectedItem.totalGstAmount || ''}
-                    className="max-w-30"
-                  />
-                  {errorMsg.totalGstAmount && (
-                    <ErrorBox msg={errorMsg.totalGstAmount} />
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Items/Service Amount ✅ */}
-            {isGstApplicable(
-              isPurchasePage
-                ? isGstApplicableForPurchaseOrders
-                : isGstApplicableForSalesOrders,
-            ) && (
-              <div className="flex flex-col gap-2">
-                <Label className="flex gap-1">
-                  {translations('form.label.amount')}
-                  <span className="text-red-600">*</span>
-                </Label>
-                <div className="flex flex-col gap-1">
-                  <Input
-                    disabled
-                    value={selectedItem?.finalAmount}
-                    className="max-w-30"
-                  />
-                  {errorMsg.finalAmount && (
-                    <ErrorBox msg={errorMsg.finalAmount} />
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Items/Service Description ✅ */}
-            {isOfferType === 'SERVICE' && (
-              <div className="col-span-4 flex flex-col gap-2">
-                <Label className="flex gap-1">Description</Label>
-                <div className="flex flex-col gap-1">
-                  <Input
-                    value={selectedItem.description || ''}
-                    className="max-w-30"
-                    onChange={(e) =>
-                      setSelectedItem((prev) => ({
-                        ...prev,
-                        description: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-            )}
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedItem({
+                    serviceName: '',
+                    productName: '',
+                    productType: '',
+                    productId: null,
+                    quantity: null,
+                    unitId: isOfferType === 'SERVICE' && null,
+                    unit: null,
+                    discountPercentage: null,
+                    description: null,
+                    unitPrice: null,
+                    gstPerUnit: null,
+                    totalAmount: null,
+                    totalGstAmount: null,
+                    finalAmount: '',
+                  });
+                }}
+              >
+                {translations('form.ctas.cancel')}
+              </Button>
+              <Button
+                size="sm"
+                className="min-w-[100px]"
+                disabled={
+                  !selectedItem.productId ||
+                  !selectedItem.quantity ||
+                  selectedItem.quantity <= 0 ||
+                  !selectedItem.unitPrice ||
+                  selectedItem.unitPrice <= 0
+                }
+                onClick={() => {
+                  const newItem = {
+                    ...selectedItem,
+                    gstPercentage: selectedItem.gstPerUnit ?? 0,
+                    gstPerUnit: selectedItem.gstPerUnit ?? 0,
+                    totalAmount: selectedItem.totalAmount ?? 0,
+                    totalGstAmount: selectedItem.totalGstAmount ?? 0,
+                    finalAmount: selectedItem.finalAmount ?? 0,
+                  };
+                  setOrder((prev) => ({
+                    ...prev,
+                    orderItems: [...(prev.orderItems || []), newItem],
+                  }));
+                  setSelectedItem({
+                    serviceName: '',
+                    productName: '',
+                    productType: '',
+                    productId: null,
+                    quantity: null,
+                    unitId: isOfferType === 'SERVICE' ? null : null,
+                    unit: null,
+                    discountPercentage: null,
+                    description: null,
+                    unitPrice: null,
+                    gstPerUnit: null,
+                    totalAmount: null,
+                    totalGstAmount: null,
+                    finalAmount: '',
+                  });
+                  setErrorMsg({});
+                }}
+              >
+                {translations('form.ctas.add')}
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center justify-end gap-4">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                // Reset selected item
-                const updatedItem = {
-                  serviceName: '',
-                  productName: '',
-                  productType: '',
-                  productId: null,
-                  quantity: null,
-                  unitId: isOfferType === 'SERVICE' && null,
-                  unit: null,
-                  discountPercentage: null,
-                  description: null,
-                  unitPrice: null,
-                  gstPerUnit: null,
-                  totalAmount: null,
-                  totalGstAmount: null,
-                  finalAmount: '',
-                };
+        </section>
 
-                setSelectedItem(updatedItem);
-              }}
-            >
-              {translations('form.ctas.cancel')}
-            </Button>
-            <Button
-              size="sm"
-              disabled={
-                !selectedItem.productId ||
-                !selectedItem.quantity ||
-                selectedItem.quantity <= 0 ||
-                !selectedItem.unitPrice ||
-                selectedItem.unitPrice <= 0
-              }
-              onClick={() => {
-                const newItem = {
-                  ...selectedItem,
-                  gstPercentage: selectedItem.gstPerUnit ?? 0,
-                  gstPerUnit: selectedItem.gstPerUnit ?? 0,
-                  totalAmount: selectedItem.totalAmount ?? 0,
-                  totalGstAmount: selectedItem.totalGstAmount ?? 0,
-                  finalAmount: selectedItem.finalAmount ?? 0,
-                };
-
-                // Add item to orderItems safely
-                setOrder((prev) => ({
-                  ...prev,
-                  orderItems: [...(prev.orderItems || []), newItem],
-                }));
-
-                // Clear selected item (UI reset)
-                setSelectedItem({
-                  serviceName: '',
-                  productName: '',
-                  productType: '',
-                  productId: null,
-                  quantity: null,
-                  unitId: isOfferType === 'SERVICE' ? null : null,
-                  unit: null,
-                  discountPercentage: null,
-                  description: null,
-                  unitPrice: null,
-                  gstPerUnit: null,
-                  totalAmount: null,
-                  totalGstAmount: null,
-                  finalAmount: '',
-                });
-
-                setErrorMsg({});
-              }}
-              variant="blue_outline"
-            >
-              {translations('form.ctas.add')}
-            </Button>
+        {/* 4. Section: Itemized List */}
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
+            <List className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold text-neutral-800">
+              {translations('title.sub_titles.edit_item')}
+            </h3>
           </div>
-        </div>
 
-        {/* selected item / Edit item table */}
-        <div className="scrollBarStyles min-h-42 relative flex flex-col gap-2 overflow-auto rounded-md border px-4">
-          <span className="sticky top-0 z-20 w-full pt-4 font-bold">
-            {translations('title.sub_titles.edit_item')}
-          </span>
-          {isLoading ? (
-            <Loading />
-          ) : (
-            <div>
-              <div className="rounded-[6px]">
+          <div className="px-1">
+            <div className="overflow-hidden rounded-lg border border-neutral-100 shadow-sm">
+              {isLoading ? (
+                <div className="flex h-32 items-center justify-center bg-white">
+                  <Loading />
+                </div>
+              ) : (
                 <Table id={orderId}>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="shrink-0 text-xs font-bold text-black">
+                  <TableHeader className="bg-neutral-50/50">
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="py-3 text-xs font-bold text-neutral-600">
                         {translations('form.table.header.item')}
                       </TableHead>
-                      <TableHead className="shrink-0 text-xs font-bold text-black">
+                      <TableHead className="py-3 text-xs font-bold text-neutral-600">
                         {translations('form.table.header.quantity')}
                       </TableHead>
-                      <TableHead className="shrink-0 text-xs font-bold text-black">
+                      <TableHead className="py-3 text-xs font-bold text-neutral-600">
                         {translations('form.table.header.price')}
                       </TableHead>
                       {isOfferType === 'SERVICE' && (
-                        <TableHead className="shrink-0 text-xs font-bold text-black">
+                        <TableHead className="py-3 text-xs font-bold text-neutral-600">
                           {translations('form.table.header.discount')}
                         </TableHead>
                       )}
@@ -1189,11 +1147,11 @@ const EditOrderS = ({ onCancel, cta, isOrder, orderId }) => {
                           ? isGstApplicableForPurchaseOrders
                           : isGstApplicableForSalesOrders,
                       ) && (
-                        <TableHead className="shrink-0 text-xs font-bold text-black">
-                          {translations('form.table.header.gst')}
+                        <TableHead className="py-3 text-xs font-bold text-neutral-600">
+                          {translations('form.table.header.gst')} (%)
                         </TableHead>
                       )}
-                      <TableHead className="shrink-0 text-xs font-bold text-black">
+                      <TableHead className="py-3 text-xs font-bold text-neutral-600">
                         {translations('form.table.header.value')}
                       </TableHead>
                       {isGstApplicable(
@@ -1202,62 +1160,59 @@ const EditOrderS = ({ onCancel, cta, isOrder, orderId }) => {
                           : isGstApplicableForSalesOrders,
                       ) && (
                         <>
-                          <TableHead className="shrink-0 text-xs font-bold text-black">
+                          <TableHead className="py-3 text-xs font-bold text-neutral-600">
                             {translations('form.table.header.tax_amount')}
                           </TableHead>
-                          <TableHead className="shrink-0 text-xs font-bold text-black">
+                          <TableHead className="py-3 text-xs font-bold text-neutral-600">
                             {translations('form.table.header.amount')}
                           </TableHead>
                         </>
                       )}
-                      <TableHead className="shrink-0 text-xs font-bold text-black"></TableHead>
+                      <TableHead className="w-10 py-3"></TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody className="italic">
-                    {order?.orderItems?.map((item) => (
-                      <TableRow key={item.id || item.productId}>
-                        {/* item name ✅ */}
-                        <TableCell>
+                  <TableBody>
+                    {order?.orderItems?.map((item, index) => (
+                      <TableRow
+                        key={item.id || `item-${index}-${item.productId}`}
+                        className="group hover:bg-neutral-50/50"
+                      >
+                        <TableCell className="font-medium text-neutral-800">
                           {item.productName || item.serviceName}
                         </TableCell>
-
-                        {/* quantity 🔔 */}
                         <TableCell>
-                          <InputWithSelect
-                            required={true}
-                            value={item.quantity === 0 ? '' : item.quantity}
-                            onValueChange={(e) => {
-                              const inputValue = e.target.value;
-
-                              // If empty -> treat as 0 quantity
-                              if (inputValue === '') {
-                                handleInputChange(item, 'quantity', 0);
-                                return;
+                          <div className="w-32">
+                            <InputWithSelect
+                              required={true}
+                              value={item.quantity === 0 ? '' : item.quantity}
+                              onValueChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (inputValue === '') {
+                                  handleInputChange(item, 'quantity', 0);
+                                  return;
+                                }
+                                if (!/^\d*\.?\d*$/.test(inputValue)) return;
+                                const numericValue = Number(inputValue);
+                                if (numericValue < 0) return;
+                                handleInputChange(
+                                  item,
+                                  'quantity',
+                                  numericValue,
+                                );
+                              }}
+                              selectUnitDisabled={true}
+                              unit={item.unitId || item.unit}
+                              units={
+                                isOfferType === 'GOODS'
+                                  ? units?.quantity
+                                  : unitForService
                               }
-
-                              // Allow only valid decimal numbers
-                              if (!/^\d*\.?\d*$/.test(inputValue)) return;
-
-                              // Convert to number
-                              const numericValue = Number(inputValue);
-
-                              if (numericValue < 0) return;
-
-                              handleInputChange(item, 'quantity', numericValue);
-                            }}
-                            selectUnitDisabled={true}
-                            unit={item.unitId || item.unit}
-                            units={
-                              isOfferType === 'GOODS'
-                                ? units?.quantity
-                                : unitForService
-                            }
-                            min={0}
-                            step="any"
-                          />
+                              min={0}
+                              step="any"
+                              className="border-neutral-200"
+                            />
+                          </div>
                         </TableCell>
-
-                        {/* unitPrice ✅ */}
                         <TableCell>
                           <Input
                             type="number"
@@ -1269,12 +1224,9 @@ const EditOrderS = ({ onCancel, cta, isOrder, orderId }) => {
                                 e.target.value,
                               )
                             }
-                            className="w-24 border-2 font-semibold"
-                            placeholder="price"
+                            className="w-24 border-neutral-200 bg-transparent font-medium focus:bg-white"
                           />
                         </TableCell>
-
-                        {/* discount ✅ */}
                         {isOfferType === 'SERVICE' && (
                           <TableCell>
                             <Input
@@ -1287,80 +1239,98 @@ const EditOrderS = ({ onCancel, cta, isOrder, orderId }) => {
                                   e.target.value,
                                 )
                               }
-                              className="w-20 border-2 font-semibold"
-                              placeholder="%"
+                              className="w-16 border-neutral-200 bg-transparent focus:bg-white"
                             />
                           </TableCell>
                         )}
-
-                        {/* gst ✅ */}
                         {isGstApplicable(
                           isPurchasePage
                             ? isGstApplicableForPurchaseOrders
                             : isGstApplicableForSalesOrders,
-                        ) && <TableCell>{item.gstPerUnit}</TableCell>}
-
-                        {/* value ✅ */}
-                        <TableCell>{`₹ ${(Number(item.totalAmount) || 0).toFixed(2)}`}</TableCell>
-
+                        ) && (
+                          <TableCell className="text-neutral-600">
+                            {item.gstPerUnit}%
+                          </TableCell>
+                        )}
+                        <TableCell className="font-medium text-neutral-800">
+                          ₹{' '}
+                          {(Number(item.totalAmount) || 0).toLocaleString(
+                            'en-IN',
+                            {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            },
+                          )}
+                        </TableCell>
                         {isGstApplicable(
                           isPurchasePage
                             ? isGstApplicableForPurchaseOrders
                             : isGstApplicableForSalesOrders,
                         ) && (
                           <>
-                            {/* tax amount */}
-                            <TableCell>{`₹ ${(Number(item.totalGstAmount) || 0).toFixed(2)}`}</TableCell>
-
-                            {/* total amount / finalAmount */}
-                            <TableCell>{`₹ ${handleCalculatefinalAmount(item.totalGstAmount, item.totalAmount).toFixed(2)}`}</TableCell>
+                            <TableCell className="text-neutral-600">
+                              ₹{' '}
+                              {(
+                                Number(item.totalGstAmount) || 0
+                              ).toLocaleString('en-IN', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </TableCell>
+                            <TableCell className="font-semibold text-neutral-900">
+                              ₹{' '}
+                              {handleCalculatefinalAmount(
+                                item.totalGstAmount,
+                                item.totalAmount,
+                              ).toLocaleString('en-IN', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </TableCell>
                           </>
                         )}
-
-                        {/* Delete Item 🔔 */}
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              className="text-red-500"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setOrder((prev) => ({
-                                  ...prev,
-                                  // ✅ Remove item from orderItems using productId (unique)
-                                  orderItems: prev.orderItems.filter(
-                                    (orderItem) =>
-                                      orderItem.productId !== item.productId,
-                                  ),
-
-                                  // ✅ Push id into deletedItems only if it exists
-                                  deletedItems: item.id
-                                    ? [...(prev.deletedItems || []), item.id]
-                                    : [...(prev.deletedItems || [])],
-                                }));
-                              }}
-                            >
-                              <Trash2 size={14} />
-                            </Button>
-                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-neutral-400 opacity-0 transition-opacity hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                            onClick={() => {
+                              setOrder((prev) => ({
+                                ...prev,
+                                orderItems: prev.orderItems.filter(
+                                  (orderItem) =>
+                                    orderItem.productId !== item.productId,
+                                ),
+                                deletedItems: item.id
+                                  ? [...(prev.deletedItems || []), item.id]
+                                  : [...(prev.deletedItems || [])],
+                              }));
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        </section>
 
-        {/* Scheduling & Delivery Expectations  */}
+        {/* 5. Section: Scheduling & Logistics (Service Only) */}
         {isOfferType === 'SERVICE' && (
-          <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
-            {/* TOP ROW */}
-            <div className="grid grid-cols-3 gap-6">
-              {/* Expected Start Date */}
+          <section className="flex flex-col gap-4 text-sm">
+            <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              <h3 className="text-lg font-semibold text-neutral-800">
+                Scheduling & Logistics
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 gap-5 px-1 md:grid-cols-2 lg:grid-cols-4">
               <div className="flex flex-col gap-2">
-                <Label>Expected Start Date</Label>
+                <Label className="text-neutral-600">Expected Start Date</Label>
                 <Input
                   type="date"
                   value={toInputDate(order.expectedStartDate)}
@@ -1370,12 +1340,14 @@ const EditOrderS = ({ onCancel, cta, isOrder, orderId }) => {
                       expectedStartDate: toDisplayDate(e.target.value),
                     }));
                   }}
+                  className="border-neutral-200"
                 />
               </div>
 
-              {/* Expected Completion Date */}
               <div className="flex flex-col gap-2">
-                <Label>Expected Completion Date</Label>
+                <Label className="text-neutral-600">
+                  Expected Completion Date
+                </Label>
                 <Input
                   type="date"
                   value={toInputDate(order.expectedCompletionDate)}
@@ -1385,20 +1357,18 @@ const EditOrderS = ({ onCancel, cta, isOrder, orderId }) => {
                       expectedCompletionDate: toDisplayDate(e.target.value),
                     }));
                   }}
+                  className="border-neutral-200"
                 />
               </div>
 
-              {/* Delivery Mode (Custom Select) */}
               <div className="flex flex-col gap-2">
-                <Label>Delivery Mode</Label>
+                <Label className="text-neutral-600">Delivery Mode</Label>
                 <Select
                   name="deliveryMode"
                   placeholder="Select mode"
                   options={deliveryModes}
                   styles={getStylesForSelectComponent()}
-                  className="max-w-xs text-sm"
-                  classNamePrefix="select"
-                  menuPlacement="top"
+                  className="text-sm"
                   value={
                     deliveryModes.find(
                       (option) => option.value === order?.deliveryMode,
@@ -1413,49 +1383,49 @@ const EditOrderS = ({ onCancel, cta, isOrder, orderId }) => {
                   }}
                 />
               </div>
-            </div>
 
-            {/* PREFERRED TIME WINDOW */}
-            <div className="flex flex-col gap-2">
-              <Label>Preferred Time Window</Label>
-              <Select
-                name="preferredTimeWindow"
-                placeholder="Select time window"
-                options={timeWindows}
-                styles={getStylesForSelectComponent()}
-                className="w-full text-sm"
-                classNamePrefix="select"
-                menuPlacement="top"
-                value={
-                  timeWindows.find(
-                    (option) => option.value === order?.preferredTimeWindow,
-                  ) || null
-                }
-                onChange={(selectedOption) => {
-                  if (!selectedOption) return;
-
-                  setOrder((prev) => ({
-                    ...prev,
-                    preferredTimeWindow: selectedOption.value,
-                  }));
-                }}
-              />
+              <div className="flex flex-col gap-2">
+                <Label className="text-neutral-600">
+                  Preferred Time Window
+                </Label>
+                <Select
+                  name="preferredTimeWindow"
+                  placeholder="Select window"
+                  options={timeWindows}
+                  styles={getStylesForSelectComponent()}
+                  className="text-sm"
+                  value={
+                    timeWindows.find(
+                      (option) => option.value === order?.preferredTimeWindow,
+                    ) || null
+                  }
+                  onChange={(selectedOption) => {
+                    if (!selectedOption) return;
+                    setOrder((prev) => ({
+                      ...prev,
+                      preferredTimeWindow: selectedOption.value,
+                    }));
+                  }}
+                />
+              </div>
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Offer Terms */}
+        {/* 6. Section: Offer Terms (Service Only) */}
         {isOfferType === 'SERVICE' && (
-          <div className="flex flex-col gap-4 rounded-sm border border-neutral-200 p-4">
-            {/* Offer Validity + Payment Terms */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {/* Offer Validity */}
+          <section className="flex flex-col gap-4">
+            <div className="flex items-center gap-2 border-b border-neutral-100 pb-2">
+              <FileText className="h-5 w-5 text-primary" />
+              <h3 className="text-lg font-semibold text-neutral-800">
+                Offer Terms & Notes
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 gap-6 px-1 lg:grid-cols-2">
               <div className="flex flex-col gap-2">
-                <Label className="flex gap-1">
-                  {`Offer Validity`}
-                  <span className="text-red-600">*</span>
+                <Label className="text-neutral-600">
+                  Offer Validity <span className="text-red-500">*</span>
                 </Label>
-
                 <Input
                   placeholder="e.g., Valid for 30 days"
                   value={order.offerValidity || ''}
@@ -1465,23 +1435,20 @@ const EditOrderS = ({ onCancel, cta, isOrder, orderId }) => {
                       offerValidity: e.target.value,
                     }))
                   }
+                  className="border-neutral-200"
                 />
-
                 {errorMsg.offerValidity && (
                   <ErrorBox msg={errorMsg.offerValidity} />
                 )}
               </div>
 
-              {/* Payment Terms */}
               <div className="flex flex-col gap-2">
-                <Label className="flex gap-1">
-                  {`Payment Terms`}
-                  <span className="text-red-600">*</span>
+                <Label className="text-neutral-600">
+                  Payment Terms <span className="text-red-500">*</span>
                 </Label>
-
                 <Textarea
                   placeholder="e.g., 50% advance, 50% on completion"
-                  className="h-24"
+                  className="min-h-[100px] resize-none border-neutral-200"
                   value={order.paymentTermsService || ''}
                   onChange={(e) =>
                     setOrder((prev) => ({
@@ -1490,98 +1457,116 @@ const EditOrderS = ({ onCancel, cta, isOrder, orderId }) => {
                     }))
                   }
                 />
-
                 {errorMsg.paymentTermsService && (
                   <ErrorBox msg={errorMsg.paymentTermsService} />
                 )}
               </div>
+
+              <div className="flex flex-col gap-2 lg:col-span-2">
+                <Label className="text-neutral-600">Notes to Customer</Label>
+                <Textarea
+                  placeholder="Any additional notes or terms..."
+                  className="min-h-[100px] resize-none border-neutral-200"
+                  value={order.notesToCustomer || ''}
+                  onChange={(e) =>
+                    setOrder((prev) => ({
+                      ...prev,
+                      notesToCustomer: e.target.value,
+                    }))
+                  }
+                />
+                {errorMsg.notesToCustomer && (
+                  <p className="text-sm text-red-500">
+                    {errorMsg.notesToCustomer}
+                  </p>
+                )}
+              </div>
             </div>
-
-            {/* Notes to Customer */}
-            <div className="flex flex-col gap-2">
-              <Label>{`Notes to Customer`}</Label>
-
-              <Textarea
-                placeholder="Any additional notes or terms..."
-                className="h-28"
-                value={order.notesToCustomer || ''}
-                onChange={(e) =>
-                  setOrder((prev) => ({
-                    ...prev,
-                    notesToCustomer: e.target.value,
-                  }))
-                }
-              />
-
-              {errorMsg.notesToCustomer && (
-                <p className="text-sm text-red-600">
-                  {errorMsg.notesToCustomer}
-                </p>
-              )}
-            </div>
-          </div>
+          </section>
         )}
-        <div className="mt-auto h-[1px] bg-neutral-300"></div>
+      </div>
 
-        {/* Footers : with info and ctas */}
-        <div className="sticky bottom-0 z-10 flex items-center justify-between gap-4 bg-white">
-          <div className="flex items-center gap-2">
-            {/* discount amount */}
+      {/* 7. Sticky Footer: Summary & Actions */}
+      <footer className="sticky bottom-0 z-30 -mx-4 -mb-6 mt-8 border-t border-neutral-200 bg-white/80 px-8 py-4 backdrop-blur-md">
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div className="flex flex-wrap items-center gap-8">
             {isOfferType === 'SERVICE' && (
-              <div className="flex items-center gap-2">
-                <span className="font-bold">
-                  {translations('form.footer.discountAmount')} :{' '}
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  {translations('form.footer.discountAmount')}
                 </span>
-                <span className="rounded-sm border bg-slate-100 p-2">
-                  {totalDiscountAmount?.toFixed(2)}
+                <span className="text-lg font-bold text-neutral-800">
+                  ₹{' '}
+                  {totalDiscountAmount?.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </span>
               </div>
             )}
+
             {isGstApplicable(
               isPurchasePage
                 ? isGstApplicableForPurchaseOrders
                 : isGstApplicableForSalesOrders,
             ) && (
               <>
-                {/* net amount */}
-                <div className="flex items-center gap-2">
-                  <span className="font-bold">{'Gross Amount'} :</span>
-                  <span className="rounded-sm border bg-slate-100 p-2">
-                    {grossAmount.toFixed(2)}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    Gross Amount
+                  </span>
+                  <span className="text-lg font-bold text-neutral-800">
+                    ₹{' '}
+                    {grossAmount.toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </span>
                 </div>
-                {/* gst amount */}
-                <div className="flex items-center gap-2">
-                  <span className="font-bold">
-                    {translations('form.footer.tax_amount')} :{' '}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    {translations('form.footer.tax_amount')}
                   </span>
-                  <span className="rounded-sm border bg-slate-100 p-2">
-                    {totalGstAmount.toFixed(2)}
+                  <span className="text-lg font-bold text-blue-600">
+                    ₹{' '}
+                    {totalGstAmount.toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </span>
                 </div>
               </>
             )}
 
-            {/* total amount with gst */}
-            <div className="flex items-center gap-2">
-              <span className="font-bold">
-                {translations('form.footer.total_amount')} :{' '}
+            <div className="flex flex-col gap-1 border-l border-neutral-100 pl-8">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                {translations('form.footer.total_amount')}
               </span>
-              <span className="rounded-sm border bg-slate-100 p-2">
+              <span className="text-xl font-black text-primary">
+                ₹{' '}
                 {handleCalculatefinalAmount(
                   totalGstAmount,
                   grossAmount,
-                ).toFixed(2)}
+                ).toLocaleString('en-IN', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </span>
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button size="sm" onClick={onCancel} variant={'outline'}>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-neutral-200 px-8 hover:bg-neutral-50"
+              onClick={onCancel}
+            >
               {translations('form.ctas.cancel')}
             </Button>
             <Button
               size="sm"
+              className="px-10 shadow-lg shadow-primary/20"
               onClick={handleSubmit}
               disabled={
                 updateOrderMutation.isPending ||
@@ -1590,14 +1575,17 @@ const EditOrderS = ({ onCancel, cta, isOrder, orderId }) => {
             >
               {updateOrderMutation.isPending ||
               updateOrderForUnRepliedSalesMutation?.isPending ? (
-                <Loading />
+                <div className="flex items-center gap-2">
+                  <Loading className="h-4 w-4" />
+                  <span>Processing...</span>
+                </div>
               ) : (
                 translations('form.ctas.revise')
               )}
             </Button>
           </div>
         </div>
-      </section>
+      </footer>
     </Wrapper>
   );
 };

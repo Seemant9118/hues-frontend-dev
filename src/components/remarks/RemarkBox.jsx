@@ -8,6 +8,7 @@ import { Textarea } from '../ui/textarea';
 import { Label } from '../ui/label';
 
 const RemarkBox = ({
+  label = 'Remarks (optional)',
   remarks,
   setRemarks,
   attachedFiles,
@@ -29,7 +30,8 @@ const RemarkBox = ({
 
   return (
     <section className="mt-6 flex flex-col gap-2">
-      <Label>Remarks (Optional)</Label>
+      <Label>{label}</Label>
+
       {/* remark input */}
       <div className="relative">
         {/* 1 */}
@@ -43,7 +45,11 @@ const RemarkBox = ({
           value={remarks}
           onChange={(e) => setRemarks(e.target.value)}
           className="min-h-[70px] px-20 pt-[20px]" // set min-height as needed
-          placeholder={translations('placeholder_remarks')}
+          placeholder={
+            label === 'Reason'
+              ? 'Type you reason here'
+              : translations('placeholder_remarks')
+          }
         />
 
         {/* 3 */}

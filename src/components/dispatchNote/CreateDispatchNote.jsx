@@ -18,11 +18,14 @@ import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
+import InfoBanner from '../auth/InfoBanner';
 import AddNewAddress from '../enterprise/AddNewAddress';
+import InvoiceOverview from '../invoices/InvoiceOverview';
 import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
-import OrdersOverview from '../orders/OrdersOverview';
+import RemarkBox from '../remarks/RemarkBox';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
+import DatePickers from '../ui/DatePickers';
 import ErrorBox from '../ui/ErrorBox';
 import { Input } from '../ui/input';
 import InputWithSelect from '../ui/InputWithSelect';
@@ -39,6 +42,20 @@ import {
 } from '../ui/table';
 import Wrapper from '../wrappers/Wrapper';
 
+// macros
+const INWARD = 'INWARD';
+const OUTWARD = 'OUTWARD';
+const movementOptions = [
+  {
+    label: 'Internal Logistics',
+    value: INWARD,
+  },
+  {
+    label: 'Supply for Sale',
+    value: OUTWARD,
+  },
+];
+
 const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const enterpriseId = LocalStorageService.get('enterprise_Id');
   const translations = useTranslations('components.createDispatchNote.form');
@@ -50,18 +67,24 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
   const [selectBilling, setSelectBilling] = useState(null);
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
   const [dispatchedData, setDispatchedData] = useState({
-    movementType: 'Supply for sale (final delivery to customer)',
+    movementType: OUTWARD,
     dispatchFromAddressId: '',
+    dispatchNoteDate: new Date(),
     billingFromAddressId: '',
     invoiceId: Number(params.invoiceId),
     totalGstAmount: null,
     totalAmount: null,
     items: [],
+    reason: '',
   });
   const [errorMsg, setErrorMsg] = useState(null);
   const [productDetailsList, setProductDetailsList] = useState(null);
   const [initialQuantities, setInitialQuantities] = useState([]);
   const [allSelected, setAllSelected] = useState(false);
+  const [
+    isDispatchQtyExceedingRemainingQty,
+    setIsDispatchQtyExceedingRemainingQty,
+  ] = useState(false);
 
   // get addresses
   const { data: addresses } = useQuery({
@@ -112,6 +135,8 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
         unitPrice = 0,
         gstPerUnit = 0,
         unitId,
+        batchNo,
+        expiryDate,
       } = item;
 
       const calculatedDispatchedQty =
@@ -127,6 +152,8 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
 
       return {
         ...orderItemId.productDetails, // product details
+        batchNo,
+        expiryDate,
         productType: orderItemId.productType,
         orderItemId: orderItemId.id,
         invoiceItemId: id,
@@ -244,10 +271,10 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
       newErrorMsg[`quantity_${orderItemId}`] =
         'Quantity must be a valid number';
     } else if (newQty > maxQty) {
-      newErrorMsg[`quantity_${orderItemId}`] =
-        `Only ${maxQty} items available for dispatching`;
+      setIsDispatchQtyExceedingRemainingQty(true);
     } else {
       delete newErrorMsg[`quantity_${orderItemId}`];
+      setIsDispatchQtyExceedingRemainingQty(false);
     }
 
     setErrorMsg(newErrorMsg);
@@ -280,24 +307,27 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
       error.movementType = 'Movement type is required';
 
     if (!dispatchedData?.dispatchFromAddressId) {
-      error.dispatchFrom = 'Please select an dispatch address';
-    }
-    if (!dispatchedData?.billingFromAddressId) {
-      error.billingFrom = 'Please select an billing address';
+      error.dispatchFrom = 'Please select a dispatch address';
     }
 
-    // Check if any invoice is selected
+    if (!dispatchedData?.billingFromAddressId) {
+      error.billingFrom = 'Please select a billing address';
+    }
+
+    if (!disptachedData?.dispatchNoteDate) {
+      error.dispatchNoteDate = 'Please select a dispatch note date';
+    }
+
     if (!disptachedData?.items?.length) {
       error.isAnyInvoiceSelected = 'Please select at least one Item to create';
     }
 
     disptachedData?.items?.forEach((item) => {
-      const id = item?.orderItemId; // productDetailsList uses orderItemId (primitive id)
+      const id = item?.orderItemId;
       const quantity = item?.quantity;
 
-      // find the corresponding invoice item from invoiceDetails
       const matchedOrderItem = invoiceDetails?.invoiceItemDetails?.find(
-        (invoiceItem) => invoiceItem.orderItemId?.id === id, // correct nested reference
+        (invoiceItem) => invoiceItem.orderItemId?.id === id,
       );
 
       const maxQuantity =
@@ -309,10 +339,15 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
       } else if (!Number.isFinite(quantity) || quantity <= 0) {
         error[`quantity_${id}`] = 'Quantity must be a valid number';
       } else if (quantity > maxQuantity) {
-        error[`quantity_${id}`] =
-          `Only ${maxQuantity} items available for dispatching`;
+        setIsDispatchQtyExceedingRemainingQty(true);
       }
     });
+
+    // NEW: reason required only when qty exceeded
+    if (isDispatchQtyExceedingRemainingQty && !disptachedData?.reason?.trim()) {
+      error.reason =
+        'Reason is required when dispatch quantity exceeds remaining quantity';
+    }
 
     return error;
   };
@@ -361,40 +396,38 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
     // clear any previous errors
     setErrorMsg({});
 
+    const formattedData = {
+      ...updatedDispatchedData,
+      dispatchNoteDate: updatedDispatchedData.dispatchNoteDate ?? null,
+    };
+
     // proceed to API call
     createDispatchNoteMutation.mutate({
       id: invoiceDetails?.invoiceDetails?.orderId,
-      data: updatedDispatchedData,
+      data: formattedData,
     });
   };
 
-  // multiStatus components
-  const multiStatus = (
-    <div className="flex gap-2">
-      <ConditionalRenderingStatus
-        status={
-          invoiceDetails?.invoiceDetails?.metaData?.sellerData?.orderStatus
-        }
-      />
-      <ConditionalRenderingStatus
-        status={invoiceDetails?.invoiceDetails?.metaData?.payment?.status}
-      />
-    </div>
-  );
+  const paymentStatus = ConditionalRenderingStatus({
+    status: invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status,
+  });
 
   return (
     <Wrapper className="h-full">
       <>
-        {/* Collapsable overview */}
-        <OrdersOverview
+        {/* Collapsible overview */}
+        <InvoiceOverview
           isCollapsableOverview={true}
-          orderDetails={invoiceDetails?.invoiceDetails}
-          orderId={invoiceDetails?.invoiceDetails?.invoiceReferenceNumber}
-          multiStatus={multiStatus}
+          invoiceDetails={invoiceDetails.invoiceDetails}
+          invoiceId={invoiceDetails?.invoiceDetails?.invoiceReferenceNumber}
+          orderId={invoiceDetails?.invoiceDetails?.orderId}
+          orderRefId={invoiceDetails?.invoiceDetails?.orderReferenceNumber}
+          paymentStatus={paymentStatus}
           Name={`${invoiceDetails?.invoiceDetails?.customerName} (${invoiceDetails?.invoiceDetails?.clientType})`}
-          mobileNumber={invoiceDetails?.invoiceDetails?.mobileNumber}
-          amtPaid={invoiceDetails?.invoiceDetails?.amountPaid}
-          totalAmount={invoiceDetails?.invoiceDetails?.totalAmount}
+          type={invoiceDetails?.invoiceDetails?.invoiceType}
+          date={invoiceDetails?.invoiceDetails?.createdAt}
+          amount={invoiceDetails?.invoiceDetails?.totalAmount}
+          amountPaid={invoiceDetails?.invoiceDetails?.amountPaid}
         />
         <section className="mt-2 flex h-full flex-col justify-between">
           <div className="flex flex-col gap-4">
@@ -404,28 +437,25 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
               </h1>
               <section className="flex flex-col gap-4">
                 <div className="mt-1 flex flex-col gap-3">
-                  {[
-                    'Internal logistics (stock transfer / repositioning)',
-                    'Supply for sale (final delivery to customer)',
-                  ].map((option) => (
+                  {movementOptions.map((option) => (
                     <label
-                      key={option}
+                      key={option.value}
                       className="flex cursor-pointer items-center gap-2 text-sm"
                     >
                       <input
                         type="radio"
                         name="movementType"
-                        value={option}
-                        checked={dispatchedData.movementType === option}
+                        value={option.value}
+                        checked={dispatchedData.movementType === option.value}
                         onChange={() =>
                           setDispatchedData((prev) => ({
                             ...prev,
-                            movementType: option,
+                            movementType: option.value,
                           }))
                         }
                         className="accent-primary"
                       />
-                      <span>{option}</span>
+                      <span>{option.label}</span>
                     </label>
                   ))}
                   {errorMsg?.movementType && (
@@ -527,258 +557,311 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
                   mutationFn={addUpdateAddress}
                   invalidateKey={deliveryProcess.getDispatchNote.endpointKey}
                 />
+
+                {/* dispatch date */}
+                <div>
+                  <Label htmlFor="dispatchNoteDate">
+                    {translations('dispatchNoteDate.label')}
+                  </Label>
+                  <div className="relative flex h-10 w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                    <DatePickers
+                      selected={dispatchedData.dispatchNoteDate}
+                      onChange={(date) => {
+                        setDispatchedData((prev) => ({
+                          ...prev,
+                          dispatchNoteDate: date,
+                        }));
+                        setErrorMsg((prev) => ({
+                          ...prev,
+                          dispatchNoteDate: '',
+                        }));
+                      }}
+                      dateFormat="dd/MM/yyyy"
+                      popperPlacement="right"
+                    />
+                  </div>
+                  {errorMsg?.dispatchNoteDate && (
+                    <ErrorBox msg={errorMsg.dispatchNoteDate} />
+                  )}
+                </div>
               </div>
             </div>
 
+            {isDispatchQtyExceedingRemainingQty && (
+              <div className="flex flex-col gap-1 rounded-md p-2">
+                <InfoBanner
+                  variant="danger"
+                  text="Dispatch quantity exceeds remaining quantity. Please provide a reason to proceed."
+                  showSupportLink={false}
+                />
+
+                <RemarkBox
+                  label="Reason"
+                  remarks={dispatchedData?.reason}
+                  setRemarks={(value) =>
+                    setDispatchedData((prev) => ({
+                      ...prev,
+                      reason: value,
+                    }))
+                  }
+                  isAttachmentDisabled={true}
+                />
+
+                {errorMsg?.reason && <ErrorBox msg={errorMsg.reason} />}
+              </div>
+            )}
+
             {/* table of items */}
-            <h1 className="font-semibold">Items</h1>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-1">
-                    <Checkbox
-                      checked={allSelected}
-                      onCheckedChange={(value) => handleSelectAll(value)}
-                    />
-                  </TableHead>
-                  <TableHead className="shrink-0 text-xs font-bold text-black">
-                    {translations('table.header.item_name')}
-                  </TableHead>
-                  <TableHead
-                    className="shrink-0 text-xs font-bold text-black"
-                    colSpan="2"
-                  >
-                    {translations('table.header.invoice_qty')}
-                  </TableHead>
-                  <TableHead className="shrink-0 text-xs font-bold text-black">
-                    {translations('table.header.dispatch_qty')}
-                  </TableHead>
-                  <TableHead className="shrink-0 text-xs font-bold text-black">
-                    {translations('table.header.unit_price')}
-                  </TableHead>
-                  <TableHead className="shrink-0 text-xs font-bold text-black">
-                    {translations('table.header.total_amount')}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
+            <div className="scrollBarStyles max-h-[400px] overflow-y-auto rounded-md border p-2">
+              <h1 className="mt-2 font-semibold">Items</h1>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-1">
+                      <Checkbox
+                        checked={allSelected}
+                        onCheckedChange={(value) => handleSelectAll(value)}
+                      />
+                    </TableHead>
+                    <TableHead className="shrink-0 text-xs font-bold text-black">
+                      {translations('table.header.item_name')}
+                    </TableHead>
+                    <TableHead
+                      className="shrink-0 text-xs font-bold text-black"
+                      colSpan="2"
+                    >
+                      {translations('table.header.invoice_qty')}
+                    </TableHead>
+                    <TableHead className="shrink-0 text-xs font-bold text-black">
+                      {translations('table.header.dispatch_qty')}
+                    </TableHead>
+                    <TableHead className="shrink-0 text-xs font-bold text-black">
+                      {translations('table.header.unit_price')}
+                    </TableHead>
+                    <TableHead className="shrink-0 text-xs font-bold text-black">
+                      {translations('table.header.total_amount')}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
 
-              <TableBody className="shrink-0">
-                {productDetailsList?.length > 0 &&
-                  productDetailsList?.map((product, index) => {
-                    return (
-                      <TableRow key={product.id}>
-                        <TableCell colSpan={1}>
-                          <Checkbox
-                            checked={product.isSelected}
-                            onCheckedChange={(value) => {
-                              const updatedList = [...productDetailsList];
-                              updatedList[index].isSelected = value;
+                <TableBody className="shrink-0">
+                  {productDetailsList?.length > 0 &&
+                    productDetailsList?.map((product, index) => {
+                      return (
+                        <TableRow key={product.id}>
+                          <TableCell colSpan={1}>
+                            <Checkbox
+                              checked={product.isSelected}
+                              onCheckedChange={(value) => {
+                                const updatedList = [...productDetailsList];
+                                updatedList[index].isSelected = value;
 
-                              setProductDetailsList(updatedList);
+                                setProductDetailsList(updatedList);
 
-                              if (value) {
-                                const updatedItems = productDetailsList.map(
-                                  (item, idx) => {
-                                    if (idx === index) {
-                                      return {
-                                        ...item,
-                                        totalAmount: parseFloat(
-                                          (
-                                            item.quantity * item.unitPrice
-                                          ).toFixed(2),
-                                        ),
-                                        totalGstAmount: parseFloat(
-                                          (
-                                            item.quantity *
-                                            item.unitPrice *
-                                            (item.gstPerUnit / 100)
-                                          ).toFixed(2),
-                                        ),
-                                      };
-                                    }
-                                    return item;
-                                  },
-                                );
-
-                                setDispatchedData({
-                                  ...dispatchedData,
-                                  items: updatedItems.filter(
-                                    (item) => item.isSelected,
-                                  ),
-                                });
-                                setErrorMsg((prevMsg) => ({
-                                  ...prevMsg,
-                                  isAnyInvoiceSelected: '',
-                                }));
-                              } else {
-                                setDispatchedData((prev) => ({
-                                  ...prev,
-                                  items: prev.items.filter(
-                                    (item) =>
-                                      item.orderItemId !==
-                                      updatedList[index].orderItemId,
-                                  ),
-                                }));
-                              }
-                            }}
-                          />
-                        </TableCell>
-
-                        <TableCell colSpan={1}>
-                          {product?.productName ?? product?.serviceName}
-                        </TableCell>
-
-                        <TableCell colSpan={1}>
-                          {initialQuantities[index]}
-                        </TableCell>
-
-                        <TableCell colSpan={2}>
-                          <div className="flex flex-col gap-1">
-                            <div className="flex gap-1">
-                              <Button
-                                className="disabled:hover:cursor-not-allowed"
-                                variant="export"
-                                debounceTime="300"
-                                onClick={() => {
-                                  if (product.quantity > 1) {
-                                    updateProductDetailsList(
-                                      product.orderItemId,
-                                      product.quantity - 1,
-                                    );
-                                  }
-                                }}
-                                disabled={product?.quantity <= 1}
-                              >
-                                -
-                              </Button>
-
-                              <InputWithSelect
-                                id="quantity"
-                                value={product?.quantity ?? ''}
-                                onValueChange={(e) => {
-                                  const inputValue = e.target.value;
-
-                                  // Allow clearing the field
-                                  if (inputValue === '') {
-                                    updateProductDetailsList(
-                                      product.orderItemId,
-                                      '',
-                                    );
-                                    return;
-                                  }
-
-                                  const newQty = parseFloat(inputValue);
-
-                                  if (!Number.isNaN(newQty)) {
-                                    updateProductDetailsList(
-                                      product.orderItemId,
-                                      newQty,
-                                    );
-                                  }
-                                }}
-                                unit={product.unitId} // unitId from state
-                                onUnitChange={(val) => {
+                                if (value) {
                                   const updatedItems = productDetailsList.map(
                                     (item, idx) => {
                                       if (idx === index) {
                                         return {
                                           ...item,
-                                          unitId: val,
+                                          totalAmount: parseFloat(
+                                            (
+                                              item.quantity * item.unitPrice
+                                            ).toFixed(2),
+                                          ),
+                                          totalGstAmount: parseFloat(
+                                            (
+                                              item.quantity *
+                                              item.unitPrice *
+                                              (item.gstPerUnit / 100)
+                                            ).toFixed(2),
+                                          ),
                                         };
                                       }
                                       return item;
                                     },
                                   );
 
-                                  setProductDetailsList(updatedItems); // keep productDetailsList in sync
+                                  setDispatchedData({
+                                    ...dispatchedData,
+                                    items: updatedItems.filter(
+                                      (item) => item.isSelected,
+                                    ),
+                                  });
+                                  setErrorMsg((prevMsg) => ({
+                                    ...prevMsg,
+                                    isAnyInvoiceSelected: '',
+                                  }));
+                                } else {
                                   setDispatchedData((prev) => ({
                                     ...prev,
-                                    items: updatedItems,
+                                    items: prev.items.filter(
+                                      (item) =>
+                                        item.orderItemId !==
+                                        updatedList[index].orderItemId,
+                                    ),
                                   }));
-                                }}
-                                selectUnitDisabled={true}
-                                units={units?.quantity ?? []} // fallback to empty array
-                              />
+                                }
+                              }}
+                            />
+                          </TableCell>
 
-                              <Button
-                                className="disabled:cursor-not-allowed"
-                                variant="export"
-                                debounceTime="300"
-                                onClick={() => {
-                                  if (
-                                    product?.quantity < initialQuantities[index]
-                                  ) {
-                                    updateProductDetailsList(
-                                      product.orderItemId,
-                                      product.quantity + 1,
+                          <TableCell colSpan={1}>
+                            {product?.productName ?? product?.serviceName}
+                          </TableCell>
+
+                          <TableCell colSpan={1}>
+                            {initialQuantities[index]}
+                          </TableCell>
+
+                          <TableCell colSpan={2}>
+                            <div className="flex flex-col gap-1">
+                              <div className="flex gap-1">
+                                <Button
+                                  className="disabled:hover:cursor-not-allowed"
+                                  variant="export"
+                                  debounceTime="300"
+                                  onClick={() => {
+                                    if (product.quantity > 1) {
+                                      updateProductDetailsList(
+                                        product.orderItemId,
+                                        product.quantity - 1,
+                                      );
+                                    }
+                                  }}
+                                  disabled={product?.quantity <= 1}
+                                >
+                                  -
+                                </Button>
+
+                                <InputWithSelect
+                                  id="quantity"
+                                  value={product?.quantity ?? ''}
+                                  onValueChange={(e) => {
+                                    const inputValue = e.target.value;
+
+                                    // Allow clearing the field
+                                    if (inputValue === '') {
+                                      updateProductDetailsList(
+                                        product.orderItemId,
+                                        '',
+                                      );
+                                      return;
+                                    }
+
+                                    const newQty = parseFloat(inputValue);
+
+                                    if (!Number.isNaN(newQty)) {
+                                      updateProductDetailsList(
+                                        product.orderItemId,
+                                        newQty,
+                                      );
+                                    }
+                                  }}
+                                  unit={product.unitId} // unitId from state
+                                  onUnitChange={(val) => {
+                                    const updatedItems = productDetailsList.map(
+                                      (item, idx) => {
+                                        if (idx === index) {
+                                          return {
+                                            ...item,
+                                            unitId: val,
+                                          };
+                                        }
+                                        return item;
+                                      },
                                     );
+
+                                    setProductDetailsList(updatedItems); // keep productDetailsList in sync
+                                    setDispatchedData((prev) => ({
+                                      ...prev,
+                                      items: updatedItems,
+                                    }));
+                                  }}
+                                  selectUnitDisabled={true}
+                                  units={units?.quantity ?? []} // fallback to empty array
+                                />
+
+                                <Button
+                                  className="disabled:cursor-not-allowed"
+                                  variant="export"
+                                  debounceTime="300"
+                                  onClick={() => {
+                                    if (
+                                      product?.quantity <
+                                      initialQuantities[index]
+                                    ) {
+                                      updateProductDetailsList(
+                                        product.orderItemId,
+                                        product.quantity + 1,
+                                      );
+                                    }
+                                  }}
+                                  disabled={
+                                    product?.quantity >=
+                                    initialQuantities[index]
                                   }
-                                }}
-                                disabled={
-                                  product?.quantity >= initialQuantities[index]
-                                }
-                              >
-                                +
-                              </Button>
+                                >
+                                  +
+                                </Button>
+                              </div>
+
+                              {/* Validation error for this quantity field */}
+                              {/* {errorMsg?.[
+                                `quantity_${product.orderItemId}`
+                              ] && (
+                                <ErrorBox
+                                  msg={
+                                    errorMsg[`quantity_${product.orderItemId}`]
+                                  }
+                                />
+                              )} */}
                             </div>
+                          </TableCell>
 
-                            {/* Validation error for this quantity field */}
-                            {errorMsg?.[`quantity_${product.orderItemId}`] && (
-                              <ErrorBox
-                                msg={
-                                  errorMsg[`quantity_${product.orderItemId}`]
-                                }
-                              />
-                            )}
-                          </div>
-                        </TableCell>
+                          <TableCell colSpan={1}>
+                            {`₹ ${(Number(product.unitPrice) || 0).toFixed(2)}`}
+                          </TableCell>
 
-                        <TableCell colSpan={1}>
-                          {`₹ ${(Number(product.unitPrice) || 0).toFixed(2)}`}
-                        </TableCell>
+                          <TableCell colSpan={1}>
+                            <Input
+                              type="text"
+                              name="totalAmount"
+                              disabled
+                              className="w-32 disabled:cursor-not-allowed"
+                              value={`₹ ${(Number(product.amount) || 0).toFixed(2)}`}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  {productDetailsList?.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan="6">No result found</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
 
-                        <TableCell colSpan={1}>
-                          <Input
-                            type="text"
-                            name="totalAmount"
-                            disabled
-                            className="w-32 disabled:cursor-not-allowed"
-                            value={`₹ ${(Number(product.amount) || 0).toFixed(2)}`}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                {productDetailsList?.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan="6">No result found</TableCell>
-                  </TableRow>
+                {errorMsg?.isAnyInvoiceSelected && (
+                  <TableFooter className="w-full shrink-0">
+                    <TableRow>
+                      <TableCell colSpan="7">
+                        <ErrorBox msg={errorMsg?.isAnyInvoiceSelected} />
+                      </TableCell>
+                    </TableRow>
+                  </TableFooter>
                 )}
-              </TableBody>
-
-              {errorMsg?.isAnyInvoiceSelected && (
-                <TableFooter className="w-full shrink-0">
-                  <TableRow>
-                    <TableCell colSpan="7">
-                      <ErrorBox msg={errorMsg?.isAnyInvoiceSelected} />
-                    </TableCell>
-                  </TableRow>
-                </TableFooter>
-              )}
-            </Table>
+              </Table>
+            </div>
           </div>
-          <div className="flex justify-end gap-4 border-t pt-4">
-            <div className="mt-auto h-[1px] bg-neutral-300"></div>
-
+          <div className="sticky bottom-0 z-20 flex justify-end gap-4 border-t bg-white px-4 py-3">
             <Button size="sm" variant="outline" onClick={() => onHandleClose()}>
               {translations('ctas.discard')}
             </Button>
 
             <Button
               size="sm"
-              onClick={() => {
-                handleSubmit(dispatchedData);
-              }}
+              onClick={() => handleSubmit(dispatchedData)}
               disabled={createDispatchNoteMutation.isPending}
             >
               {createDispatchNoteMutation.isPending ? (

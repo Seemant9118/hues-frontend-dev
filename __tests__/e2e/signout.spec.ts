@@ -1,29 +1,43 @@
 import { test as base, expect } from '@playwright/test';
 
+// Override global auth state — signout test starts from fresh (unauthenticated) context
 const test = base.extend({
-  // Override any global setup for auth if it exists
-  storageState: undefined,
+  storageState: { cookies: [], origins: [] },
 });
 
+test('Sign out clears session and redirects to login page', async ({ page }) => {
+  // ── 1. Login first ─────────────────────────────────────────────────────────
+  await page.goto('/en/login');
 
-test('test', async ({ page }) => {
-  await page.goto('http://localhost:3000/en/login');
-  await page.waitForTimeout(2000);
-  await page.getByPlaceholder('Enter a Aadhar linked phone').fill('9532751771');
-  await page.getByRole('button', { name: 'Send OTP' }).click();
-  await page.waitForSelector('text=Verify your number', { state: 'visible' });
+  await expect(page.getByRole('heading', { name: /Welcome to Hues/i })).toBeVisible({
+    timeout: 15_000,
+  });
+
+  await page
+    .getByPlaceholder('Enter your Aadhaar-linked mobile number')
+    .fill('7317414274');
+
+  await page.getByRole('button', { name: /Get OTP/i }).click();
+
+  await expect(
+    page.getByRole('heading', { name: /verify your number/i }),
+  ).toBeVisible({ timeout: 15_000 });
+
   await page.getByRole('textbox').fill('8080');
-  await page.waitForTimeout(2000);
-  await page.getByRole('button', { name: 'Verify' }).click();
-  await expect(
-    page.getByRole('heading', { name: 'Dashboard', exact: true }),
-  ).toBeVisible();
+  await page.getByRole('button', { name: /Confirm/i }).click();
 
-  // logout
+  // Wait for the post-login redirect (dashboard or enterprise selection)
+  await page.waitForURL(/.*(dashboard|confirmation|selection).*/, { timeout: 20_000 });
+
+  // ── 2. Logout ──────────────────────────────────────────────────────────────
+  // Open profile menu (typically in sidebar/topbar)
   await page.getByText('Profile').click();
+
+  // Click Logout
   await page.getByText('Logout').click();
-  await page.waitForURL('http://localhost:3000/en/login')
-  await expect(
-    page.getByText('Welcome to Hues')
-  ).toBeVisible();
+
+  // After logout, should redirect to login page
+  await page.waitForURL('**/en/login', { timeout: 15_000 });
+
+  await expect(page.getByText(/Welcome to Hues/i)).toBeVisible({ timeout: 10_000 });
 });

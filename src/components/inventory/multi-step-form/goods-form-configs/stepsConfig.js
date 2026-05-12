@@ -1,7 +1,5 @@
 import AdditionalInfo from './AdditionalInfo';
 import ItemOverview from './ItemOverview';
-import PromotionalContents from './PromotionalContents';
-import TradePromotions from './TradePromotions';
 
 // Services
 export const stepsGoodsConfig = [
@@ -14,14 +12,39 @@ export const stepsGoodsConfig = [
 
       if (!form?.goodsTypeId)
         newErrors.goodsTypeId = 'Product type is required';
-      if (!form?.productName)
+
+      if (!form?.productName?.trim?.())
         newErrors.productName = 'Product name is required';
+      if (!form?.skuId) newErrors.skuId = 'SKU ID is required';
       if (!form?.categoryId) newErrors.categoryId = 'Category is required';
       if (!form?.subCategoryId)
         newErrors.subCategoryId = 'Sub Category is required';
       if (!form?.hsnCode) newErrors.hsnCode = `HSN Code is required`;
       if (!form?.gstPercentage) newErrors.gstPercentage = `GST(%) is required`;
       if (!form?.description) newErrors.description = `Description is required`;
+
+      // FIX: Category validation (id OR name)
+      const hasCategory = !!form?.categoryId || !!form?.categoryName?.trim?.();
+
+      if (!hasCategory) newErrors.categoryId = 'Category is required';
+
+      // FIX: SubCategory validation (id OR name)
+      const hasSubCategory =
+        !!form?.subCategoryId || !!form?.subCategoryName?.trim?.();
+
+      if (!hasSubCategory) newErrors.subCategoryId = 'Sub Category is required';
+
+      if (!form?.hsnCode?.trim?.()) newErrors.hsnCode = 'HSN Code is required';
+
+      if (
+        form?.gstPercentage === null ||
+        form?.gstPercentage === undefined ||
+        String(form?.gstPercentage).trim() === ''
+      )
+        newErrors.gstPercentage = 'GST(%) is required';
+
+      if (!form?.description?.trim?.())
+        newErrors.description = 'Description is required';
 
       return newErrors;
     },
@@ -38,9 +61,9 @@ export const stepsGoodsConfig = [
         newErrors.salesPrice = 'Sales price is required';
       }
 
-      if (!form?.costPrice || Number(form.costPrice) <= 0) {
-        newErrors.costPrice = 'Cost price is required';
-      }
+      // if (!form?.costPrice || Number(form.costPrice) <= 0) {
+      //   newErrors.costPrice = 'Cost price is required';
+      // }
 
       if (!form?.mrp || Number(form.mrp) <= 0) {
         newErrors.mrp = 'MRP is required';
@@ -49,14 +72,14 @@ export const stepsGoodsConfig = [
       return newErrors;
     },
   },
-  {
-    key: 'tradePromotions',
-    title: 'Trade Promotions',
-    component: TradePromotions,
-  },
-  {
-    key: 'promotionalContents',
-    title: 'Promotional Content',
-    component: PromotionalContents,
-  },
+  // {
+  //   key: 'tradePromotions',
+  //   title: 'Trade Promotions',
+  //   component: TradePromotions,
+  // },
+  // {
+  //   key: 'promotionalContents',
+  //   title: 'Promotional Content',
+  //   component: PromotionalContents,
+  // },
 ];

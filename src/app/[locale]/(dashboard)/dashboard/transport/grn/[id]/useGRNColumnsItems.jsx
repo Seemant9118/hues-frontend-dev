@@ -7,32 +7,42 @@ export const useGRNColumnsItems = () => {
   const t = useTranslations('transport.grns.grnsDetails.tabs.tab1.table');
 
   return [
-    /* Sr. No */
-    {
-      id: 'sr',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Sr." />
-      ),
-      cell: ({ row }) => row.index + 1,
-    },
-
-    /* SKU ID */
-    {
-      id: 'skuId',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('header.skuId')} />
-      ),
-      cell: ({ row }) => row.original?.metaData?.productDetails?.skuId || '--',
-    },
-
     /* Item Name */
     {
       id: 'itemName',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t('header.itemName')} />
       ),
+      cell: ({ row }) => (
+        <div className="flex flex-col gap-1">
+          <span className="font-medium">
+            {row.original?.metaData?.productDetails?.productName}
+          </span>
+          <span className="text-grey-400 text-xs">
+            {row.original?.metaData?.productDetails?.skuId}
+          </span>
+        </div>
+      ),
+    },
+
+    /* Batch Number */
+    {
+      id: 'batchNo',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('header.batch')} />
+      ),
       cell: ({ row }) =>
-        row.original?.metaData?.productDetails?.productName || '--',
+        row.original?.batchNo || row.original?.metaData?.batchNo || '--',
+    },
+
+    /* Expiry Date */
+    {
+      id: 'expiryDate',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t('header.expiry')} />
+      ),
+      cell: ({ row }) =>
+        row.original?.expiryDate || row.original?.metaData?.expiryDate || '--',
     },
 
     /* Qty Received */
@@ -41,7 +51,7 @@ export const useGRNColumnsItems = () => {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={t('header.qtyReceived')}
+          title={t('header.dispatchQty')}
         />
       ),
       cell: ({ row }) => {
@@ -56,7 +66,7 @@ export const useGRNColumnsItems = () => {
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={t('header.qtyAccepted')}
+          title={t('header.qtyRecieved')}
         />
       ),
       cell: ({ row }) => {
@@ -68,10 +78,7 @@ export const useGRNColumnsItems = () => {
     {
       id: 'qtyRejected',
       header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title={t('header.qtyRejected')}
-        />
+        <DataTableColumnHeader column={column} title={t('header.qtyMissing')} />
       ),
       cell: ({ row }) => {
         const rejectQty = row.original?.rejectedQuantity || 0;

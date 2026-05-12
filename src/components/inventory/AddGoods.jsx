@@ -12,20 +12,29 @@ import { toast } from 'sonner';
 import Wrapper from '../wrappers/Wrapper';
 import MultiStepForm from './multi-step-form/MultiStepForm';
 import { stepsGoodsConfig } from './multi-step-form/goods-form-configs/stepsConfig';
+import Loading from '../ui/Loading';
 
 const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
-  const draftData = SessionStorageService.get(`${enterpriseId}_GoodsData`);
+  const [enterpriseId, setEnterpriseId] = useState(null);
+  const [draftData, setDraftData] = useState(null);
+  const [isMounted, setIsMounted] = useState(false);
   const translation = useTranslations('components.addGoods');
   const queryClient = useQueryClient();
   const hasRestoredDraftRef = useRef(false);
+
+  useEffect(() => {
+    const eId = LocalStorageService.get('enterprise_Id');
+    setEnterpriseId(eId);
+    setDraftData(SessionStorageService.get(`${eId}_GoodsData`));
+    setIsMounted(true);
+  }, []);
   const [goods, setGoods] = useState({
     productType: '',
     productName: '',
     manufacturerName: '',
     description: '',
     hsnCode: '',
-    costPrice: '',
+    // costPrice: '',
     salesPrice: '',
     mrp: '',
     gstPercentage: '',
@@ -95,6 +104,23 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
     setGoods((prev) => ({
       ...prev,
       ...goodsToEdit,
+      goodsType: {
+        item:
+          goodsToEdit?.goodsHsnMasterDetails?.item ||
+          goodsToEdit?.goodsType?.goodsHsnMaster?.item,
+      },
+      categoryId:
+        goodsToEdit?.goodsHsnMasterDetails?.category?.id ||
+        goodsToEdit?.goodsType?.goodsHsnMaster?.category?.id,
+      categoryName:
+        goodsToEdit?.goodsHsnMasterDetails?.category?.categoryName ||
+        goodsToEdit?.goodsType?.goodsHsnMaster?.category?.categoryName,
+      subCategoryId:
+        goodsToEdit?.goodsHsnMasterDetails?.subCategory?.id ||
+        goodsToEdit?.goodsType?.goodsHsnMaster?.subCategory?.id,
+      subCategoryName:
+        goodsToEdit?.goodsHsnMasterDetails?.subCategory?.subCategoryName ||
+        goodsToEdit?.goodsType?.goodsHsnMaster?.subCategory?.subCategoryName,
 
       // ARRAY → ARRAY
       offers:
@@ -137,12 +163,23 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
     mutationFn: UpdateProductGoods,
     onSuccess: () => {
       toast.success('Goods Updated Successfully');
-      queryClient.invalidateQueries({
-        queryKey: [goodsApi.getAllProductGoods.endpointKey],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [goodsApi.getProductGoods.endpointKey],
-      });
+      // types -> items refetch
+      if (goodsToEdit?.goodsHsnMasterDetails?.item) {
+        queryClient.invalidateQueries({
+          queryKey: [goodsApi.getItemType.endpointKey],
+        });
+      }
+      if (goodsToEdit?.goodsType?.goodsHsnMaster?.item) {
+        // product listing refectch
+        queryClient.invalidateQueries({
+          queryKey: [goodsApi.getAllProductGoods.endpointKey],
+        });
+        // product details
+        queryClient.invalidateQueries({
+          queryKey: [goodsApi.getProductGoods.endpointKey],
+        });
+      }
+
       setIsCreatingGoods(false);
       SessionStorageService.remove(`${enterpriseId}_GoodsData`);
     },
@@ -206,6 +243,8 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
 
     addGoodsMutation.mutate(payload);
   };
+
+  if (!isMounted) return <Loading />;
 
   return (
     <Wrapper className="h-full">

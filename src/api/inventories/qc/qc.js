@@ -23,4 +23,8 @@ export const qcApis = {
     endpoint: `/inventory/qc/stock-in/`,
     endpointKey: 'stock_in_qc',
   },
+  bucketOptions: {
+    endpoint: `/inventory/:enterpriseId/buckets`,
+    endpointKey: 'bucket_options',
+  },
 };

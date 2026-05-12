@@ -3,7 +3,7 @@
 import { userAuth } from '@/api/user_auth/Users';
 import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import { validatePan } from '@/appUtils/ValidationUtils';
-import ExplantoryText from '@/components/auth/ExplantoryText';
+import InfoBanner from '@/components/auth/InfoBanner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +20,8 @@ import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
+const INFO_BANNER_TEXT = `Verification of PAN using govt resources may sometimes fail. Contact us if onboarding isn't completed`;
 
 const EnterprisePANVerifyPage = () => {
   const translations = useTranslations('auth.enterprise.panVerify');
@@ -139,7 +141,7 @@ const EnterprisePANVerifyPage = () => {
   return (
     <UserProvider>
       <div className="flex h-full items-center justify-center">
-        <div className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md">
+        <div className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-6 rounded-md">
           {/* Header */}
           <div className="flex flex-col gap-4">
             <h1 className="text-center text-2xl font-bold text-[#121212]">
@@ -149,6 +151,14 @@ const EnterprisePANVerifyPage = () => {
               {translations('subtitle')}
             </p>
           </div>
+
+          {getDetailsByPanVerifiedMutation.isError && (
+            <InfoBanner
+              text={INFO_BANNER_TEXT}
+              variant="danger"
+              showSupportLink
+            />
+          )}
 
           {/* Form */}
           <form
@@ -186,8 +196,11 @@ const EnterprisePANVerifyPage = () => {
             </div>
 
             <div className="flex w-full flex-col gap-2">
-              {/* Explanatory Information */}
-              <ExplantoryText text={translations('information')} />
+              {/* banner */}
+              <InfoBanner
+                text={translations('information')}
+                showSupportLink={false}
+              />
               <Button
                 size="sm"
                 type="submit"

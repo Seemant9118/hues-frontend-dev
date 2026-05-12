@@ -46,6 +46,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
+import { useDeliveryChallansColumns } from './useDeliveryChallansColumns';
 import { useDispatchedItemColumns } from './useDispatchedItemColumns';
 
 const ViewDispatchNote = () => {
@@ -258,15 +259,21 @@ const ViewDispatchNote = () => {
 
     return dispatchDetails?.items?.map((item) => ({
       productName:
-        item?.invoiceItem?.orderItemId?.productDetails?.productName ?? '--',
+        item?.invoiceItem?.orderItemId?.productDetails?.productName ||
+        item?.product?.name ||
+        '--',
 
       invoiceQuantity: item?.invoiceItem?.quantity ?? 0,
 
       dispatchedQuantity: item?.dispatchedQuantity ?? 0,
 
-      rate: item?.invoiceItem?.unitPrice ?? 0,
+      rate: item?.invoiceItem?.unitPrice || item?.product?.salesPrice || 0,
 
       amount: Number(item?.amount ?? 0),
+
+      batchNo: item?.invoiceItem?.batchNo,
+
+      expiryDate: item?.invoiceItem?.expiryDate,
     }));
   };
   const formattedDispatchedItems = mapDispatchDetailsForItems(dispatchDetails);
@@ -278,17 +285,34 @@ const ViewDispatchNote = () => {
     dispatchId: dispatchDetails?.referenceNumber || '-',
     consignor: dispatchDetails?.sellerDetails?.name || '-',
     consignee: dispatchDetails?.buyerName || '-',
-    supply: dispatchDetails?.movementType || 'Outward Supply',
+    supply:
+      dispatchDetails?.movementType === 'OUTWARD'
+        ? 'Outward Supply'
+        : 'Inward Supply',
     deliveryChallanNo: dispatchDetails?.deliveryChallanNo || '-',
-    invoiceId: dispatchDetails?.invoice?.referenceNumber || '-',
+    ...(dispatchDetails?.invoice?.referenceNumber
+      ? { invoiceId: dispatchDetails?.invoice?.referenceNumber }
+      : {}),
     totalAmount: formattedAmount(totalAmount + totalGstAmount),
     // EWB: dispatchDetails?.ewb || '-',
     // transporter: dispatchDetails?.transporterName || '-',
     dispatchFrom: dispatchDetails?.dispatchFromAddress?.address || '-',
-    billingFrom: dispatchDetails?.billingFromAddress?.address || '-',
-    billingAddress: capitalize(dispatchDetails?.billingAddress?.address) || '-',
-    shippingAddress:
-      capitalize(dispatchDetails?.shippingAddress?.address) || '-',
+    ...(dispatchDetails?.dispatchToAddress?.address
+      ? { dispatchTo: capitalize(dispatchDetails?.dispatchToAddress?.address) }
+      : {}),
+    ...(dispatchDetails?.billingFromAddress?.address
+      ? { billingFrom: dispatchDetails?.billingFromAddress?.address }
+      : {}),
+    ...(dispatchDetails?.billingAddress?.address
+      ? { billingAddress: capitalize(dispatchDetails?.billingAddress?.address) }
+      : {}),
+    ...(dispatchDetails?.shippingAddress?.address
+      ? {
+          shippingAddress: capitalize(
+            dispatchDetails?.shippingAddress?.address,
+          ),
+        }
+      : {}),
   };
   const overviewLabels = {
     dispatchId: translations('overview_labels.dispatchId'),
@@ -301,6 +325,7 @@ const ViewDispatchNote = () => {
     // EWB: translations('overview_labels.ewb'),
     // transporter: translations('overview_labels.transporter'),
     dispatchFrom: translations('overview_labels.dispatch_from'),
+    dispatchTo: translations('overview_labels.dispatch_to'),
     billingFrom: translations('overview_labels.billing_from'),
     billingAddress: translations('overview_labels.billing_address'),
     shippingAddress: translations('overview_labels.shipping_address'),
@@ -435,7 +460,8 @@ const ViewDispatchNote = () => {
                 )
               }
             >
-              {challan.referenceNumber} <MoveUpRight size={12} />
+              {`#${challan.sequenceNumber} ${challan.referenceNumber}`}{' '}
+              <MoveUpRight size={12} />
             </p>
           ));
         }
@@ -453,7 +479,8 @@ const ViewDispatchNote = () => {
                   )
                 }
               >
-                {challanData[0].referenceNumber} <MoveUpRight size={12} />
+                {`#${challanData[0].sequenceNumber} ${challanData[0].referenceNumber}`}{' '}
+                <MoveUpRight size={12} />
               </p>
 
               <button
@@ -479,7 +506,8 @@ const ViewDispatchNote = () => {
                 )
               }
             >
-              {challan.referenceNumber} <MoveUpRight size={12} />
+              {`#${challan.sequenceNumber} ${challan.referenceNumber}`}{' '}
+              <MoveUpRight size={12} />
             </p>
           );
         }
@@ -774,6 +802,10 @@ const ViewDispatchNote = () => {
               productName:
                 item?.invoiceItem?.orderItemId?.productDetails?.productName ||
                 '',
+              salesPrice:
+                item?.invoiceItem?.unitPrice || item?.product?.salesPrice || 0,
+              skuId:
+                item?.invoiceItem?.orderItemId?.productDetails?.skuId || '',
             },
           },
         },
@@ -811,11 +843,20 @@ const ViewDispatchNote = () => {
       viewPdfInNewTab(dispatchDetails?.dispatchDocumentSlug);
     } else {
       const formattedPayload = formatDispatchPreviewPayload(dispatchDetails);
+
       previewDispatchNoteMutation.mutate({
         id: params.dispatchId,
         data: formattedPayload,
       });
     }
+  };
+
+  const getLegFromAddress = () => {
+    const vouchers = dispatchDetails?.vouchers;
+
+    if (!Array.isArray(vouchers) || vouchers.length === 0) return null;
+
+    return vouchers[vouchers.length - 1]?.legTo ?? null;
   };
 
   // updateStatus mutation
@@ -846,6 +887,7 @@ const ViewDispatchNote = () => {
 
   const generateDC = () => {
     const formattedPayload = formatDispatchPreviewPayload(dispatchDetails);
+
     // preview DC
     previewDCMutation.mutate({
       id: params.dispatchId,
@@ -853,8 +895,15 @@ const ViewDispatchNote = () => {
     });
   };
 
+  const onDCclick = (row) => {
+    return router.push(`/dashboard/transport/delivery-challan/${row.id}`);
+  };
+
   // columns
-  const dispatchedItemDetailsColumns = useDispatchedItemColumns();
+  const dispatchedItemDetailsColumns = useDispatchedItemColumns({
+    movementType: dispatchDetails?.movementType,
+  });
+  const deliveryChallansColumns = useDeliveryChallansColumns();
 
   if (isDispatchDetailsLoading) {
     <Loading />;
@@ -892,11 +941,9 @@ const ViewDispatchNote = () => {
                     )}
                   />
                   {/* generateDC cta */}
-                  {dispatchDetails?.vouchers?.length === 0 && (
-                    <Button size="sm" onClick={generateDC}>
-                      {translations('overview_inputs.ctas.generateDC')}
-                    </Button>
-                  )}
+                  <Button size="sm" onClick={generateDC}>
+                    {translations('overview_inputs.ctas.generateDC')}
+                  </Button>
                 </div>
               </section>
 
@@ -912,6 +959,9 @@ const ViewDispatchNote = () => {
                     </TabsTrigger>
                     <TabsTrigger value="items">
                       {translations('tabs.tab2.title')}
+                    </TabsTrigger>
+                    <TabsTrigger value="dc">
+                      {translations('tabs.tab3.title')}
                     </TabsTrigger>
                   </TabsList>
                 </section>
@@ -948,6 +998,17 @@ const ViewDispatchNote = () => {
                     />
                   </section>
                 </TabsContent>
+
+                <TabsContent value="dc">
+                  {/* DCs TABLE */}
+                  <section className="mt-2">
+                    <DataTable
+                      data={dispatchDetails?.vouchers || []}
+                      columns={deliveryChallansColumns}
+                      onRowClick={onDCclick}
+                    />
+                  </section>
+                </TabsContent>
               </Tabs>
             </>
           )}
@@ -959,6 +1020,8 @@ const ViewDispatchNote = () => {
             url={dcPreviewUrl}
             breadcrumb={dispatchOrdersBreadCrumbs}
             onClose={() => setIsGeneratingDC(false)}
+            legFrom={getLegFromAddress()}
+            creatingDCNo={dispatchDetails?.vouchers?.length}
           />
         )}
       </Wrapper>

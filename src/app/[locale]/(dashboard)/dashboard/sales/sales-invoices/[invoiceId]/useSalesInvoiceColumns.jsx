@@ -40,6 +40,15 @@ export const useSalesInvoiceColumns = () => {
       ),
     },
     {
+      accessorKey: 'gstPerUnit',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translations('gstPerUnit')}
+        />
+      ),
+    },
+    {
       accessorKey: 'totalAmount',
       header: ({ column }) => (
         <DataTableColumnHeader
@@ -52,6 +61,22 @@ export const useSalesInvoiceColumns = () => {
 
         return formattedAmount(amount);
       },
+    },
+    /* Batch Number */
+    {
+      accessorKey: 'batchNo',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={translations('batch')} />
+      ),
+      cell: ({ row }) => row.original?.batchNo || '--',
+    },
+    /* Expiry Date */
+    {
+      accessorKey: 'expiryDate',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={translations('expiry')} />
+      ),
+      cell: ({ row }) => row.original?.expiryDate || '--',
     },
   ];
 };

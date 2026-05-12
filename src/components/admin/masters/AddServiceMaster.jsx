@@ -15,7 +15,7 @@ import Wrapper from '@/components/wrappers/Wrapper';
 
 import {
   createServiceMaster,
-  updateSerivceMaster,
+  updateServiceMaster,
 } from '@/services/Admin_Services/AdminServices';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -78,7 +78,7 @@ export default function AddServiceMaster({
 
   /* Update */
   const UpdateServiceMutation = useMutation({
-    mutationFn: updateSerivceMaster,
+    mutationFn: updateServiceMaster,
     onSuccess: () => {
       toast.success('Service Master Updated Successfully');
       onClose?.();
@@ -121,6 +121,7 @@ export default function AddServiceMaster({
       exemptedCategory: Boolean(formData.exemptedCategory),
       nilRatedCategory: Boolean(formData.nilRatedCategory),
       description: formData.description.trim() || null,
+      isDeleted: false,
     };
 
     if (serviceMasterToEdit) {
@@ -147,43 +148,47 @@ export default function AddServiceMaster({
       </section>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Hues Item ID */}
-        <div>
-          <Label>Hues Item ID</Label>
-          <Input
-            value={formData.huesItemId}
-            onChange={(e) => handleChange('huesItemId', e.target.value)}
-          />
-          {errors.huesItemId && <ErrorBox msg={errors.huesItemId} />}
-        </div>
-
-        {/* Service Name */}
-        <div>
-          <Label>Service Name</Label>
-          <Input
-            value={formData.serviceName}
-            onChange={(e) => handleChange('serviceName', e.target.value)}
-          />
-          {errors.serviceName && <ErrorBox msg={errors.serviceName} />}
-        </div>
-
-        {/* SAC / GST */}
         <div className="grid grid-cols-2 gap-4">
+          {/* Hues Item ID */}
           <div>
-            <Label>SAC</Label>
+            <Label>Hues Item ID</Label> <span className="text-red-500">*</span>
+            <Input
+              value={formData.huesItemId}
+              onChange={(e) => handleChange('huesItemId', e.target.value)}
+              placeholder="Enter Hues Item ID"
+            />
+            {errors.huesItemId && <ErrorBox msg={errors.huesItemId} />}
+          </div>
+
+          {/* Service Name */}
+          <div>
+            <Label>Service Name</Label> <span className="text-red-500">*</span>
+            <Input
+              value={formData.serviceName}
+              onChange={(e) => handleChange('serviceName', e.target.value)}
+              placeholder="Enter Service Name"
+            />
+            {errors.serviceName && <ErrorBox msg={errors.serviceName} />}
+          </div>
+
+          {/* SAC / GST */}
+          <div>
+            <Label>SAC</Label> <span className="text-red-500">*</span>
             <Input
               value={formData.sac}
               onChange={(e) => handleChange('sac', e.target.value)}
+              placeholder="Enter SAC"
             />
             {errors.sac && <ErrorBox msg={errors.sac} />}
           </div>
 
           <div>
-            <Label>GST Rate (%)</Label>
+            <Label>GST Rate (%)</Label> <span className="text-red-500">*</span>
             <Input
               type="number"
               value={formData.gstRate}
               onChange={(e) => handleChange('gstRate', e.target.value)}
+              placeholder="Enter GST Rate"
             />
             {errors.gstRate && <ErrorBox msg={errors.gstRate} />}
           </div>
@@ -220,6 +225,7 @@ export default function AddServiceMaster({
             rows={4}
             value={formData.description}
             onChange={(e) => handleChange('description', e.target.value)}
+            placeholder="Enter Description"
           />
         </div>
 

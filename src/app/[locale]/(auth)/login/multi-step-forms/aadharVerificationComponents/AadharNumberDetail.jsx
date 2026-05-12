@@ -1,5 +1,5 @@
 import { validateAadhaar } from '@/appUtils/ValidationUtils';
-import ExplantoryText from '@/components/auth/ExplantoryText';
+import InfoBanner from '@/components/auth/InfoBanner';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import ErrorBox from '@/components/ui/ErrorBox';
@@ -11,10 +11,13 @@ import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 import AuthProgress from '../../util-auth-components/AuthProgress';
 
+const INFO_BANNER_TEXT = `Verification of Aadhar using govt resources may sometimes fail. Contact us if onboarding isn't completed`;
+
 const AadharNumberDetail = ({
   aadharNumber,
   setAadharNumber,
   loading,
+  isGettingError,
   validateAadharAndUpdateUser,
   translations,
 }) => {
@@ -60,7 +63,7 @@ const AadharNumberDetail = ({
   return (
     <form
       onSubmit={handleProceed}
-      className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-10 rounded-md"
+      className="flex min-h-[500px] w-[450px] flex-col items-center justify-center gap-6 rounded-md"
     >
       <div className="flex flex-col gap-3">
         <AuthProgress isCurrAuthStep={'isAadhaarVerificationStep'} />
@@ -71,6 +74,11 @@ const AadharNumberDetail = ({
           {translations('steps.aadharNum.subtitle')}
         </p>
       </div>
+
+      {/* show only when validateAadharAndUpdateUser is getting error */}
+      {isGettingError && (
+        <InfoBanner text={INFO_BANNER_TEXT} variant="danger" showSupportLink />
+      )}
 
       <div className="flex w-full flex-col gap-4">
         <div className="grid w-full items-center gap-1.5">
@@ -101,8 +109,11 @@ const AadharNumberDetail = ({
           )}
         </div>
 
-        {/* Explanatory Information */}
-        <ExplantoryText text={translations('steps.aadharNum.information')} />
+        {/* banner */}
+        <InfoBanner
+          text={translations('steps.aadharNum.information')}
+          showSupportLink={false}
+        />
 
         <Button type="submit" className="w-full" size="sm" disabled={loading}>
           {loading ? <Loading /> : translations('steps.aadharNum.button')}

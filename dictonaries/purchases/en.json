@@ -79,6 +79,11 @@
                     "payment_advice": "Send Payment Advise",
                     "generate_invoice": "Invoice",
                     "stock-in": "Stock in",
+                    "withdraw": {
+                        "cta": "Withdraw",
+                        "successMsg": "Order withdrawn successfully",
+                        "errorMsg": "Oops! Something didn’t go as planned Try again?"
+                    },
                     "view": {
                         "placeholder": "Preview Order"
                     },
@@ -166,6 +171,10 @@
                     "successMsg": "Invoice exported—your download’s starting now",
                     "errorMsg": "Uh-oh, we hit a snag. Retry?"
                 },
+                "invoice": {
+                    "cta": "Record Vendor Invoice",
+                    "tooltip": "Record a Vendor Invoice"
+                },
                 "search": {
                     "placeholder": "Search by Vendor..."
                 }
@@ -184,7 +193,9 @@
                     "vendors": "Vendor",
                     "order_id": "Order ID",
                     "status": "Status",
-                    "total_amount": "Total amount"
+                    "roundOff_amount": "Invoice Total",
+                    "match_status": "Match Status",
+                    "gst_feeds": "GST Feeds"
                 }
             },
             "invoice_details": {
@@ -220,7 +231,10 @@
                                     "item": "Item",
                                     "quantity": "Quantity",
                                     "rate": "Rate",
-                                    "total_amount": "Total amount"
+                                    "gstPerUnit": "GST (%)",
+                                    "total_amount": "Total amount",
+                                    "batch": "Batch",
+                                    "expiry": "Expiry"
                                 }
                             }
                         },

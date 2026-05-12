@@ -176,7 +176,13 @@ export function GoodsTable({
       </div>
       {isFetching && <div className="p-1 text-center">Fetching More...</div>}
       {/* Render Pagination only if there's data */}
-      {!isFetching && data?.length > 0 && <DataTablePagination table={table} />}
+      {!isFetching && data?.length > 0 && (
+        <DataTablePagination
+          table={table}
+          totalPages={totalPages}
+          currFetchedPage={currFetchedPage}
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { servicesApi } from '@/api/inventories/services/services';
+import { formattedAmount } from '@/appUtils/helperFunctions';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Button } from '@/components/ui/button';
@@ -10,16 +11,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { DeleteProductServices } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
-import { Info, MoreVertical, Pencil } from 'lucide-react';
-import moment from 'moment';
-import { useTranslations } from 'next-intl';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import { usePermission } from '@/hooks/usePermissions';
-import Tooltips from '@/components/auth/Tooltips';
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import { DeleteProductServices } from '@/services/Inventories_Services/Services_Inventories/Services_Inventories';
+import { MoreVertical, Pencil } from 'lucide-react';
+import moment from 'moment';
+import { useTranslations } from 'next-intl';
 
-export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
+export const useServicesColumns = (setIsEditing, setServicesToEdit, router) => {
   const translations = useTranslations('services');
   const { hasAnyPermission } = usePermission();
 
@@ -33,23 +32,22 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
         />
       ),
       cell: ({ row }) => {
-        const { shortDescription, serviceName } = row.original;
+        const { serviceName } = row.original;
         return (
           <div className="flex items-center gap-1">
             <span className="hover:text-primary hover:underline">
               {serviceName}
             </span>
-            <Tooltips trigger={<Info size={14} />} content={shortDescription} />
           </div>
         );
       },
     },
     {
-      accessorKey: 'sacCode',
+      accessorKey: 'serviceCode',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('table.header.sac')}
+          title={translations('table.header.serviceCode')}
         />
       ),
     },
@@ -62,8 +60,9 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
         />
       ),
       cell: ({ row }) => {
-        const { shortDescription } = row.original;
-        return <p className="truncate">{shortDescription}</p>;
+        const defaultValue =
+          row.original?.config?.short_description?.defaultValue || '-';
+        return <p className="truncate">{defaultValue}</p>;
       },
     },
     {
@@ -87,6 +86,10 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
           title={translations('table.header.gst')}
         />
       ),
+      cell: ({ row }) => {
+        const value = row.original?.config?.gst_rate_percent?.defaultValue;
+        return value ? `${value}%` : '-';
+      },
     },
     {
       accessorKey: 'createdAt',
@@ -104,7 +107,7 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
     },
   ];
 
-  // ✅ Conditionally add actions column
+  // Conditionally add actions column
   const canShowActions = hasAnyPermission([
     'permission:item-masters-edit',
     'permission:item-masters-delete',
@@ -131,9 +134,10 @@ export const useServicesColumns = (setIsEditing, setServicesToEdit) => {
                 <DropdownMenuItem
                   className="flex items-center justify-center gap-2"
                   onClick={(e) => {
-                    setIsEditing(true);
                     e.stopPropagation();
                     setServicesToEdit(row.original);
+                    router.push('/dashboard/inventory/services?action=edit');
+                    setIsEditing(true);
                   }}
                 >
                   <Pencil size={12} />

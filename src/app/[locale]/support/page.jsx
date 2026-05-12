@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ArrowLeftCircle, Mail, Phone } from 'lucide-react';
+import { ArrowLeftCircle, Mail } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -26,7 +26,7 @@ export default function SupportPage() {
           an option below or reach out to our support team.`}
         </p>
 
-        <div className="grid gap-6 sm:grid-cols-2">
+        <div className="grid gap-6 sm:grid-cols-1">
           <div className="rounded-lg border p-6 shadow-sm transition hover:shadow-md">
             <Mail className="mx-auto mb-4 h-8 w-8 text-primary" />
             <h2 className="mb-2 text-lg font-semibold">Email Support</h2>
@@ -34,14 +34,14 @@ export default function SupportPage() {
               {`Send us an email and we'll get back to you within 24 hours.`}
             </p>
             <a
-              href="mailto:support@yourapp.com"
+              href="mailto:support@paraphernalia.in"
               className="font-medium text-primary hover:underline"
             >
-              support@yourapp.com
+              support@paraphernalia.in
             </a>
           </div>
 
-          <div className="rounded-lg border p-6 shadow-sm transition hover:shadow-md">
+          {/* <div className="rounded-lg border p-6 shadow-sm transition hover:shadow-md">
             <Phone className="mx-auto mb-4 h-8 w-8 text-green-600" />
             <h2 className="mb-2 text-lg font-semibold">Phone Support</h2>
             <p className="mb-3 text-sm">
@@ -53,7 +53,7 @@ export default function SupportPage() {
             >
               +91 9869350874
             </a>
-          </div>
+          </div> */}
         </div>
 
         <Button

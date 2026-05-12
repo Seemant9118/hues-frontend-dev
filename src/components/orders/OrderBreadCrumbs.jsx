@@ -27,6 +27,11 @@ const OrderBreadCrumbs = ({
       return;
     }
 
+    if (page.onClick) {
+      page.onClick();
+      return;
+    }
+
     if (page.name === 'Sales') {
       // Directly navigate to /sales-orders for SALES breadcrumb
       router.push('/dashboard/sales/sales-orders');

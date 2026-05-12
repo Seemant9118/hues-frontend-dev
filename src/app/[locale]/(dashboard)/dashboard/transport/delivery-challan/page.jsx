@@ -21,6 +21,10 @@ import { toast } from 'sonner';
 import { updateReadTracker } from '@/services/Read_Tracker_Services/Read_Tracker_Services';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import DebouncedInput from '@/components/ui/DebouncedSearchInput';
+import InfoBanner from '@/components/auth/InfoBanner';
+import { Button } from '@/components/ui/button';
+import DirectDC from '@/components/dispatchNote/DirectDC';
+import { FeatureFlagWrapper } from '@/components/wrappers/FeatureFlagWrapper';
 import { useDeliveryChallanColumns } from './useDeliveryChallanColumns';
 
 // macros
@@ -47,6 +51,7 @@ const DeliveryChallan = () => {
   const [searchCycle, setSearchCycle] = useState(0);
   const [dispatchedNotes, setDispatchedNotes] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
+  const [isCreatingDC, setIsCreatingDC] = useState(false);
 
   const isSearching = searchTerm?.length > 0;
   const hasData = dispatchedNotes?.length > 0;
@@ -171,38 +176,62 @@ const DeliveryChallan = () => {
                 onDebouncedChange={handleSearchChange}
                 placeholder="Search Delivery Challan"
               />
+
+              <Button size="sm" onClick={() => setIsCreatingDC(true)}>
+                Generate Delivery Challans
+              </Button>
             </div>
           </SubHeader>
 
-          {isDeliveryChallanLoading ? (
-            <Loading />
-          ) : (
+          {!isCreatingDC && (
             <>
-              {/* Case 1: No search term, and no data → Empty stage */}
-              {!hasData && !isSearching ? (
-                <EmptyStageComponent
-                  heading={translations('emtpyStateComponent.heading')}
-                  subItems={keys}
-                />
+              {isDeliveryChallanLoading ? (
+                <Loading />
               ) : (
-                // Case 2: data is available → Show Table
-                <InfiniteDataTable
-                  id="delivery-challan-table"
-                  columns={dispatchedNotesColumns}
-                  data={hasData ? dispatchedNotes : []}
-                  fetchNextPage={fetchNextPage}
-                  isFetching={isFetching}
-                  totalPages={paginationData?.totalPages}
-                  currFetchedPage={paginationData?.currFetchedPage}
-                  onRowClick={onRowClick}
-                />
+                <>
+                  {/* Banner */}
+                  <InfoBanner
+                    showSupportLink={false}
+                    text={
+                      <>
+                        {`You can create multiple Delivery Challans against a single Dispatch Note.`}
+                      </>
+                    }
+                  />
+                  {/* Case 1: No search term, and no data → Empty stage */}
+                  {!hasData && !isSearching ? (
+                    <EmptyStageComponent
+                      heading={translations('emtpyStateComponent.heading')}
+                      subItems={keys}
+                    />
+                  ) : (
+                    // Case 2: data is available → Show Table
+                    <InfiniteDataTable
+                      id="delivery-challan-table"
+                      columns={dispatchedNotesColumns}
+                      data={hasData ? dispatchedNotes : []}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
+                    />
+                  )}
+                </>
               )}
             </>
           )}
+
+          {isCreatingDC && <DirectDC setIsOpen={setIsCreatingDC} />}
         </Wrapper>
       )}
     </ProtectedWrapper>
   );
 };
 
-export default DeliveryChallan;
+const DeliveryChallanGuarded = ({ params }) => (
+  <FeatureFlagWrapper flag="TRANSPORT.DELIVERY_CHALLAN" redirectTo="/dashboard">
+    <DeliveryChallan params={params} />
+  </FeatureFlagWrapper>
+);
+export default DeliveryChallanGuarded;

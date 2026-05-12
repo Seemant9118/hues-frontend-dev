@@ -4,15 +4,17 @@ import { formattedAmount, isGstApplicable } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { SessionStorageService } from '@/lib/utils';
 import { Trash2 } from 'lucide-react';
+import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
 
 export const useCreateSalesInvoiceColumns = (
   isOrder,
   setOrder,
   setSelectedItem,
-  isB2BInvoice,
-  isGstApplicableForSalesOrders,
+  sessionStorageKey,
+  isGstApplicableForSelectedVendor,
 ) => {
   const translations = useTranslations(
     'components.create_edit_order.form.table.header',
@@ -24,12 +26,33 @@ export const useCreateSalesInvoiceColumns = (
         <DataTableColumnHeader column={column} title={translations('item')} />
       ),
       cell: ({ row }) => {
-        const { productName, serviceName } = row.original;
+        const { productName, serviceName, isFromLinkedOrder } = row.original;
         return (
-          <div className="flex items-center gap-2">
-            <span>{productName || serviceName}</span>
+          <div className="flex flex-col items-start gap-2">
+            <span>{productName || serviceName} </span>
+            {isFromLinkedOrder && <Badge>From Order</Badge>}
           </div>
         );
+      },
+    },
+    {
+      accessorKey: 'batch',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Batch" />
+      ),
+      cell: ({ row }) => {
+        const { batch } = row.original;
+        return batch?.batchNo || '-';
+      },
+    },
+    {
+      accessorKey: 'expiryDate',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Expiry" />
+      ),
+      cell: ({ row }) => {
+        const { expiryDate } = row.original;
+        return expiryDate ? moment(expiryDate).format('DD/MM/YYYY') : '-';
       },
     },
     {
@@ -48,7 +71,7 @@ export const useCreateSalesInvoiceColumns = (
         <DataTableColumnHeader column={column} title={translations('price')} />
       ),
     },
-    ...(isGstApplicable(isGstApplicableForSalesOrders)
+    ...(isGstApplicable(isGstApplicableForSelectedVendor)
       ? [
           {
             accessorKey: 'gstPerUnit',
@@ -81,7 +104,7 @@ export const useCreateSalesInvoiceColumns = (
         return formattedAmount(amount);
       },
     },
-    ...(isGstApplicable(isGstApplicableForSalesOrders)
+    ...(isGstApplicable(isGstApplicableForSelectedVendor)
       ? [
           {
             accessorKey: 'totalGstAmount',
@@ -127,7 +150,9 @@ export const useCreateSalesInvoiceColumns = (
                 // Update order state (remove item)
                 setOrder((prev) => {
                   const updatedItems = prev.orderItems.filter(
-                    (item) => item.productId !== row.original.productId,
+                    (item) =>
+                      item.productId !== row.original.productId ||
+                      item.batch?.id !== row.original.batch?.id,
                   );
 
                   const updatedOrder = {
@@ -136,23 +161,13 @@ export const useCreateSalesInvoiceColumns = (
                   };
 
                   // Update session storage with updatedOrder and restored itemDraft
-                  if (isB2BInvoice) {
-                    const prevDraft =
-                      SessionStorageService.get('b2bInvoiceDraft') || {};
-                    SessionStorageService.set('b2bInvoiceDraft', {
-                      ...prevDraft,
-                      ...updatedOrder,
-                      itemDraft: row.original,
-                    });
-                  } else {
-                    const prevDraft =
-                      SessionStorageService.get('b2CInvoiceDraft') || {};
-                    SessionStorageService.set('b2CInvoiceDraft', {
-                      ...prevDraft,
-                      ...updatedOrder,
-                      itemDraft: row.original,
-                    });
-                  }
+                  const prevDraft =
+                    SessionStorageService.get(sessionStorageKey) || {};
+                  SessionStorageService.set(sessionStorageKey, {
+                    ...prevDraft,
+                    ...updatedOrder,
+                    itemDraft: row.original,
+                  });
 
                   return updatedOrder;
                 });

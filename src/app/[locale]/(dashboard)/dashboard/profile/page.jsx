@@ -101,13 +101,8 @@ function Profile() {
     'HUES PROFILE',
   ); // dynamic title
 
-  // useEffect(() => {
-  //   const bgColorClass = getRandomBgColor();
-  //   setBgColor(bgColorClass);
-  // }, []);
-
   return (
-    <Wrapper className="h-full gap-8">
+    <Wrapper className="h-full">
       <SubHeader name="Profile">
         <Button
           size="sm"

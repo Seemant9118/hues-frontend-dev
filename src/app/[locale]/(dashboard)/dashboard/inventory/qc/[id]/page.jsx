@@ -1,6 +1,7 @@
 'use client';
 
 import { qcApis } from '@/api/inventories/qc/qc';
+import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import CommentBox from '@/components/comments/CommentBox';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import QCItemsDialog from '@/components/qc/QCItemDialog';
@@ -24,6 +25,7 @@ import { useQCItemsColumns } from './qcItemColumns';
 
 const ViewQC = () => {
   const translations = useTranslations('qc.qcDetails');
+  const enterpriseId = getEnterpriseId();
   const router = useRouter();
   const params = useParams();
   const [tab, setTab] = useState('overview');
@@ -62,7 +64,7 @@ const ViewQC = () => {
       qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails?.referenceNumber ||
       '-',
     vendorName:
-      qcDetails?.items?.[0]?.grn?.metaData?.sellerDetails?.name || '-',
+      qcDetails?.items?.[0]?.grn?.metaData?.sellerDetails?.name || 'Self',
     status: qcDetails?.parentStatus || '-',
   };
   const overviewLabels = {
@@ -89,22 +91,27 @@ const ViewQC = () => {
       );
     },
     invoiceId: () => {
-      return (
-        <p
-          className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
-          onClick={() => {
-            router.push(
-              `/dashboard/purchases/purchase-invoices/${qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails?.id}`,
-            );
-          }}
-        >
-          {
-            qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails
-              ?.referenceNumber
-          }
-          <MoveUpRight size={12} />
-        </p>
-      );
+      if (
+        qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails?.referenceNumber ||
+        qcDetails?.items?.[0]?.grn?.invoice?.referenceNumber
+      ) {
+        return (
+          <p
+            className="flex cursor-pointer items-center gap-0.5 text-base font-semibold hover:text-primary hover:underline"
+            onClick={() => {
+              router.push(
+                `/dashboard/purchases/purchase-invoices/${qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails?.id || qcDetails?.items?.[0]?.grn?.invoice?.id}`,
+              );
+            }}
+          >
+            {qcDetails?.items?.[0]?.grn?.metaData?.invoiceDetails
+              ?.referenceNumber ||
+              qcDetails?.items?.[0]?.grn?.invoice?.referenceNumber}
+            <MoveUpRight size={12} />
+          </p>
+        );
+      }
+      return '-';
     },
   };
 
@@ -133,6 +140,8 @@ const ViewQC = () => {
         qcPassedQuantity: Number(item.qcPassedQuantity || 0),
         qcFailedQuantity: Number(item.qcFailedQuantity || 0),
         qcRemarks: item.qcRemarks || '',
+        batchNo: item.batchNo,
+        expiryDate: item.expiryDate,
       };
     });
 
@@ -222,6 +231,7 @@ const ViewQC = () => {
             )}
 
             <QCItemsDialog
+              enterpriseId={enterpriseId}
               open={isQCDialogOpen}
               onClose={() => setIsQCDialogOpen(false)}
               qcDetails={qcDetails}

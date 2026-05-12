@@ -64,6 +64,7 @@
                     "delivery_challan_no": "Delivery challan no.",
                     "ewb": "EWB",
                     "dispatch_from": "Dispatch From",
+                    "dispatch_to": "Dispatch To",
                     "billing_from": "Billing From",
                     "billing_address": "Billing Address",
                     "shipping_address": "Shipping Address"
@@ -80,7 +81,7 @@
                         "edit": "Edit",
                         "share": "(Share with Transporter)",
                         "readyForDispatch": "Ready for Dispatch",
-                        "generateDC": "Generate Delivery Challan",
+                        "generateDC": "Add Delivery Challan",
                         "addBooking": "Add Transport Booking",
                         "generateEWayBill": "Generate E-Way Bill",
                         "refreshEWayBill": "Refresh E-Way Bill",
@@ -122,7 +123,9 @@
                                 "invoiceQty": "Invoice Quantity",
                                 "dispatchedQty": "Dispatched Quantity",
                                 "rate": "Rate",
-                                "amount": "Amount"
+                                "amount": "Amount",
+                                "batch": "Batch",
+                                "expiry": "Expiry"
                             }
                         },
                         "emtpyStateComponent": {
@@ -131,8 +134,8 @@
                         }
                     },
                     "tab3": {
-                        "title1": "Transport Booking",
-                        "title2": "No booking yet",
+                        "title": "Delivery Challans",
+                        "title2": "No Delivery Challans yet",
                         "table": {
                             "header": {
                                 "type": "Mode",
@@ -150,30 +153,6 @@
                         "emtpyStateComponent": {
                             "title": "No Trasnport booking yet",
                             "para": "You haven't recorded any trasnport bookings yet. Start now to keep your booking history up to date"
-                        }
-                    },
-                    "tab4": {
-                        "title": "E-way bills",
-                        "table": {
-                            "header": {
-                                "ewbNo": "EWB No",
-                                "ewayBillDate": "E-Way Bill Date",
-                                "from": "From Party",
-                                "to": "To Party",
-                                "totalValue": "Total Value",
-                                "invoiceValue": "Invoice Value",
-                                "transporter": "Transporter Name",
-                                "status": "Status",
-                                "noValidDays": "Valid Days",
-                                "vehicleType": "Vehicle Type"
-                            },
-                            "ctas": {
-                                "viewDetails": "View Details"
-                            }
-                        },
-                        "emtpyStateComponent": {
-                            "title": "No E-way bills generated yet",
-                            "para": "You haven't recorded any E-way bills yet. Start now to keep your E-way bills history up to date"
                         }
                     }
                 },
@@ -283,7 +262,9 @@
                     "dispatch_from": "Dispatch From",
                     "billing_from": "Billing From",
                     "billing_address": "Billing Address",
-                    "shipping_address": "Shipping Address"
+                    "shipping_address": "Shipping Address",
+                    "legFrom": "Leg From",
+                    "legTo": "Leg To"
                 },
                 "overview_inputs": {
                     "transporter": "Select Transporter",
@@ -510,11 +491,12 @@
                         "title": "Overview",
                         "table": {
                             "header": {
-                                "skuId": "SKU ID",
-                                "itemName": "Item name",
-                                "qtyReceived": "Qty. Recieved",
-                                "qtyAccepted": "Qty. Accepted",
-                                "qtyRejected": "Qty. Rejected"
+                                "itemName": "Item name / SKU",
+                                "dispatchQty": "Dispatch Qty.",
+                                "qtyRecieved": "Recieved Qty.",
+                                "qtyMissing": "Missing Qty.",
+                                "batch": "Batch",
+                                "expiry": "Expiry"
                             }
                         }
                     }
@@ -581,7 +563,9 @@
                                 "itemName": "Item name",
                                 "qtyReceived": "Qty. Recieved",
                                 "qtyAccepted": "Qty. Accepted",
-                                "qtyRejected": "Qty. Rejected"
+                                "qtyRejected": "Qty. Rejected",
+                                "batch": "Batch",
+                                "expiry": "Expiry"
                             }
                         }
                     }

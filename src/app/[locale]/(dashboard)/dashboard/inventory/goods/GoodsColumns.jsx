@@ -1,10 +1,11 @@
 'use client';
 
 import { goodsApi } from '@/api/inventories/goods/goods';
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
 import Tooltips from '@/components/auth/Tooltips';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -33,28 +34,50 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
         />
       ),
       cell: ({ row }) => {
-        const { description, productName } = row.original;
+        const { productName } = row.original;
         return (
           <div className="flex items-center gap-1">
             <span className="hover:text-primary hover:underline">
               {productName}
             </span>
-            <Tooltips trigger={<Info size={14} />} content={description} />
           </div>
         );
       },
     },
+    // {
+    //   accessorKey: 'manufacturerName',
+    //   header: ({ column }) => (
+    //     <DataTableColumnHeader
+    //       column={column}
+    //       title={translations('table.header.manufacturer')}
+    //     />
+    //   ),
+    //   cell: ({ row }) => {
+    //     const { manufacturerName } = row.original;
+    //     return manufacturerName || '-';
+    //   },
+    // },
     {
-      accessorKey: 'manufacturerName',
+      accessorKey: 'produtType',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('table.header.manufacturer')}
+          title={translations('table.header.prodType')}
         />
       ),
       cell: ({ row }) => {
-        const { manufacturerName } = row.original;
-        return manufacturerName || '-';
+        // eslint-disable-next-line no-unsafe-optional-chaining
+        const itemType = row.original?.goodsType?.goodsHsnMaster?.item || '-';
+        const description =
+          row.original?.goodsType?.goodsHsnMaster?.description || '-';
+        return (
+          <div className="flex items-center gap-1">
+            <span className="hover:text-primary hover:underline">
+              {capitalize(itemType)}
+            </span>
+            <Tooltips trigger={<Info size={14} />} content={description} />
+          </div>
+        );
       },
     },
     {
@@ -65,27 +88,24 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
           title={translations('table.header.hsnCode')}
         />
       ),
+      cell: ({ row }) => {
+        const { hsnCode } = row.original;
+        return <Badge variant="secondary">{hsnCode || '-'}</Badge>;
+      },
     },
-    // {
-    //   accessorKey: 'rate',
-    //   header: ({ column }) => (
-    //     <DataTableColumnHeader
-    //       column={column}
-    //       title={translations('table.header.rate')}
-    //     />
-    //   ),
-    // },
+
     {
-      accessorKey: 'costPrice',
+      accessorKey: 'category',
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
-          title={translations('table.header.costPrice')}
+          title={translations('table.header.category')}
         />
       ),
       cell: ({ row }) => {
-        const value = row.getValue('costPrice');
-        return formattedAmount(value);
+        const category =
+          row.original?.goodsType?.goodsHsnMaster?.category?.categoryName;
+        return category || '-';
       },
     },
     {
@@ -125,7 +145,7 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
       ),
       cell: ({ row }) => {
         const value = row.getValue('gstPercentage');
-        return `${value} %`;
+        return `${value ?? 0} %`;
       },
     },
     {
@@ -144,7 +164,7 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
     },
   ];
 
-  // ✅ Conditionally add actions column
+  // Conditionally add actions column
   const canShowActions = hasAnyPermission([
     'permission:item-masters-edit',
     'permission:item-masters-delete',
@@ -156,7 +176,7 @@ export const useGoodsColumns = (setIsEditing, setGoodsToEdit) => {
       enableHiding: false,
       cell: ({ row }) => {
         const { id } = row.original;
-        const name = row.original.productName;
+        const name = row.original?.productName;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

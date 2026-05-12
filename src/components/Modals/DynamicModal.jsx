@@ -13,6 +13,7 @@ const DynamicModal = ({
   description,
   buttons = [],
   showCloseOnOutsideClick = true,
+  children,
 }) => {
   return (
     <Dialog
@@ -33,6 +34,7 @@ const DynamicModal = ({
             {description}
           </p>
         )}
+        {children}
 
         {/* Buttons */}
         {buttons.length > 0 && (

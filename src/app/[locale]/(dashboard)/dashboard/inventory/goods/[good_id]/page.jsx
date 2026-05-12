@@ -1,108 +1,208 @@
 'use client';
 
+import { batchApi } from '@/api/inventories/goods/batch';
 import { goodsApi } from '@/api/inventories/goods/goods';
-import { formattedAmount } from '@/appUtils/helperFunctions';
+import { stockApis } from '@/api/inventories/stocks/stocksApi';
+import { formattedAmount, getEnterpriseId } from '@/appUtils/helperFunctions';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import InfiniteDataTable from '@/components/table/infinite-data-table';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TruncateAndShowInfo } from '@/components/ui/TruncateAndShowInfo';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { useStockContext } from '@/context/StockContext';
 import useMetaData from '@/hooks/useMetaData';
 import {
   DeleteProductGoods,
   GetProductGoods,
 } from '@/services/Inventories_Services/Goods_Inventories/Goods_Inventories';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Pencil } from 'lucide-react';
+import { GetProductBatchList } from '@/services/Inventories_Services/Goods_Inventories/ProductBatch_Services';
+import { getStocksItems } from '@/services/Inventories_Services/Stocks_Services/Stocks_Services';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { ArrowLeft, CircleFadingPlus, Pencil } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
+import { useBatchColumns } from '../../batch/BatchColumns';
+import { BatchTable } from '../../batch/BatchTable';
+import { useStocksColumns } from '../../stocks/stockColumns';
 
 const EditGoods = dynamic(() => import('@/components/inventory/AddGoods'), {
   loading: () => <Loading />,
 });
 
+const AddBatch = dynamic(
+  () => import('@/components/inventory/batch/AddBatch'),
+  {
+    loading: () => <Loading />,
+  },
+);
+
+const QuickStockInModal = dynamic(
+  () => import('@/components/inventory/QuickStockInModal'),
+  {
+    loading: () => <Loading />,
+  },
+);
+
 const ViewItem = () => {
   useMetaData('Hues! - Goods Details', 'HUES Goods Details');
   const translations = useTranslations('goods.goodDetails');
+  const { setStockData } = useStockContext();
+  const enterpriseId = getEnterpriseId();
   const router = useRouter();
   const params = useParams();
-  const [tab, setTab] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
   const [goodsToEdit, setGoodsToEdit] = useState(null);
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState('overview');
+
+  // Batch states
+  const [isAddingBatch, setIsAddingBatch] = useState(false);
+  const [isEditingBatch, setIsEditingBatch] = useState(false);
+  const [batchToEdit, setBatchToEdit] = useState(null);
+
+  // Quick Stock In state
+  const [isQuickStockInOpen, setIsQuickStockInOpen] = useState(false);
 
   const itemsBreadCrumbs = [
     {
       id: 1,
       name: translations('title.items'),
       path: '/dashboard/inventory/goods',
-      show: true, // Always show
+      show: true,
     },
     {
       id: 2,
       name: translations('title.item_details'),
       path: `/dashboard/inventory/goods/${params.good_id}`,
-      show: true, // Always show
+      show: true,
     },
   ];
 
-  const onTabChange = (tab) => {
-    setTab(tab);
-  };
-
-  // item details fetching
-  const { data: itemDetails } = useQuery({
+  // Item details fetching
+  const { data: itemDetails, isLoading: isItemLoading } = useQuery({
     queryKey: [goodsApi.getProductGoods.endpointKey, params.good_id],
     queryFn: () => GetProductGoods(params.good_id),
     select: (res) => res.data.data,
-    enabled: true,
   });
 
-  const overviewData = {
-    productName: `${itemDetails?.productName} (${itemDetails?.manufacturerName})`,
-    huesId: itemDetails?.huesId,
-    skuId: itemDetails?.skuId || '--',
-    hsnCode: itemDetails?.hsnCode,
-    costPrice: formattedAmount(itemDetails?.costPrice),
-    salesPrice: formattedAmount(itemDetails?.salesPrice),
-    mrp: formattedAmount(itemDetails?.mrp),
-    gstPercentage: `${itemDetails?.gstPercentage}%`,
+  // Stocks Query
+  const stocksQuery = useInfiniteQuery({
+    queryKey: [stockApis.getStocksItems.endpointKey, params.good_id],
+    queryFn: async ({ pageParam = 1 }) => {
+      return getStocksItems({
+        enterpriseId,
+        page: pageParam,
+        limit: 10,
+        productId: params.good_id,
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (_lastGroup, groups) => {
+      const totalPages = _lastGroup?.data?.data?.totalPages;
+      if (!totalPages) return undefined;
+      const nextPage = (groups?.length || 0) + 1;
+      return nextPage <= totalPages ? nextPage : undefined;
+    },
+    enabled: activeTab === 'stocks' && !!enterpriseId,
+  });
+
+  const stocksList = stocksQuery.data?.pages?.flatMap(
+    (page) => page?.data?.data?.data || [],
+  );
+  const lastStockPage =
+    stocksQuery.data?.pages?.length > 0
+      ? stocksQuery.data?.pages[stocksQuery.data.pages.length - 1]?.data?.data
+      : null;
+
+  // Batches Query
+  const batchQuery = useInfiniteQuery({
+    queryKey: [batchApi.listBatches.endpointKey, itemDetails?.skuId],
+    queryFn: async ({ pageParam = 0 }) =>
+      GetProductBatchList({
+        searchString: itemDetails?.skuId,
+        skip: pageParam,
+        limit: 10,
+      }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      const data = lastPage?.data?.data;
+      const totalItems = data?.totalItems || 0;
+      const nextSkip = (allPages?.length || 0) * 10;
+      return nextSkip < totalItems ? nextSkip : undefined;
+    },
+    enabled: activeTab === 'batches' && !!itemDetails?.skuId,
+  });
+
+  const batches = batchQuery.data?.pages?.flatMap(
+    (page) => page?.data?.data?.data || [],
+  );
+
+  const productInfoData = {
+    productName: itemDetails?.productName,
+    skuId: itemDetails?.skuId || 'Not available',
+    huesId: itemDetails?.huesId || 'Not available',
     createdAt: moment(itemDetails?.createdAt).format('DD-MM-YYYY'),
     updatedAt: moment(itemDetails?.updatedAt).format('DD-MM-YYYY'),
-    weight: itemDetails?.weight,
-    length: itemDetails?.length,
-    breadth: itemDetails?.breadth,
-    height: itemDetails?.height,
     description: itemDetails?.description,
   };
 
-  const overviewLabels = {
+  const productInfoLabel = {
     productName: translations('overview_labels.productName'),
-    huesId: translations('overview_labels.huesId'),
     skuId: translations('overview_labels.skuId'),
-    hsnCode: translations('overview_labels.hsnCode'),
-    costPrice: translations('overview_labels.costPrice'),
-    salesPrice: translations('overview_labels.salesPrice'),
-    mrp: translations('overview_labels.mrp'),
-    gstPercentage: translations('overview_labels.gstPercentage'),
+    huesId: translations('overview_labels.huesId'),
     createdAt: translations('overview_labels.createdAt'),
     updatedAt: translations('overview_labels.updatedAt'),
-    weight: translations('overview_labels.weight'), // todo : with units
-    length: translations('overview_labels.length'), // todo : with units
-    breadth: translations('overview_labels.breadth'), // todo : with units
-    height: translations('overview_labels.height'), // todo :with units
     description: translations('overview_labels.description'),
   };
 
+  const customRender = {
+    description: (value) => <TruncateAndShowInfo text={value} />,
+  };
+
+  const pricingData = {
+    salesPrice: formattedAmount(itemDetails?.salesPrice),
+    mrp: formattedAmount(itemDetails?.mrp),
+    unit: itemDetails?.unit?.name || 'Not available',
+  };
+  const pricingLabel = {
+    salesPrice: translations('overview_labels.salesPrice'),
+    mrp: translations('overview_labels.mrp'),
+    unit: 'Unit',
+  };
+
+  const taxComplianceData = {
+    hsnCode: itemDetails?.hsnCode,
+    gstPercentage: `${itemDetails?.gstPercentage ?? 0}%`,
+  };
+  const taxComplianceLabel = {
+    hsnCode: translations('overview_labels.hsnCode'),
+    gstPercentage: translations('overview_labels.gstPercentage'),
+  };
+
+  const handleSetIsEditingBatch = (val, batch = null) => {
+    setIsEditingBatch(val);
+    if (batch) setBatchToEdit(batch);
+    else setBatchToEdit(null);
+  };
+
+  const stocksColumns = useStocksColumns();
+  const batchColumns = useBatchColumns(handleSetIsEditingBatch);
+
+  if (isItemLoading) return <Loading />;
+
   return (
     <ProtectedWrapper permissionCode={'permission:item-masters-view'}>
-      {!isEditing && (
-        <Wrapper className="h-full py-2">
+      {!isEditing && !isAddingBatch && !isEditingBatch && (
+        <Wrapper className="h-full py-1">
           {/* Headers */}
           <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
             <div className="flex items-center gap-1">
@@ -112,7 +212,6 @@ const ViewItem = () => {
               >
                 <ArrowLeft size={16} />
               </button>
-              {/* breadcrumbs */}
               <OrderBreadCrumbs possiblePagesBreadcrumbs={itemsBreadCrumbs} />
             </div>
 
@@ -149,27 +248,174 @@ const ViewItem = () => {
             </div>
           </section>
 
-          {/* Content */}
           <Tabs
-            value={tab}
-            onValueChange={onTabChange}
-            defaultValue={'overview'}
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="flex flex-col"
           >
-            <TabsList className="border">
-              <TabsTrigger value="overview">
-                {translations('tabs.tab1.title')}
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="overview">
-              <Overview data={overviewData} labelMap={overviewLabels} />
+            <section className="flex items-center justify-between">
+              <TabsList className="w-fit">
+                <TabsTrigger value="overview">
+                  {translations('tabs.tab1.title')}
+                </TabsTrigger>
+                <TabsTrigger value="stocks">
+                  {translations('tabs.tab2.title')}
+                </TabsTrigger>
+                <TabsTrigger value="batches">
+                  {translations('tabs.tab3.title')}
+                </TabsTrigger>
+              </TabsList>
+              {activeTab === 'batches' && (
+                <Button
+                  variant="blue_outline"
+                  onClick={() => setIsAddingBatch(true)}
+                  size="sm"
+                >
+                  <CircleFadingPlus size={14} />
+                  Add Batch
+                </Button>
+              )}
+
+              {activeTab === 'stocks' && (
+                <Button
+                  size="sm"
+                  variant="blue_outline"
+                  onClick={() => setIsQuickStockInOpen(true)}
+                >
+                  {translations('messages.quickStockIn')}
+                </Button>
+              )}
+            </section>
+
+            <TabsContent value="overview" className="flex flex-col">
+              <section className="grid grid-cols-1 gap-4">
+                <div className="px-2">
+                  <div className="mb-4 border-b pb-2">
+                    <h2 className="text-lg font-semibold text-primary">
+                      Basic Information
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                      Core product details
+                    </p>
+                  </div>
+                  <Overview
+                    sectionClass="grid grid-cols-1 md:grid-cols-3 gap-6"
+                    data={productInfoData}
+                    labelMap={productInfoLabel}
+                    customRender={customRender}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 px-2 md:grid-cols-2">
+                  <div>
+                    <div className="mb-4 border-b pb-2">
+                      <h2 className="text-lg font-semibold text-primary">
+                        Pricing
+                      </h2>
+                      <p className="text-sm text-gray-500">
+                        Sales price and MRP details
+                      </p>
+                    </div>
+                    <Overview
+                      sectionClass="grid grid-cols-1 md:grid-cols-2 gap-6"
+                      data={pricingData}
+                      labelMap={pricingLabel}
+                    />
+                  </div>
+
+                  <div>
+                    <div className="mb-4 border-b pb-2">
+                      <h2 className="text-lg font-semibold text-primary">
+                        Tax & Compliance
+                      </h2>
+                      <p className="text-sm text-gray-500">
+                        HSN and GST information
+                      </p>
+                    </div>
+                    <Overview
+                      sectionClass="grid grid-cols-1 md:grid-cols-2 gap-6"
+                      data={taxComplianceData}
+                      labelMap={taxComplianceLabel}
+                    />
+                  </div>
+                </div>
+              </section>
+            </TabsContent>
+
+            <TabsContent value="stocks" className="flex flex-col gap-2">
+              {stocksQuery.isLoading ? (
+                <Loading />
+              ) : stocksList && stocksList.length > 0 ? (
+                <InfiniteDataTable
+                  id="product-stocks-table"
+                  columns={stocksColumns}
+                  data={stocksList || []}
+                  fetchNextPage={stocksQuery.fetchNextPage}
+                  isFetching={stocksQuery.isFetching}
+                  totalPages={lastStockPage?.totalPages}
+                  currFetchedPage={lastStockPage?.currentPage}
+                  onRowClick={(row) => {
+                    setStockData(row);
+                    router.push(`/dashboard/inventory/stocks/${row.productId}`);
+                  }}
+                />
+              ) : (
+                <div className="flex h-32 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
+                  {translations('messages.noStocks')}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="batches" className="flex flex-col gap-2">
+              {batchQuery.isLoading ? (
+                <Loading />
+              ) : batches && batches.length > 0 ? (
+                <BatchTable
+                  id="product-batch-table"
+                  columns={batchColumns}
+                  data={batches || []}
+                  fetchNextPage={batchQuery.fetchNextPage}
+                  isFetching={batchQuery.isFetching}
+                  hasNextPage={batchQuery.hasNextPage}
+                />
+              ) : (
+                <div className="flex h-32 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
+                  {translations('messages.noBatches')}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </Wrapper>
       )}
+
       {isEditing && (
         <EditGoods
           setIsCreatingGoods={setIsEditing}
           goodsToEdit={goodsToEdit}
+        />
+      )}
+
+      {isAddingBatch && (
+        <AddBatch
+          setIsAdding={setIsAddingBatch}
+          setIsEditing={setIsEditingBatch}
+          batchToEdit={null}
+        />
+      )}
+
+      {isEditingBatch && (
+        <AddBatch
+          setIsAdding={setIsAddingBatch}
+          setIsEditing={setIsEditingBatch}
+          batchToEdit={batchToEdit}
+        />
+      )}
+
+      {isQuickStockInOpen && (
+        <QuickStockInModal
+          isOpen={isQuickStockInOpen}
+          onClose={() => setIsQuickStockInOpen(false)}
+          product={itemDetails}
         />
       )}
     </ProtectedWrapper>

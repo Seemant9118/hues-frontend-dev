@@ -21,9 +21,9 @@ const buttonVariants = cva(
           'text-[#288AF9] border-[#288AF9] border underline-offset-4 hover:bg-blue-500/10',
         grey: 'p-2 rounded-sm gap-2 bg-[#A5ABBD26] text-grey text-xs font-bold',
         warning:
-          'border border-input bg-background hover:bg-accent hover:text-accent-foreground text-[#CE9D0C]',
+          'border border-[#CE9D0C] bg-background hover:bg-accent hover:text-accent-foreground text-[#CE9D0C]',
         export:
-          'bg-neutral-500/10 text-neutral-600 border-neutral-300 hover:bg-neutral-600/10 border underline-offset-4',
+          'bg-neutral-500/10 text-black border-black hover:bg-neutral-600/10 border underline-offset-4',
       },
       size: {
         default: 'h-10 rounded-md px-4 py-2',

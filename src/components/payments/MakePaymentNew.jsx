@@ -197,6 +197,17 @@ const MakePaymentNew = ({
       error.paymentDate = translations('errorMsg.payment_date');
     }
 
+    // transaction ID
+    if (
+      updatedPaymentData.paymentMode !== 'cash' &&
+      (!updatedPaymentData.transactionId ||
+        updatedPaymentData.transactionId.trim() === '')
+    ) {
+      error.transactionId =
+        translations('errorMsg.transaction_id') ||
+        'Please enter a transaction ID.';
+    }
+
     // payment mode
     if (
       !updatedPaymentData.paymentMode ||
@@ -524,7 +535,7 @@ const MakePaymentNew = ({
                     className="max-w-md"
                     disabled={paymentData.paymentMode === 'cash'}
                   >
-                    <SelectValue placeholder="Select" />
+                    <SelectValue placeholder="Select Bank Account" />
                   </SelectTrigger>
                   <SelectContent>
                     {bankAccounts?.map((account) => (
@@ -550,7 +561,10 @@ const MakePaymentNew = ({
             {/* transaction ID */}
             <div className="flex w-1/2 flex-col gap-3">
               <Label className="text-sm font-semibold">
-                {translations('form.label.tran_id')}
+                {translations('form.label.tran_id')}{' '}
+                {paymentData?.paymentMode !== 'cash' && (
+                  <span className="text-red-600">*</span>
+                )}
               </Label>
               <div className="flex flex-col gap-1">
                 <Input
@@ -564,6 +578,9 @@ const MakePaymentNew = ({
                   onChange={handleInputChange}
                 />
               </div>
+              {errorMsg.transactionId && (
+                <ErrorBox msg={errorMsg.transactionId} />
+              )}
             </div>
           </div>
 
@@ -580,6 +597,7 @@ const MakePaymentNew = ({
                 <Input
                   name="amount"
                   className="max-w-md"
+                  placeholder="0.00"
                   value={paymentData.amount}
                   onChange={handleInputChange}
                 />

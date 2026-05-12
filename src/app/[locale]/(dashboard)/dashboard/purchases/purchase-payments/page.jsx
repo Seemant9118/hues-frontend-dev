@@ -3,12 +3,14 @@
 import { paymentApi } from '@/api/payments/payment_api';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import DirectPayment from '@/components/payments/DirectPayment';
+import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
@@ -19,6 +21,7 @@ import {
   useInfiniteQuery,
   useMutation,
 } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -46,6 +49,7 @@ const PurchasePayments = () => {
   const [paymentsListing, setPaymentsListing] = useState(null);
   const [paginationData, setPaginationData] = useState(null);
   const [tab, setTab] = useState('ALL');
+  const [isPaymentAdvicing, setIsPaymentAdvicing] = useState(false);
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -165,125 +169,144 @@ const PurchasePayments = () => {
           <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
             <div className="flex w-full items-center justify-between gap-2">
               <SubHeader name={translations('title')} />
+
+              {!isPaymentAdvicing && (
+                <Button size="sm" onClick={() => setIsPaymentAdvicing(true)}>
+                  <Plus size={16} />
+                  Payment Advice
+                </Button>
+              )}
             </div>
           </section>
 
-          <Tabs
-            value={tab}
-            onValueChange={onTabChange}
-            defaultValue={'ALL'}
-            className="flex flex-grow flex-col overflow-hidden"
-          >
-            <section className="flex w-full justify-between py-2">
-              <TabsList className="border">
-                <TabsTrigger value="ALL">
-                  {translations('tabs.tab1.label')}
-                </TabsTrigger>
-                <TabsTrigger value="PENDING">
-                  {translations('tabs.tab2.label')}
-                </TabsTrigger>
-                <TabsTrigger value="ACCEPTED">
-                  {translations('tabs.tab3.label')}
-                </TabsTrigger>
-              </TabsList>
-            </section>
-            <TabsContent value="ALL" className="flex-grow overflow-hidden">
-              {/* Loading state */}
-              {isPaymentsLoading && <Loading />}
+          {!isPaymentAdvicing && (
+            <Tabs
+              value={tab}
+              onValueChange={onTabChange}
+              defaultValue={'ALL'}
+              className="flex flex-grow flex-col overflow-hidden"
+            >
+              <section className="flex w-full justify-between py-2">
+                <TabsList className="border">
+                  <TabsTrigger value="ALL">
+                    {translations('tabs.tab1.label')}
+                  </TabsTrigger>
+                  <TabsTrigger value="PENDING">
+                    {translations('tabs.tab2.label')}
+                  </TabsTrigger>
+                  <TabsTrigger value="ACCEPTED">
+                    {translations('tabs.tab3.label')}
+                  </TabsTrigger>
+                </TabsList>
+              </section>
+              <TabsContent value="ALL" className="flex-grow overflow-hidden">
+                {/* Loading state */}
+                {isPaymentsLoading && <Loading />}
 
-              {/* Table when data is available */}
-              {!isPaymentsLoading && paymentsListing?.length > 0 && (
-                <PurchaseTable
-                  id="purchase-debit-note-accepted"
-                  columns={paymentColumns}
-                  data={paymentsListing}
-                  fetchNextPage={fetchNextPage}
-                  isFetching={isFetching}
-                  totalPages={paginationData?.totalPages}
-                  currFetchedPage={paginationData?.currFetchedPage}
-                  onRowClick={onRowClick}
-                  lastPurchaseDebitNotesRef={lastPurchasePaymentsRef}
-                />
-              )}
+                {/* Table when data is available */}
+                {!isPaymentsLoading && paymentsListing?.length > 0 && (
+                  <PurchaseTable
+                    id="purchase-debit-note-accepted"
+                    columns={paymentColumns}
+                    data={paymentsListing}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                    lastPurchaseDebitNotesRef={lastPurchasePaymentsRef}
+                  />
+                )}
 
-              {/* Empty state */}
-              {!isPaymentsLoading && paymentsListing?.length === 0 && (
-                <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                  <Image src={emptyImg} alt="emptyIcon" />
-                  <p className="text-lg font-bold text-black">
-                    {translations('emptyStateComponent.heading')}
-                  </p>
-                  <p className="w-1/3 text-center">
-                    {translations('emptyStateComponent.description')}
-                  </p>
-                </div>
-              )}
-            </TabsContent>
-            <TabsContent value="PENDING" className="flex-grow overflow-hidden">
-              {/* Loading state */}
-              {isPaymentsLoading && <Loading />}
+                {/* Empty state */}
+                {!isPaymentsLoading && paymentsListing?.length === 0 && (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p className="text-lg font-bold text-black">
+                      {translations('emptyStateComponent.heading')}
+                    </p>
+                    <p className="w-1/3 text-center">
+                      {translations('emptyStateComponent.description')}
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+              <TabsContent
+                value="PENDING"
+                className="flex-grow overflow-hidden"
+              >
+                {/* Loading state */}
+                {isPaymentsLoading && <Loading />}
 
-              {/* Table when data is available */}
-              {!isPaymentsLoading && paymentsListing?.length > 0 && (
-                <PurchaseTable
-                  id="purchase-debit-note-accepted"
-                  columns={paymentColumns}
-                  data={paymentsListing}
-                  fetchNextPage={fetchNextPage}
-                  isFetching={isFetching}
-                  totalPages={paginationData?.totalPages}
-                  currFetchedPage={paginationData?.currFetchedPage}
-                  onRowClick={onRowClick}
-                  lastPurchaseDebitNotesRef={lastPurchasePaymentsRef}
-                />
-              )}
+                {/* Table when data is available */}
+                {!isPaymentsLoading && paymentsListing?.length > 0 && (
+                  <PurchaseTable
+                    id="purchase-debit-note-accepted"
+                    columns={paymentColumns}
+                    data={paymentsListing}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                    lastPurchaseDebitNotesRef={lastPurchasePaymentsRef}
+                  />
+                )}
 
-              {/* Empty state */}
-              {!isPaymentsLoading && paymentsListing?.length === 0 && (
-                <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                  <Image src={emptyImg} alt="emptyIcon" />
-                  <p className="text-lg font-bold text-black">
-                    {translations('emptyStateComponent.heading')}
-                  </p>
-                  <p className="w-1/3 text-center">
-                    {translations('emptyStateComponent.description')}
-                  </p>
-                </div>
-              )}
-            </TabsContent>
-            <TabsContent value="ACCEPTED" className="flex-grow overflow-hidden">
-              {/* Loading state */}
-              {isPaymentsLoading && <Loading />}
+                {/* Empty state */}
+                {!isPaymentsLoading && paymentsListing?.length === 0 && (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p className="text-lg font-bold text-black">
+                      {translations('emptyStateComponent.heading')}
+                    </p>
+                    <p className="w-1/3 text-center">
+                      {translations('emptyStateComponent.description')}
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+              <TabsContent
+                value="ACCEPTED"
+                className="flex-grow overflow-hidden"
+              >
+                {/* Loading state */}
+                {isPaymentsLoading && <Loading />}
 
-              {/* Table when data is available */}
-              {!isPaymentsLoading && paymentsListing?.length > 0 && (
-                <PurchaseTable
-                  id="purchase-debit-note-accepted"
-                  columns={paymentColumns}
-                  data={paymentsListing}
-                  fetchNextPage={fetchNextPage}
-                  isFetching={isFetching}
-                  totalPages={paginationData?.totalPages}
-                  currFetchedPage={paginationData?.currFetchedPage}
-                  onRowClick={onRowClick}
-                  lastPurchaseDebitNotesRef={lastPurchasePaymentsRef}
-                />
-              )}
+                {/* Table when data is available */}
+                {!isPaymentsLoading && paymentsListing?.length > 0 && (
+                  <PurchaseTable
+                    id="purchase-debit-note-accepted"
+                    columns={paymentColumns}
+                    data={paymentsListing}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                    onRowClick={onRowClick}
+                    lastPurchaseDebitNotesRef={lastPurchasePaymentsRef}
+                  />
+                )}
 
-              {/* Empty state */}
-              {!isPaymentsLoading && paymentsListing?.length === 0 && (
-                <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                  <Image src={emptyImg} alt="emptyIcon" />
-                  <p className="text-lg font-bold text-black">
-                    {translations('emptyStateComponent.heading')}
-                  </p>
-                  <p className="w-1/3 text-center">
-                    {translations('emptyStateComponent.description')}
-                  </p>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+                {/* Empty state */}
+                {!isPaymentsLoading && paymentsListing?.length === 0 && (
+                  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                    <Image src={emptyImg} alt="emptyIcon" />
+                    <p className="text-lg font-bold text-black">
+                      {translations('emptyStateComponent.heading')}
+                    </p>
+                    <p className="w-1/3 text-center">
+                      {translations('emptyStateComponent.description')}
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          )}
+
+          {isPaymentAdvicing && (
+            <DirectPayment setIsPaymentRecording={setIsPaymentAdvicing} />
+          )}
         </Wrapper>
       )}
     </ProtectedWrapper>

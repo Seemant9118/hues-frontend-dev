@@ -5,8 +5,17 @@ import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
+import CreatePurchaseInvoice from '@/components/invoices/CreatePurchaseInvoice';
 import FilterInvoices from '@/components/invoices/FilterInvoices';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import AuthenticationExpired from '@/components/gst/AuthenticationExpired';
+import GSTOTPDialog from '@/components/gst/GSTOTPDialog';
+import SyncInvoicesModal from '@/components/invoices/SyncInvoicesModal';
+import {
+  requestGSTOTP,
+  verifyGSTOTP,
+} from '@/services/GST_Services/GST_Services';
+import { gstAPIs } from '@/api/gstAPI/gstApi';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
@@ -31,7 +40,9 @@ import {
   useInfiniteQuery,
   useMutation,
   useQuery,
+  useQueryClient,
 } from '@tanstack/react-query';
+import { PlusCircle, RefreshCw } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -70,11 +81,31 @@ const PurchaseInvoices = () => {
   const [paginationData, setPaginationData] = useState({});
   const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
   const [filterData, setFilterData] = useState(null);
+  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+  const [authExpiredModalOpen, setAuthExpiredModalOpen] = useState(false);
+  const [showOTPDialog, setShowOTPDialog] = useState(false);
+  const [triggerSyncPeriod, setTriggerSyncPeriod] = useState(null);
+
+  const queryClient = useQueryClient();
 
   // Function to handle tab change
   const onTabChange = (value) => {
     setTab(value);
   };
+
+  useEffect(() => {
+    let newPath = '/dashboard/purchases/purchase-invoices';
+
+    if (isCreatingInvoice) {
+      newPath += `?action=invoice`;
+    }
+    const currentPath = window.location.pathname + window.location.search;
+
+    if (currentPath !== newPath) {
+      router.push(newPath);
+    }
+  }, [isCreatingInvoice]);
 
   useEffect(() => {
     // Apply filters based on the selected tab
@@ -326,6 +357,60 @@ const PurchaseInvoices = () => {
     }
   };
 
+  // [RE-AUTHENTICATION_FLOW]
+  const requestOTPMutation = useMutation({
+    mutationFn: requestGSTOTP,
+    onSuccess: () => {
+      toast.success('OTP sent successfully to your registered contact');
+      setAuthExpiredModalOpen(false);
+      setShowOTPDialog(true);
+    },
+    onError: (error) => {
+      toast.error(
+        error?.response?.data?.message ||
+          'Failed to send OTP. Please try again.',
+      );
+    },
+  });
+
+  const handleGenerateOTP = () => {
+    requestOTPMutation.mutate();
+  };
+
+  const verifyOTPMutation = useMutation({
+    mutationFn: verifyGSTOTP,
+    onSuccess: () => {
+      toast.success('Authentication successful!');
+      setShowOTPDialog(false);
+      // Invalidate auth status
+      queryClient.invalidateQueries({
+        queryKey: [gstAPIs.checkAuth.endpointKey],
+      });
+      // Re-open sync modal and trigger sync
+      setIsSyncModalOpen(true);
+    },
+    onError: (error) => {
+      toast.error(
+        error?.response?.data?.message || 'Invalid OTP. Please try again.',
+      );
+    },
+  });
+
+  const handleVerifyOTP = (otp) => {
+    verifyOTPMutation.mutate({ otp });
+  };
+
+  const handleSyncError = (period) => {
+    setIsSyncModalOpen(false);
+    setTriggerSyncPeriod(period);
+    setAuthExpiredModalOpen(true);
+  };
+
+  const handleCloseSyncModal = () => {
+    setIsSyncModalOpen(false);
+    setTriggerSyncPeriod(null);
+  };
+
   // Assuming useinvoiceColumns is a valid hook or function to generate the table columns
   const invoiceColumns = usePurchaseInvoicesColumns(setSelectedInvoices);
 
@@ -339,165 +424,225 @@ const PurchaseInvoices = () => {
       )}
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <>
-          <Wrapper className="h-screen overflow-hidden">
-            {/* headers */}
-            <SubHeader
-              name={translations('title')}
-              className="sticky top-0 z-10 flex items-center justify-between bg-white"
-            >
-              <div className="flex items-center justify-center gap-3">
-                <Tooltips
-                  trigger={
+          {!isCreatingInvoice && (
+            <Wrapper className="h-screen overflow-hidden">
+              {/* headers */}
+              <SubHeader
+                name={translations('title')}
+                className="sticky top-0 z-10 flex items-center justify-between bg-white"
+              >
+                <div className="flex items-center justify-center gap-3">
+                  <Tooltips
+                    trigger={
+                      <Button
+                        onClick={() => setIsSyncModalOpen(true)}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <RefreshCw size={16} />
+                        Sync Invoices
+                      </Button>
+                    }
+                    content={'Sync Invoices from external sources'}
+                  />
+                  <Tooltips
+                    trigger={
+                      <Button
+                        disabled={
+                          selectedInvoiceExportMutation.isPending ||
+                          exportAllInvoicesMutations.isPending
+                        }
+                        onClick={handleExportInvoice}
+                        variant="outline"
+                        className="border border-[#A5ABBD] hover:bg-neutral-600/10"
+                        size="sm"
+                      >
+                        <Image
+                          src="/xlsx_png.png"
+                          alt="xlsx-icon"
+                          width={16}
+                          height={16}
+                        />
+                        {translations('ctas.export.cta')}
+                      </Button>
+                    }
+                    content={translations(
+                      selectedInvoices.length > 0
+                        ? 'ctas.export.placeholder2'
+                        : 'ctas.export.placeholder',
+                    )}
+                  />
+                  <ProtectedWrapper
+                    permissionCode={'permission:purchase-invoice-create'}
+                  >
                     <Button
-                      disabled={
-                        selectedInvoiceExportMutation.isPending ||
-                        exportAllInvoicesMutations.isPending
-                      }
-                      onClick={handleExportInvoice}
-                      variant="outline"
-                      className="border border-[#A5ABBD] hover:bg-neutral-600/10"
                       size="sm"
+                      onClick={() => setIsCreatingInvoice(true)}
                     >
-                      <Image
-                        src="/xlsx_png.png"
-                        alt="xlsx-icon"
-                        width={16}
-                        height={16}
-                      />
-                      {translations('ctas.export.cta')}
+                      <PlusCircle size={14} />
+                      {translations('ctas.invoice.cta')}
                     </Button>
-                  }
-                  content={translations(
-                    selectedInvoices.length > 0
-                      ? 'ctas.export.placeholder2'
-                      : 'ctas.export.placeholder',
-                  )}
-                />
-              </div>
-            </SubHeader>
-
-            <Tabs
-              value={tab}
-              onValueChange={onTabChange}
-              defaultValue={'all'}
-              className="flex flex-grow flex-col overflow-hidden"
-            >
-              <section className="flex w-full justify-between py-2">
-                <TabsList className="border">
-                  <TabsTrigger value="all">
-                    {translations('tabs.label.tab1')}
-                  </TabsTrigger>
-                  <TabsTrigger value="outstanding">
-                    {translations('tabs.label.tab2')}
-                  </TabsTrigger>
-                  <TabsTrigger value="disputed">
-                    {translations('tabs.label.tab3')}
-                  </TabsTrigger>
-                </TabsList>
-
-                <div className="flex items-center gap-2">
-                  {/* Search by Customer */}
-                  <Select
-                    name="clientIds"
-                    isClearable
-                    isLoading={isVendorLoad}
-                    placeholder={translations('ctas.search.placeholder')}
-                    options={updatedVendorData}
-                    className="w-64 min-w-64 text-sm"
-                    classNamePrefix="select"
-                    value={valueVendor}
-                    onChange={handleChangeForVendor}
-                    onMenuOpen={() => {
-                      setVendorDropdownOpen(true);
-                      fetchVendors();
-                    }}
-                  />
-
-                  {/* filters */}
-                  <FilterInvoices
-                    isSalesFilter={false}
-                    tab={tab}
-                    setFilterData={setFilterData}
-                    setPaginationData={setPaginationData}
-                  />
+                  </ProtectedWrapper>
                 </div>
-              </section>
+              </SubHeader>
 
-              <TabsContent value="all" className="flex-grow overflow-hidden">
-                {isInvoiceLoading && <Loading />}
-                {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
-                  <PurchaseTable
-                    id="purchase-orders"
-                    columns={invoiceColumns}
-                    data={purchaseinvoiceListing}
-                    fetchNextPage={fetchNextPage}
-                    isFetching={isFetching}
-                    totalPages={paginationData?.totalPages}
-                    currFetchedPage={paginationData?.currFetchedPage}
-                    onRowClick={onRowClick}
-                  />
-                )}
-                {!isInvoiceLoading && purchaseinvoiceListing?.length === 0 && (
-                  <EmptyStageComponent
-                    heading={translations('emptyStateComponent.heading')}
-                    subItems={keys}
-                  />
-                )}
-              </TabsContent>
-              <TabsContent
-                value="outstanding"
-                className="flex-grow overflow-hidden"
+              <Tabs
+                value={tab}
+                onValueChange={onTabChange}
+                defaultValue={'all'}
+                className="flex flex-grow flex-col overflow-hidden"
               >
-                {isInvoiceLoading && <Loading />}
-                {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
-                  <PurchaseTable
-                    id="purchase-outstanding-orders"
-                    columns={invoiceColumns}
-                    data={purchaseinvoiceListing}
-                    fetchNextPage={fetchNextPage}
-                    isFetching={isFetching}
-                    totalPages={paginationData?.totalPages}
-                    currFetchedPage={paginationData?.currFetchedPage}
-                    onRowClick={onRowClick}
-                  />
-                )}
+                <section className="flex w-full justify-between py-2">
+                  <TabsList className="border">
+                    <TabsTrigger value="all">
+                      {translations('tabs.label.tab1')}
+                    </TabsTrigger>
+                    <TabsTrigger value="outstanding">
+                      {translations('tabs.label.tab2')}
+                    </TabsTrigger>
+                    <TabsTrigger value="disputed">
+                      {translations('tabs.label.tab3')}
+                    </TabsTrigger>
+                  </TabsList>
 
-                {!isInvoiceLoading && purchaseinvoiceListing?.length === 0 && (
-                  <EmptyStageComponent
-                    heading={translations('emptyStateComponent.heading')}
-                    subItems={keys}
-                  />
-                )}
-              </TabsContent>
-              <TabsContent
-                value="disputed"
-                className="flex-grow overflow-hidden"
-              >
-                {isInvoiceLoading && <Loading />}
-                {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
-                  <PurchaseTable
-                    id="purchase-invoices-disputed"
-                    columns={invoiceColumns}
-                    data={purchaseinvoiceListing}
-                    fetchNextPage={fetchNextPage}
-                    isFetching={isFetching}
-                    totalPages={paginationData?.totalPages}
-                    currFetchedPage={paginationData?.currFetchedPage}
-                    onRowClick={onRowClick}
-                  />
-                )}
+                  <div className="flex items-center gap-2">
+                    {/* Search by Customer */}
+                    <Select
+                      name="clientIds"
+                      isClearable
+                      isLoading={isVendorLoad}
+                      placeholder={translations('ctas.search.placeholder')}
+                      options={updatedVendorData}
+                      className="w-64 min-w-64 text-sm"
+                      classNamePrefix="select"
+                      value={valueVendor}
+                      onChange={handleChangeForVendor}
+                      onMenuOpen={() => {
+                        setVendorDropdownOpen(true);
+                        fetchVendors();
+                      }}
+                    />
 
-                {!isInvoiceLoading && purchaseinvoiceListing?.length === 0 && (
-                  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
-                    <Image src={emptyImg} alt="emptyIcon" />
-                    <p>{translations('emptyStateComponent2.heading')}</p>
+                    {/* filters */}
+                    <FilterInvoices
+                      isSalesFilter={false}
+                      tab={tab}
+                      setFilterData={setFilterData}
+                      setPaginationData={setPaginationData}
+                    />
                   </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </Wrapper>
+                </section>
+
+                <TabsContent value="all" className="flex-grow overflow-hidden">
+                  {isInvoiceLoading && <Loading />}
+                  {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
+                    <PurchaseTable
+                      id="purchase-orders"
+                      columns={invoiceColumns}
+                      data={purchaseinvoiceListing}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
+                    />
+                  )}
+                  {!isInvoiceLoading &&
+                    purchaseinvoiceListing?.length === 0 && (
+                      <EmptyStageComponent
+                        heading={translations('emptyStateComponent.heading')}
+                        subItems={keys}
+                      />
+                    )}
+                </TabsContent>
+                <TabsContent
+                  value="outstanding"
+                  className="flex-grow overflow-hidden"
+                >
+                  {isInvoiceLoading && <Loading />}
+                  {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
+                    <PurchaseTable
+                      id="purchase-outstanding-orders"
+                      columns={invoiceColumns}
+                      data={purchaseinvoiceListing}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
+                    />
+                  )}
+
+                  {!isInvoiceLoading &&
+                    purchaseinvoiceListing?.length === 0 && (
+                      <EmptyStageComponent
+                        heading={translations('emptyStateComponent.heading')}
+                        subItems={keys}
+                      />
+                    )}
+                </TabsContent>
+                <TabsContent
+                  value="disputed"
+                  className="flex-grow overflow-hidden"
+                >
+                  {isInvoiceLoading && <Loading />}
+                  {!isInvoiceLoading && purchaseinvoiceListing?.length > 0 && (
+                    <PurchaseTable
+                      id="purchase-invoices-disputed"
+                      columns={invoiceColumns}
+                      data={purchaseinvoiceListing}
+                      fetchNextPage={fetchNextPage}
+                      isFetching={isFetching}
+                      totalPages={paginationData?.totalPages}
+                      currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
+                    />
+                  )}
+
+                  {!isInvoiceLoading &&
+                    purchaseinvoiceListing?.length === 0 && (
+                      <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border bg-gray-50 p-4 text-[#939090]">
+                        <Image src={emptyImg} alt="emptyIcon" />
+                        <p>{translations('emptyStateComponent2.heading')}</p>
+                      </div>
+                    )}
+                </TabsContent>
+              </Tabs>
+            </Wrapper>
+          )}
+          {/* Show CreateOrder based on invoice type */}
+          {isCreatingInvoice && (
+            <CreatePurchaseInvoice
+              isCreatingInvoice={true}
+              onCancel={() => setIsCreatingInvoice(false)}
+              name={translations('ctas.invoice.cta')}
+              cta="bid"
+              isOrder="invoice"
+            />
+          )}
         </>
       )}
+      <SyncInvoicesModal
+        type="PURCHASES"
+        isOpen={isSyncModalOpen}
+        onClose={handleCloseSyncModal}
+        onSyncError={handleSyncError}
+        triggerSyncPeriod={triggerSyncPeriod}
+      />
+
+      <AuthenticationExpired
+        open={authExpiredModalOpen}
+        onClose={() => setAuthExpiredModalOpen(false)}
+        handleGenerateOTP={handleGenerateOTP}
+        requestOTPMutation={requestOTPMutation}
+      />
+
+      <GSTOTPDialog
+        open={showOTPDialog}
+        onOpenChange={setShowOTPDialog}
+        onVerify={handleVerifyOTP}
+        isVerifying={verifyOTPMutation.isPending}
+      />
     </ProtectedWrapper>
   );
 };

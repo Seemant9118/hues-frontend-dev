@@ -10,7 +10,7 @@ import {
   validateEnterpriseName,
   validatePinCode,
 } from '@/appUtils/ValidationUtils';
-import ExplantoryText from '@/components/auth/ExplantoryText';
+import InfoBanner from '@/components/auth/InfoBanner';
 import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import DatePickers from '@/components/ui/DatePickers';
@@ -315,26 +315,27 @@ const EnterpriseVerificationDetailsPage = () => {
   };
 
   return (
-    <div className="flex h-full items-center justify-center">
+    <div className="flex h-full w-full items-center justify-center overflow-hidden">
       <form
         onSubmit={handleSubmit}
-        className="flex w-[500px] flex-col items-center gap-2"
+        className="flex h-full w-full max-w-[500px] flex-col items-center gap-2 rounded-xl bg-white"
       >
         <div className="mb-2 flex flex-col gap-1">
-          <h1 className="w-full text-center text-xl font-bold text-[#121212]">
+          <h1 className="w-full text-center text-base font-bold text-[#121212] sm:text-lg md:text-xl">
             {translations('heading')}
           </h1>
-          <p className="w-full text-center text-sm font-semibold text-[#A5ABBD]">
+
+          <p className="w-full text-center text-[11px] font-semibold text-[#A5ABBD] sm:text-xs md:text-sm">
             {translations('subheading')}
           </p>
         </div>
 
-        <div className="navScrollBarStyles flex max-h-[400px] w-full flex-col gap-5 overflow-y-auto">
+        <div className="scrollBarStyles flex max-h-[70vh] w-full flex-col gap-5 overflow-y-auto sm:max-h-[400px]">
           <div
             ref={(el) => {
               inputRefs.current.name = el;
             }}
-            className="grid w-full items-center gap-1 px-2"
+            className="grid w-full items-center gap-1 px-1 sm:px-2"
           >
             <Label
               htmlFor="enterpriseName"
@@ -362,7 +363,8 @@ const EnterpriseVerificationDetailsPage = () => {
               <ErrorBox msg={translationForError(errorMsg.name)} />
             )}
           </div>
-          <div className="grid w-full items-center gap-1 px-2">
+
+          <div className="grid w-full items-center gap-1 px-1 sm:px-2">
             <Label
               htmlFor="email"
               className="flex items-center gap-1 font-medium text-[#414656]"
@@ -386,7 +388,8 @@ const EnterpriseVerificationDetailsPage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 px-2">
+          {/* ✅ On mobile stack, on sm+ keep 2 columns */}
+          <div className="grid grid-cols-1 gap-4 px-1 sm:grid-cols-2 sm:px-2">
             <div
               ref={(el) => {
                 inputRefs.current.pincode = el;
@@ -430,7 +433,7 @@ const EnterpriseVerificationDetailsPage = () => {
             </div>
           </div>
 
-          <div className="space-y-1 px-2">
+          <div className="space-y-1 px-1 sm:px-2">
             <Label htmlFor="state">{translations('labels.state')}</Label>
             <Input
               id="state"
@@ -445,7 +448,7 @@ const EnterpriseVerificationDetailsPage = () => {
             ref={(el) => {
               inputRefs.current.address = el;
             }}
-            className="grid w-full items-center gap-1 px-2"
+            className="grid w-full items-center gap-1 px-1 sm:px-2"
           >
             <Label
               htmlFor="address"
@@ -474,7 +477,7 @@ const EnterpriseVerificationDetailsPage = () => {
             </div>
           </div>
 
-          <div className="grid w-full items-center gap-1 px-2">
+          <div className="grid w-full items-center gap-1 px-1 sm:px-2">
             <Label
               htmlFor="roc"
               className="flex items-center gap-1 font-medium text-[#414656]"
@@ -502,7 +505,7 @@ const EnterpriseVerificationDetailsPage = () => {
             ref={(el) => {
               inputRefs.current.doi = el;
             }}
-            className="grid w-full items-center gap-1 px-2"
+            className="grid w-full items-center gap-1 px-1 sm:px-2"
           >
             <Label
               htmlFor="doi"
@@ -542,14 +545,18 @@ const EnterpriseVerificationDetailsPage = () => {
                 </div>
               )}
             </div>
+
             {errorMsg?.doi && (
               <ErrorBox msg={translationForError(errorMsg.doi)} />
             )}
           </div>
         </div>
-        <div className="flex w-full flex-col gap-4">
-          {/* Explanatory Information */}
-          <ExplantoryText text={translations('information')} />
+
+        <div className="sticky bottom-0 flex w-full flex-col gap-2 border-t pt-2">
+          <InfoBanner
+            showSupportLink={false}
+            text={<>{translations('information')}</>}
+          />
 
           <Button
             size="sm"
@@ -564,7 +571,13 @@ const EnterpriseVerificationDetailsPage = () => {
             )}
           </Button>
 
-          <Button variant="ghost" size="sm" onClick={handleBack}>
+          <Button
+            variant="ghost"
+            size="sm"
+            type="button"
+            className="w-full"
+            onClick={handleBack}
+          >
             <ArrowLeft size={14} />
             {translations('buttons.back')}
           </Button>
