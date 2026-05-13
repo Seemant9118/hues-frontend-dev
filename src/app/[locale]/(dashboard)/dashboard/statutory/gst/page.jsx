@@ -175,6 +175,13 @@ const GST = () => {
                     },
                   },
                   {
+                    key: 'gstr1a',
+                    label: 'GSTR-1A',
+                    onClick: () => {
+                      setPreparingGst('gstr1a');
+                    },
+                  },
+                  {
                     key: 'gstr3b',
                     label: 'GSTR-3B',
                     onClick: () => {
@@ -332,6 +339,13 @@ const GST = () => {
                           label: 'GSTR-1',
                           onClick: () => {
                             setPreparingGst('gstr1');
+                          },
+                        },
+                        {
+                          key: 'gstr1a',
+                          label: 'GSTR-1A',
+                          onClick: () => {
+                            setPreparingGst('gstr1a');
                           },
                         },
                         {

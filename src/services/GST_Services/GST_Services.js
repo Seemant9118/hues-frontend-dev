@@ -125,3 +125,56 @@ export const retOffsetGstr3b = (period) => {
     `${gstAPIs.retOffsetGstr3b.endpoint}?retPeriod=${period}`,
   );
 };
+
+// GSTR1A Services
+export const saveDraftGSTR1A = (data) => {
+  return APIinstance.post(gstAPIs.saveDraftGSTR1A.endpoint, data);
+};
+
+export const finalizedGSTR1A = ({ period }) => {
+  return APIinstance.get(
+    `${gstAPIs.finalizedGSTR1A.endpoint}?retPeriod=${period}`,
+  );
+};
+
+export const filingOTPGenrateGSTR1A = ({ period }) => {
+  return APIinstance.get(
+    `${gstAPIs.filingOTPGenrateGSTR1A.endpoint}?retPeriod=${period}`,
+  );
+};
+
+export const getSummaryBeforeFilingGSTR1A = ({ period }) => {
+  return APIinstance.get(
+    `${gstAPIs.getSummaryBeforeFilingGSTR1A.endpoint}?retPeriod=${period}`,
+  );
+};
+
+export const filingGSTR1A = ({ period, data }) => {
+  return APIinstance.post(
+    `${gstAPIs.filingGSTR1A.endpoint}?retPeriod=${period}`,
+    data,
+  );
+};
+
+export const getStatusOfFilingGSTR1A = ({ period }) => {
+  return APIinstance.get(
+    `${gstAPIs.getStatusOfFilingGSTR1A.endpoint}?retPeriod=${period}`,
+  );
+};
+
+export const syncInvoicesWithGSTR1A = ({
+  period,
+  page,
+  limit,
+  context = 'SELLER',
+}) => {
+  return APIinstance.get(
+    `${gstAPIs.syncInvoicesWithGSTR1A.endpoint}?retPeriod=${period}&context=${context}&page=${page}&limit=${limit}`,
+  );
+};
+
+export const syncCDNRWithGSTR1A = ({ period, page, limit }) => {
+  return APIinstance.get(
+    `${gstAPIs.syncCDNRWithGSTR1A.endpoint}?retPeriod=${period}&page=${page}&limit=${limit}`,
+  );
+};

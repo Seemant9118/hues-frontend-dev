@@ -95,4 +95,38 @@ export const gstAPIs = {
     endpoint: '/gstr3b/retoffset',
     endpointKey: 'RET_OFFSET_GSTR3B',
   },
+
+  // gstr1a
+  saveDraftGSTR1A: {
+    endpoint: '/gstr1a/save-return',
+    endpointKey: 'SAVE_DRAFT_GSTR1A',
+  },
+  finalizedGSTR1A: {
+    endpoint: `/gstr1a/proceedfile`,
+    endpointKey: 'FINALIZED_GSTR1A',
+  },
+  filingOTPGenrateGSTR1A: {
+    endpoint: `/gstr1/otpforevc`,
+    endpointKey: 'FILING_OTP_GENRATE_GSTR1A',
+  },
+  getSummaryBeforeFilingGSTR1A: {
+    endpoint: `/gstr1a/return-summary`,
+    endpointKey: 'GET_SUMMARY_BEFORE_FILING_GSTR1A',
+  },
+  filingGSTR1A: {
+    endpoint: '/gstr1a/file-return',
+    endpointKey: 'FILING_GSTR1A',
+  },
+  getStatusOfFilingGSTR1A: {
+    endpoint: `/gstr1a/retstatus`,
+    endpointKey: 'GET_STATUS_OF_FILING_GSTR1A',
+  },
+  syncInvoicesWithGSTR1A: {
+    endpoint: '/gstr1a/b2b',
+    endpointKey: 'SYNC_INVOICES_GSTR1A',
+  },
+  syncCDNRWithGSTR1A: {
+    endpoint: '/gstr1a/cdnr',
+    endpointKey: 'SYNC_CDNR_GSTR1A',
+  },
 };

@@ -98,6 +98,49 @@
                 "lastUpdated": "Last Updated",
                 "action": "Action"
             }
+        },
+        "gstr1a": {
+            "title1": "GST",
+            "title2": "GSTR-1A",
+            "emptyStateComponent": {
+                "heading": "No items saved to Draft for this period yet.",
+                "subHeading1": "Use Fetch to pull documents into a review list, Select what to include and Save to Draft. Repeat as needed before Finalize."
+            },
+            "tabs": {
+                "tab1": {
+                    "label": "B2B Invoices"
+                },
+                "tab2": {
+                    "label": "Credit Notes"
+                }
+            },
+            "actions": {
+                "prepare": "Prepare",
+                "fetch": "Fetch",
+                "saveDraft": "Save Draft",
+                "finalize": "Finalize",
+                "file": "File",
+                "delete": "Discard Draft",
+                "finalized": "✅ Finalized"
+            },
+            "table": {
+                "documentNo": "Document no.",
+                "documentType": "Document Type",
+                "period": "Period",
+                "section": "Section",
+                "gstin": "GSTIN",
+                "docNo": "Doc No",
+                "docDate": "Doc Date",
+                "counterpartyGstin": "Counterparty GSTIN",
+                "counterpartyName": "Counterparty Name",
+                "value": "Value",
+                "status": "Status",
+                "sync": "Sync",
+                "description": "Description",
+                "dueDate": "Due Date",
+                "lastUpdated": "Last Updated",
+                "action": "Action"
+            }
         }
     }
 }

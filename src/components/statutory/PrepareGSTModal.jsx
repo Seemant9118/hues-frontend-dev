@@ -30,7 +30,8 @@ export function PrepareGstrModal({
   );
 
   const isGstr3B = type === 'gstr3b';
-  const label = isGstr3B ? 'GSTR-3B' : 'GSTR-1';
+  const isGstr1A = type === 'gstr1a';
+  const label = isGstr3B ? 'GSTR-3B' : isGstr1A ? 'GSTR-1A' : 'GSTR-1';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
