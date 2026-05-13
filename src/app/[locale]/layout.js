@@ -8,13 +8,12 @@ import './globals.css';
 import ClarityScript from '@/appUtils/ClarityScript';
 import FCMProvider from '@/context/FCMProvider';
 import { loadDictionaryMessages } from '@/lib/localeUtils';
-import { Nanum_Pen_Script as nanumPenScript } from 'next/font/google';
+import nanumPenScript from 'next/font/local';
 import NotFound from './not-found';
 
 // Font configuration
 const nanumPen = nanumPenScript({
-  weight: '400',
-  subsets: ['latin'],
+  src: '../../../public/fonts/NanumPenScript-Regular.ttf',
   variable: '--font-nanum-pen',
   display: 'swap',
 });
