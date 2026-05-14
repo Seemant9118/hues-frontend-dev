@@ -552,7 +552,7 @@ const ViewOrder = () => {
                           orderDetails={orderDetails}
                           orderId={orderDetails?.referenceNumber}
                           multiStatus={multiStatus}
-                          Name={`${orderDetails?.vendorName} (${orderDetails?.clientType})`}
+                          Name={orderDetails?.vendorName}
                           mobileNumber={orderDetails?.vendorMobileNumber}
                           amtPaid={orderDetails?.amountPaid}
                           totalAmount={

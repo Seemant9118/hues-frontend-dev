@@ -69,8 +69,8 @@ const PaymentOverview = ({ paymentsDetails }) => {
           </p>
           <p className="text-sm font-bold">
             {isPaymentOnSales
-              ? `${paymentsDetails?.clientName} (${paymentsDetails?.clientType})`
-              : `${paymentsDetails?.sellerName}`}
+              ? paymentsDetails?.clientName
+              : paymentsDetails?.sellerName}
           </p>
           <p className="text-sm text-gray-400">
             {paymentsDetails?.number ?? translations('fallback')}

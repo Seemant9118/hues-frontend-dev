@@ -5,6 +5,7 @@ import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
 import ConfirmAction from '@/components/Modals/ConfirmAction';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -148,6 +149,14 @@ export const useSalesColumns = (
           className="min-w-[50px]"
         />
       ),
+      cell: ({ row }) => {
+        const { clientType } = row.original;
+        return (
+          <Badge variant="secondary">
+            {clientType === 'B2B' ? 'Enterprise' : 'Retail'}
+          </Badge>
+        );
+      },
     },
     {
       accessorKey: 'clientName',

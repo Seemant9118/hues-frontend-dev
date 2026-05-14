@@ -423,7 +423,7 @@ const CreateDispatchNote = ({ invoiceDetails, setIsCreatingDispatchNote }) => {
           orderId={invoiceDetails?.invoiceDetails?.orderId}
           orderRefId={invoiceDetails?.invoiceDetails?.orderReferenceNumber}
           paymentStatus={paymentStatus}
-          Name={`${invoiceDetails?.invoiceDetails?.customerName} (${invoiceDetails?.invoiceDetails?.clientType})`}
+          Name={invoiceDetails?.invoiceDetails?.customerName}
           type={invoiceDetails?.invoiceDetails?.invoiceType}
           date={invoiceDetails?.invoiceDetails?.createdAt}
           amount={invoiceDetails?.invoiceDetails?.totalAmount}

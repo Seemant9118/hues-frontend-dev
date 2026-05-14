@@ -511,7 +511,7 @@ const GenerateInvoice = ({ orderDetails, setIsGenerateInvoice }) => {
             orderDetails={orderDetails}
             orderId={orderDetails?.referenceNumber}
             multiStatus={multiStatus}
-            Name={`${orderDetails?.clientName} (${orderDetails?.clientType})`}
+            Name={orderDetails?.clientName}
             mobileNumber={orderDetails?.mobileNumber}
             amtPaid={orderDetails?.amountPaid}
             totalAmount={orderDetails.amount + orderDetails.gstAmount}

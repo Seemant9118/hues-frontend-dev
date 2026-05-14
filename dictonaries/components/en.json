@@ -266,8 +266,8 @@
                         "placeholder": "Enter Order Number"
                     },
                     "clientType": {
-                        "b2b": "B2B",
-                        "b2c": "B2C"
+                        "b2b": "Enterprise",
+                        "b2c": "Retail"
                     },
                     "client": {
                         "placeholder": "Select Client...",
@@ -318,7 +318,7 @@
         },
         "create_B2C_Invoice": {
             "title": {
-                "b2cInvoice": "B2C invoice"
+                "b2cInvoice": "Retail Invoice"
             },
             "form": {
                 "label": {
@@ -681,9 +681,9 @@
                 "invoice": "Invoice"
             },
             "types": {
-                "type1": "B2C (Business to Consumer)",
+                "type1": "Retail Invoice",
                 "type1_desc": "Used for direct sales to individual customers, often without GST registration",
-                "type2": "B2B (Business to Business)",
+                "type2": "Enterprise Invoice",
                 "type2_desc": "Used for transactions between two GST registered businesses"
             }
         },
@@ -812,11 +812,11 @@
             "change_default_link": "link",
             "types": {
                 "b2c": {
-                    "name": "B2C invoice",
+                    "name": "Retail Invoice",
                     "description": "Used for direct sales to individual customers, often without GST registration"
                 },
                 "b2b": {
-                    "name": "B2B invoice",
+                    "name": "Enterprise Invoice",
                     "description": "Used for transactions where both businesses are registered under GST"
                 }
             }
@@ -832,11 +832,11 @@
             "social_links_placeholder": "Add link here",
             "invoice_types": {
                 "b2c": {
-                    "name": "B2C (Business to Consumer)",
+                    "name": "Retail Invoice",
                     "description": "Used for direct sales to individual customers, often without GST registration"
                 },
                 "b2b": {
-                    "name": "B2B (Business to Business)",
+                    "name": "Enterprise Invoice",
                     "description": "Used for transactions where both businesses are registered under GST."
                 }
             },

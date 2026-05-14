@@ -4,6 +4,7 @@ import { formattedAmount } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dot, Info } from 'lucide-react';
 import moment from 'moment';
@@ -112,6 +113,14 @@ export const useSalesInvoicesColumns = (setSelectedInvoices) => {
           title={translations('customers_type')}
         />
       ),
+      cell: ({ row }) => {
+        const { clientType } = row.original;
+        return (
+          <Badge variant="secondary">
+            {clientType === 'B2B' ? 'Enterprise' : 'Retail'}
+          </Badge>
+        );
+      },
     },
     {
       accessorKey: 'customerName',
