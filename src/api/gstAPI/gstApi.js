@@ -13,7 +13,7 @@ export const gstAPIs = {
     endpointKey: 'VERIFY_OTP_GST_AUTH',
   },
 
-  // filed gsts
+  // filed gstr1
   filedGsts: {
     endpoint: `/gstr1/filing-status`,
     endpointKey: 'GET_FILED_GSTS',
@@ -55,6 +55,7 @@ export const gstAPIs = {
     endpointKey: 'GET_STATUS_OF_FILING',
   },
 
+  // gstr3b
   syncInvoicesWithGSTR1: {
     endpoint: '/gstr1/b2b',
     endpointKey: 'SYNC_INVOICES_GSTR1',
@@ -122,11 +123,11 @@ export const gstAPIs = {
     endpointKey: 'GET_STATUS_OF_FILING_GSTR1A',
   },
   syncInvoicesWithGSTR1A: {
-    endpoint: '/gstr1a/b2b',
+    endpoint: '/gstr1/b2b',
     endpointKey: 'SYNC_INVOICES_GSTR1A',
   },
   syncCDNRWithGSTR1A: {
-    endpoint: '/gstr1a/cdnr',
+    endpoint: '/gstr1/cdnr',
     endpointKey: 'SYNC_CDNR_GSTR1A',
   },
 };
