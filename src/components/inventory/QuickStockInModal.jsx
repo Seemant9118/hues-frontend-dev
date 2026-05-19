@@ -37,6 +37,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import ErrorBox from '../ui/ErrorBox';
+import AddBatch from './batch/AddBatch';
 
 const QuickStockInModal = ({ isOpen, onClose, product }) => {
   const enterpriseId = getEnterpriseId();
@@ -44,6 +45,7 @@ const QuickStockInModal = ({ isOpen, onClose, product }) => {
 
   const [adjustmentReason, setAdjustmentReason] = useState('MANUAL_CORRECTION');
   const [items, setItems] = useState([]);
+  const [isAddingBatchFor, setIsAddingBatchFor] = useState(null);
 
   const [errors, setErrors] = useState({});
 
@@ -100,6 +102,25 @@ const QuickStockInModal = ({ isOpen, onClose, product }) => {
       }
     }
   }, [product, isOpen]);
+
+  useEffect(() => {
+    if (!isAddingBatchFor && isOpen && items.length > 0) {
+      items.forEach((item) => {
+        if (item.skuId) {
+          GetProductBatchList({ searchString: item.skuId }).then((res) => {
+            const batchList = res?.data?.data?.data || [];
+            setItems((prev) =>
+              prev.map((it) =>
+                it.productId === item.productId
+                  ? { ...it, batches: batchList }
+                  : it,
+              ),
+            );
+          });
+        }
+      });
+    }
+  }, [isAddingBatchFor]);
 
   const calculateAmounts = (item) => {
     const qty = Number(item.quantity) || 0;
@@ -248,254 +269,300 @@ const QuickStockInModal = ({ isOpen, onClose, product }) => {
     stockInMutation.mutate({ enterpriseId, data: payload });
   };
 
-  // const goodsOptions = useMemo(() => {
-  //   return allGoods.map((g) => ({
-  //     value: g.id,
-  //     label: `${g.productName} (${g.skuId})`,
-  //   }));
-  // }, [allGoods]);
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-h-[90vh] max-w-[65vw] overflow-y-auto lg:max-w-[65vw]">
-        <DialogHeader>
-          <DialogTitle>Quick Stock In</DialogTitle>
-        </DialogHeader>
-
-        <div className="flex flex-col gap-6 py-4">
-          {/* Reason Section */}
-          <div className="flex items-center gap-4 border-b pb-4">
-            <div className="flex flex-col gap-1.5">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Adjustment Reason <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={adjustmentReason}
-                onValueChange={handleReasonChange}
-              >
-                <SelectTrigger
-                  className={`w-[240px] ${errors.adjustmentReason ? 'border-red-500' : ''}`}
-                >
-                  <SelectValue placeholder="Select Reason" />
-                </SelectTrigger>
-                <SelectContent>
-                  {reasonOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.adjustmentReason && (
-                <ErrorBox msg={errors.adjustmentReason} />
-              )}
-            </div>
+        {isAddingBatchFor ? (
+          <div className="h-full w-full">
+            <AddBatch
+              setIsAdding={(val) => {
+                if (!val) {
+                  if (isAddingBatchFor?.skuId) {
+                    GetProductBatchList({
+                      searchString: isAddingBatchFor.skuId,
+                    }).then((res) => {
+                      const batchList = res?.data?.data?.data || [];
+                      setItems((p) =>
+                        p.map((item) =>
+                          item.productId === isAddingBatchFor.productId
+                            ? { ...item, batches: batchList }
+                            : item,
+                        ),
+                      );
+                    });
+                  }
+                  setIsAddingBatchFor(null);
+                }
+              }}
+              setIsEditing={() => {}}
+              initialSku={isAddingBatchFor}
+            />
           </div>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>Quick Stock In</DialogTitle>
+            </DialogHeader>
 
-          {/* Table Section */}
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="min-w-[180px]">Item Details</TableHead>
-                  <TableHead className="min-w-[150px]">Bucket</TableHead>
-                  <TableHead className="min-w-[180px]">
-                    Batch / Expiry
-                  </TableHead>
-                  <TableHead className="w-24">Qty</TableHead>
-                  <TableHead className="w-28">Unit Price</TableHead>
-                  <TableHead className="text-right">Tax</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="text-center">QC</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((item, index) => {
-                  const itemError = errors.items?.[index];
-                  return (
-                    <TableRow key={item.productId}>
-                      <TableCell>
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-primary">
-                            {item.productName}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground">
-                            SKU: {item.skuId}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={String(item.targetBucketId)}
-                          onValueChange={(val) =>
-                            handleItemChange(
-                              item.productId,
-                              'targetBucketId',
-                              val,
-                            )
-                          }
-                        >
-                          <SelectTrigger
-                            className={`h-9 ${
-                              itemError?.targetBucketId
-                                ? 'border-red-500 text-red-500'
-                                : ''
-                            }`}
-                          >
-                            <SelectValue placeholder="Bucket" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {buckets.map((b) => (
-                              <SelectItem key={b.id} value={String(b.id)}>
-                                {b.displayName}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {itemError?.targetBucketId && (
-                          <ErrorBox msg={itemError.targetBucketId} />
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <Select
-                            value={item.batchNo || ''}
-                            onValueChange={(val) => {
-                              const selectedBatch = item.batches?.find(
-                                (b) => b.batchNo === val,
-                              );
-                              handleItemChange(item.productId, 'batchNo', val);
-                              handleItemChange(
-                                item.productId,
-                                'expiryDate',
-                                selectedBatch?.expiryDate || '',
-                              );
-                            }}
-                          >
-                            <SelectTrigger className="h-9">
-                              <SelectValue>
-                                {item.batchNo || 'Select Batch'}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {item.batches?.map((b) => (
-                                <SelectItem key={b.batchNo} value={b.batchNo}>
-                                  <div className="flex flex-col gap-0.5">
-                                    <span className="text-xs font-semibold">
-                                      Batch: {b.batchNo}
-                                    </span>
-                                    <span className="text-[10px] text-muted-foreground">
-                                      Exp:{' '}
-                                      {moment(b.expiryDate).format(
-                                        'DD/MM/YYYY',
-                                      )}
-                                    </span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          className={`h-9 px-2 ${
-                            itemError?.quantity
-                              ? 'border-red-500 text-red-500 placeholder:text-red-300'
-                              : ''
-                          }`}
-                          value={item.quantity}
-                          onChange={(e) =>
-                            handleItemChange(
-                              item.productId,
-                              'quantity',
-                              e.target.value,
-                            )
-                          }
-                          placeholder="0"
-                        />
-                        {itemError?.quantity && (
-                          <ErrorBox msg={itemError.quantity} />
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          className={`h-9 px-2 ${
-                            itemError?.unitPrice
-                              ? 'border-red-500 text-red-500 placeholder:text-red-300'
-                              : ''
-                          }`}
-                          value={item.unitPrice}
-                          onChange={(e) =>
-                            handleItemChange(
-                              item.productId,
-                              'unitPrice',
-                              e.target.value,
-                            )
-                          }
-                          placeholder="0.00"
-                        />
-                        {itemError?.unitPrice && (
-                          <ErrorBox msg={itemError.unitPrice} />
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        ₹{item.totalGstAmount || '0'}
-                      </TableCell>
-                      <TableCell className="text-right font-bold text-primary">
-                        ₹{item.totalAmount || '0'}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <input
-                          type="checkbox"
-                          checked={item.isQcOkay}
-                          onChange={(e) =>
-                            handleItemChange(
-                              item.productId,
-                              'isQcOkay',
-                              e.target.checked,
-                            )
-                          }
-                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                        />
-                      </TableCell>
+            <div className="flex flex-col gap-6 py-4">
+              {/* Reason Section */}
+              <div className="flex items-center gap-4 border-b pb-4">
+                <div className="flex flex-col gap-1.5">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Adjustment Reason <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={adjustmentReason}
+                    onValueChange={handleReasonChange}
+                  >
+                    <SelectTrigger
+                      className={`w-[240px] ${errors.adjustmentReason ? 'border-red-500' : ''}`}
+                    >
+                      <SelectValue placeholder="Select Reason" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {reasonOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.adjustmentReason && (
+                    <ErrorBox msg={errors.adjustmentReason} />
+                  )}
+                </div>
+              </div>
+
+              {/* Table Section */}
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[180px]">
+                        Item Details
+                      </TableHead>
+                      <TableHead className="min-w-[150px]">Bucket</TableHead>
+                      <TableHead className="min-w-[180px]">
+                        Batch / Expiry
+                      </TableHead>
+                      <TableHead className="w-24">Qty</TableHead>
+                      <TableHead className="w-28">Unit Price</TableHead>
+                      <TableHead className="text-right">Tax</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                      <TableHead className="text-center">QC</TableHead>
                     </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
+                  </TableHeader>
+                  <TableBody>
+                    {items.map((item, index) => {
+                      const itemError = errors.items?.[index];
+                      return (
+                        <TableRow key={item.productId}>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-primary">
+                                {item.productName}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">
+                                SKU: {item.skuId}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={String(item.targetBucketId)}
+                              onValueChange={(val) =>
+                                handleItemChange(
+                                  item.productId,
+                                  'targetBucketId',
+                                  val,
+                                )
+                              }
+                            >
+                              <SelectTrigger
+                                className={`h-9 ${
+                                  itemError?.targetBucketId
+                                    ? 'border-red-500 text-red-500'
+                                    : ''
+                                }`}
+                              >
+                                <SelectValue placeholder="Bucket" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {buckets.map((b) => (
+                                  <SelectItem key={b.id} value={String(b.id)}>
+                                    {b.displayName}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {itemError?.targetBucketId && (
+                              <ErrorBox msg={itemError.targetBucketId} />
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              <Select
+                                value={item.batchNo || undefined}
+                                onValueChange={(val) => {
+                                  if (val === 'ADD_NEW_BATCH') {
+                                    setIsAddingBatchFor({
+                                      skuId: item.skuId,
+                                      productName: item.productName,
+                                      productId: item.productId,
+                                    });
+                                    return;
+                                  }
+                                  const selectedBatch = item.batches?.find(
+                                    (b) => b.batchNo === val,
+                                  );
+                                  handleItemChange(
+                                    item.productId,
+                                    'batchNo',
+                                    val,
+                                  );
+                                  handleItemChange(
+                                    item.productId,
+                                    'expiryDate',
+                                    selectedBatch?.expiryDate || '',
+                                  );
+                                }}
+                              >
+                                <SelectTrigger className="h-9">
+                                  <SelectValue placeholder="Select Batch">
+                                    {item.batchNo || undefined}
+                                  </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {item.batches?.map((b) => (
+                                    <SelectItem
+                                      key={b.batchNo}
+                                      value={b.batchNo}
+                                    >
+                                      <div className="flex flex-col gap-0.5">
+                                        <span className="text-xs font-semibold">
+                                          Batch: {b.batchNo}
+                                        </span>
+                                        <span className="text-[10px] text-muted-foreground">
+                                          Exp:{' '}
+                                          {moment(b.expiryDate).format(
+                                            'DD/MM/YYYY',
+                                          )}
+                                        </span>
+                                      </div>
+                                    </SelectItem>
+                                  ))}
+                                  <SelectItem
+                                    value="ADD_NEW_BATCH"
+                                    className="font-semibold text-primary"
+                                  >
+                                    + Add a New Batch
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              className={`h-9 px-2 ${
+                                itemError?.quantity
+                                  ? 'border-red-500 text-red-500 placeholder:text-red-300'
+                                  : ''
+                              }`}
+                              value={item.quantity}
+                              onChange={(e) =>
+                                handleItemChange(
+                                  item.productId,
+                                  'quantity',
+                                  e.target.value,
+                                )
+                              }
+                              placeholder="0"
+                            />
+                            {itemError?.quantity && (
+                              <ErrorBox msg={itemError.quantity} />
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              className={`h-9 px-2 ${
+                                itemError?.unitPrice
+                                  ? 'border-red-500 text-red-500 placeholder:text-red-300'
+                                  : ''
+                              }`}
+                              value={item.unitPrice}
+                              onChange={(e) =>
+                                handleItemChange(
+                                  item.productId,
+                                  'unitPrice',
+                                  e.target.value,
+                                )
+                              }
+                              placeholder="0.00"
+                            />
+                            {itemError?.unitPrice && (
+                              <ErrorBox msg={itemError.unitPrice} />
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            ₹{item.totalGstAmount || '0'}
+                          </TableCell>
+                          <TableCell className="text-right font-bold text-primary">
+                            ₹{item.totalAmount || '0'}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <input
+                              type="checkbox"
+                              checked={item.isQcOkay}
+                              onChange={(e) =>
+                                handleItemChange(
+                                  item.productId,
+                                  'isQcOkay',
+                                  e.target.checked,
+                                )
+                              }
+                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
 
-          <div className="flex items-center justify-between rounded-lg bg-muted/30 p-4">
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold uppercase text-muted-foreground">
-                Total Stock In Value
-              </span>
-              <span className="text-xl font-bold text-primary">
-                ₹{' '}
-                {items
-                  .reduce((sum, it) => sum + (it.totalAmount || 0), 0)
-                  .toFixed(2)}
-              </span>
+              <div className="flex items-center justify-between rounded-lg bg-muted/30 p-4">
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold uppercase text-muted-foreground">
+                    Total Stock In Value
+                  </span>
+                  <span className="text-xl font-bold text-primary">
+                    ₹{' '}
+                    {items
+                      .reduce((sum, it) => sum + (it.totalAmount || 0), 0)
+                      .toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex gap-3">
+                  <Button size="sm" variant="outline" onClick={onClose}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={stockInMutation.isPending}
+                    size="sm"
+                  >
+                    {stockInMutation.isPending
+                      ? 'Processing...'
+                      : 'Complete Stock In'}
+                  </Button>
+                </div>
+              </div>
             </div>
-            <div className="flex gap-3">
-              <Button size="sm" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={stockInMutation.isPending}
-                size="sm"
-              >
-                {stockInMutation.isPending
-                  ? 'Processing...'
-                  : 'Complete Stock In'}
-              </Button>
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

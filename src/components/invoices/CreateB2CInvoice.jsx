@@ -30,6 +30,7 @@ import { useEffect, useState } from 'react';
 import ReactSelect from 'react-select';
 import CreatableSelect from 'react-select/creatable';
 import { toast } from 'sonner';
+import AddBatch from '@/components/inventory/batch/AddBatch';
 import { useCreateSalesInvoiceColumns } from '../columns/useCreateSalesInvoiceColumns';
 import DatePickers from '../ui/DatePickers';
 import EmptyStageComponent from '../ui/EmptyStageComponent';
@@ -65,6 +66,7 @@ const CreateB2CInvoice = ({
     serviceName: b2CInvoiceDraft?.itemDraft?.serviceName || '',
     sac: b2CInvoiceDraft?.itemDraft?.sac || '',
     hsnCode: b2CInvoiceDraft?.itemDraft?.hsnCode || '',
+    skuId: b2CInvoiceDraft?.itemDraft?.skuId || '',
     productType: b2CInvoiceDraft?.itemDraft?.productType || '',
     productId: b2CInvoiceDraft?.itemDraft?.productId || null,
     quantity: b2CInvoiceDraft?.itemDraft?.quantity || null,
@@ -97,6 +99,7 @@ const CreateB2CInvoice = ({
     invoiceDate: b2CInvoiceDraft?.invoiceDate || null,
   });
   const [productBatchesMap, setProductBatchesMap] = useState({});
+  const [isAddingBatchFor, setIsAddingBatchFor] = useState(null);
 
   // fetch units
   const { data: units } = useQuery({
@@ -454,818 +457,903 @@ const CreateB2CInvoice = ({
     isGstApplicableForSalesOrders,
   );
 
-  if (!enterpriseId) {
-    return (
-      <div className="flex flex-col justify-center">
-        <EmptyStageComponent heading="Please Complete Your Onboarding to Create Order" />
-        <Button variant="outline" onClick={onCancel}>
-          Close
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <Wrapper className="relative flex h-full flex-col py-2">
-      <div className="flex items-end gap-0.5">
-        <SubHeader
-          name={name === 'B2C Invoice' && translations('title.b2cInvoice')}
-        ></SubHeader>
+      {!enterpriseId && (
+        <div className="flex flex-col justify-center">
+          <EmptyStageComponent heading="Please Complete Your Onboarding to Create Order" />
+          <Button variant="outline" onClick={onCancel}>
+            Close
+          </Button>
+        </div>
+      )}
+      {!isAddingBatchFor && enterpriseId && (
+        <>
+          <div className="flex items-end gap-0.5">
+            <SubHeader
+              name={name === 'B2C Invoice' && translations('title.b2cInvoice')}
+            ></SubHeader>
 
-        <InvoiceTypePopover
-          triggerInvoiceTypeModal={
-            <ChevronDown
-              className="cursor-pointer hover:text-primary"
-              size={20}
+            <InvoiceTypePopover
+              triggerInvoiceTypeModal={
+                <ChevronDown
+                  className="cursor-pointer hover:text-primary"
+                  size={20}
+                />
+              }
+              invoiceType={invoiceType}
+              setInvoiceType={setInvoiceType}
             />
-          }
-          invoiceType={invoiceType}
-          setInvoiceType={setInvoiceType}
-        />
-      </div>
-
-      <div className="flex flex-1 flex-col gap-6 overflow-y-auto pt-4">
-        {/* Customer section */}
-        <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-5 shadow-sm">
-          <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
-            {/* Invoice Date */}
-            <div className="flex flex-col gap-1.5">
-              <Label>
-                {translations('form.label.invoice_date')}
-                <span className="text-red-600">*</span>
-              </Label>
-
-              <div className="relative flex h-10 items-center rounded-md border border-input px-3 py-1 text-sm shadow-sm transition-colors focus-within:ring-1 focus-within:ring-ring">
-                <DatePickers
-                  selected={
-                    order.invoiceDate ? new Date(order.invoiceDate) : null
-                  }
-                  onChange={(date) => {
-                    const formattedForAPI = date
-                      ? moment(date).format('YYYY-MM-DD')
-                      : null;
-
-                    setOrder((prev) => ({
-                      ...prev,
-                      invoiceDate: formattedForAPI,
-                    }));
-
-                    saveDraftToSession({
-                      key: 'b2CInvoiceDraft',
-                      data: {
-                        ...order,
-                        invoiceDate: formattedForAPI,
-                      },
-                    });
-                  }}
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="dd/mm/yyyy"
-                  className="w-full"
-                  popperPlacement="end"
-                />
-              </div>
-
-              {errorMsg.invoiceDate && <ErrorBox msg={errorMsg.invoiceDate} />}
-            </div>
-
-            {/* Customer Number */}
-            <div className="flex flex-col gap-1.5">
-              <Label>
-                {translations('form.label.customer')}
-                <span className="text-red-600">*</span>
-              </Label>
-              <div className="flex flex-col gap-1">
-                <CreatableSelect
-                  value={
-                    options.find((option) => option.value === order.buyerId) ||
-                    null
-                  }
-                  onChange={handleChange}
-                  onCreateOption={handleCreate}
-                  onInputChange={(input, { action }) => {
-                    if (action === 'input-change') {
-                      setInputValue(input);
-                    }
-                  }}
-                  styles={getStylesForSelectComponent()}
-                  className="text-sm"
-                  isClearable
-                  placeholder="+91 1234567890"
-                  options={options}
-                  noOptionsMessage={() =>
-                    translations('form.input.customer.placeholder')
-                  }
-                />
-
-                {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
-              </div>
-            </div>
-
-            {/* Customer Name */}
-            {order?.buyerId && (
-              <div className="flex flex-col gap-1.5">
-                <Label>
-                  {translations('form.label.customer_name')}
-                  <span className="text-red-600">*</span>
-                </Label>
-                <Input
-                  type="text"
-                  value={order.buyerName || ''}
-                  onChange={(e) => {
-                    setOrder((prev) => ({
-                      ...prev,
-                      buyerName: e.target.value,
-                    }));
-
-                    saveDraftToSession({
-                      key: 'b2CInvoiceDraft',
-                      data: {
-                        ...order,
-                        buyerName: e.target.value,
-                      },
-                    });
-                  }}
-                  placeholder={translations('form.label.customer_name')}
-                  className="text-sm"
-                />
-                {errorMsg.buyerName && <ErrorBox msg={errorMsg.buyerName} />}
-              </div>
-            )}
-
-            {/* Address Type */}
-            {order?.buyerId && (
-              <div className="flex flex-col gap-1.5">
-                <Label>
-                  {translations('form.label.address_type')}
-                  <span className="text-red-600">*</span>
-                </Label>
-                <ReactSelect
-                  value={addressTypesOptions.find(
-                    (option) => option.value === order.addressType,
-                  )}
-                  onChange={(selectedOption) => {
-                    if (selectedOption?.value === 'OTC') {
-                      setErrorMsg({
-                        ...errorMsg,
-                        buyerAddress: '',
-                      });
-                    }
-                    setOrder((prev) => ({
-                      ...prev,
-                      addressType: selectedOption ? selectedOption.value : null,
-                      buyerAddress:
-                        selectedOption?.value === 'OTC'
-                          ? profileDetails?.enterpriseDetails?.address
-                          : '',
-                    }));
-
-                    saveDraftToSession({
-                      key: 'b2CInvoiceDraft',
-                      data: {
-                        ...order,
-                        addressType: selectedOption
-                          ? selectedOption.value
-                          : null,
-                        buyerAddress:
-                          selectedOption?.value === 'OTC'
-                            ? profileDetails?.enterpriseDetails?.address
-                            : '',
-                      },
-                    });
-                  }}
-                  styles={getStylesForSelectComponent()}
-                  className="text-sm"
-                  isClearable
-                  placeholder={translations('form.label.address_type')}
-                  options={addressTypesOptions}
-                />
-                {errorMsg.addressType && (
-                  <ErrorBox msg={errorMsg.addressType} />
-                )}
-              </div>
-            )}
-
-            {/* Address */}
-            {order?.buyerId && (
-              <div className="flex flex-col gap-1.5 lg:col-span-4">
-                <Label>
-                  {translations('form.label.customer_address')}
-                  {order?.addressType === 'deliveryPurchase' && (
-                    <span className="text-red-600">*</span>
-                  )}
-                </Label>
-
-                <Input
-                  type="text"
-                  disabled={order?.addressType === 'OTC'}
-                  value={order.buyerAddress || ''}
-                  onChange={(e) => {
-                    setOrder((prev) => ({
-                      ...prev,
-                      buyerAddress: e.target.value,
-                    }));
-
-                    saveDraftToSession({
-                      key: 'b2CInvoiceDraft',
-                      data: {
-                        ...order,
-                        buyerAddress: e.target.value,
-                      },
-                    });
-                  }}
-                  placeholder={translations('form.label.customer_address')}
-                  className="text-sm"
-                />
-                {errorMsg.buyerAddress && (
-                  <ErrorBox msg={errorMsg.buyerAddress} />
-                )}
-              </div>
-            )}
           </div>
-        </section>
 
-        {/* Add Items Section */}
-        <section className="space-y-4 rounded-lg border border-neutral-200 bg-neutral-50/30 p-5">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-end gap-4">
-              {/* Item Type */}
-              <div className="flex flex-col gap-1.5">
-                <Label>
-                  {translations('form.label.item_type')}
-                  <span className="text-red-500">*</span>
-                </Label>
-                <ReactSelect
-                  name="itemType"
-                  isDisabled={order.buyerId === null || order.buyerId === ''}
-                  placeholder={translations('form.input.item_type.placeholder')}
-                  options={itemTypeOptions}
-                  styles={getStylesForSelectComponent()}
-                  className="w-40 text-sm"
-                  value={
-                    itemTypeOptions.find(
-                      (option) => option.value === order.invoiceType,
-                    ) || null
-                  }
-                  onChange={(selectedOption) => {
-                    if (!selectedOption) return;
+          <div className="flex flex-1 flex-col gap-6 overflow-y-auto pt-4">
+            {/* Customer section */}
+            <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-5 shadow-sm">
+              <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
+                {/* Invoice Date */}
+                <div className="flex flex-col gap-1.5">
+                  <Label>
+                    {translations('form.label.invoice_date')}
+                    <span className="text-red-600">*</span>
+                  </Label>
 
-                    const clearedItem = {
-                      productName: '',
-                      serviceName: '',
-                      sac: '',
-                      hsnCode: '',
-                      productType: '',
-                      productId: null,
-                      quantity: null,
-                      unitId: null,
-                      unitPrice: null,
-                      gstPerUnit: null,
-                      totalAmount: null,
-                      totalGstAmount: null,
-                      batch: null,
-                      batches: [],
-                      expiryDate: '',
-                    };
+                  <div className="relative flex h-10 items-center rounded-md border border-input px-3 py-1 text-sm shadow-sm transition-colors focus-within:ring-1 focus-within:ring-ring">
+                    <DatePickers
+                      selected={
+                        order.invoiceDate ? new Date(order.invoiceDate) : null
+                      }
+                      onChange={(date) => {
+                        const formattedForAPI = date
+                          ? moment(date).format('YYYY-MM-DD')
+                          : null;
 
-                    setSelectedItem(clearedItem);
-                    setOrder((prev) => ({
-                      ...prev,
-                      invoiceType: selectedOption.value,
-                    }));
+                        setOrder((prev) => ({
+                          ...prev,
+                          invoiceDate: formattedForAPI,
+                        }));
 
-                    saveDraftToSession({
-                      key: 'b2CInvoiceDraft',
-                      data: {
-                        ...order,
-                        invoiceType: selectedOption.value,
-                        itemDraft: clearedItem,
-                      },
-                    });
-                  }}
-                />
-                {errorMsg.invoiceType && (
-                  <ErrorBox msg={errorMsg.invoiceType} />
+                        saveDraftToSession({
+                          key: 'b2CInvoiceDraft',
+                          data: {
+                            ...order,
+                            invoiceDate: formattedForAPI,
+                          },
+                        });
+                      }}
+                      dateFormat="dd/MM/yyyy"
+                      placeholderText="dd/mm/yyyy"
+                      className="w-full"
+                      popperPlacement="end"
+                    />
+                  </div>
+
+                  {errorMsg.invoiceDate && (
+                    <ErrorBox msg={errorMsg.invoiceDate} />
+                  )}
+                </div>
+
+                {/* Customer Number */}
+                <div className="flex flex-col gap-1.5">
+                  <Label>
+                    {translations('form.label.customer')}
+                    <span className="text-red-600">*</span>
+                  </Label>
+                  <div className="flex flex-col gap-1">
+                    <CreatableSelect
+                      value={
+                        options.find(
+                          (option) => option.value === order.buyerId,
+                        ) || null
+                      }
+                      onChange={handleChange}
+                      onCreateOption={handleCreate}
+                      onInputChange={(input, { action }) => {
+                        if (action === 'input-change') {
+                          setInputValue(input);
+                        }
+                      }}
+                      styles={getStylesForSelectComponent()}
+                      className="text-sm"
+                      isClearable
+                      placeholder="+91 1234567890"
+                      options={options}
+                      noOptionsMessage={() =>
+                        translations('form.input.customer.placeholder')
+                      }
+                    />
+
+                    {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
+                  </div>
+                </div>
+
+                {/* Customer Name */}
+                {order?.buyerId && (
+                  <div className="flex flex-col gap-1.5">
+                    <Label>
+                      {translations('form.label.customer_name')}
+                      <span className="text-red-600">*</span>
+                    </Label>
+                    <Input
+                      type="text"
+                      value={order.buyerName || ''}
+                      onChange={(e) => {
+                        setOrder((prev) => ({
+                          ...prev,
+                          buyerName: e.target.value,
+                        }));
+
+                        saveDraftToSession({
+                          key: 'b2CInvoiceDraft',
+                          data: {
+                            ...order,
+                            buyerName: e.target.value,
+                          },
+                        });
+                      }}
+                      placeholder={translations('form.label.customer_name')}
+                      className="text-sm"
+                    />
+                    {errorMsg.buyerName && (
+                      <ErrorBox msg={errorMsg.buyerName} />
+                    )}
+                  </div>
+                )}
+
+                {/* Address Type */}
+                {order?.buyerId && (
+                  <div className="flex flex-col gap-1.5">
+                    <Label>
+                      {translations('form.label.address_type')}
+                      <span className="text-red-600">*</span>
+                    </Label>
+                    <ReactSelect
+                      value={addressTypesOptions.find(
+                        (option) => option.value === order.addressType,
+                      )}
+                      onChange={(selectedOption) => {
+                        if (selectedOption?.value === 'OTC') {
+                          setErrorMsg({
+                            ...errorMsg,
+                            buyerAddress: '',
+                          });
+                        }
+                        setOrder((prev) => ({
+                          ...prev,
+                          addressType: selectedOption
+                            ? selectedOption.value
+                            : null,
+                          buyerAddress:
+                            selectedOption?.value === 'OTC'
+                              ? profileDetails?.enterpriseDetails?.address
+                              : '',
+                        }));
+
+                        saveDraftToSession({
+                          key: 'b2CInvoiceDraft',
+                          data: {
+                            ...order,
+                            addressType: selectedOption
+                              ? selectedOption.value
+                              : null,
+                            buyerAddress:
+                              selectedOption?.value === 'OTC'
+                                ? profileDetails?.enterpriseDetails?.address
+                                : '',
+                          },
+                        });
+                      }}
+                      styles={getStylesForSelectComponent()}
+                      className="text-sm"
+                      isClearable
+                      placeholder={translations('form.label.address_type')}
+                      options={addressTypesOptions}
+                    />
+                    {errorMsg.addressType && (
+                      <ErrorBox msg={errorMsg.addressType} />
+                    )}
+                  </div>
+                )}
+
+                {/* Address */}
+                {order?.buyerId && (
+                  <div className="flex flex-col gap-1.5 lg:col-span-4">
+                    <Label>
+                      {translations('form.label.customer_address')}
+                      {order?.addressType === 'deliveryPurchase' && (
+                        <span className="text-red-600">*</span>
+                      )}
+                    </Label>
+
+                    <Input
+                      type="text"
+                      disabled={order?.addressType === 'OTC'}
+                      value={order.buyerAddress || ''}
+                      onChange={(e) => {
+                        setOrder((prev) => ({
+                          ...prev,
+                          buyerAddress: e.target.value,
+                        }));
+
+                        saveDraftToSession({
+                          key: 'b2CInvoiceDraft',
+                          data: {
+                            ...order,
+                            buyerAddress: e.target.value,
+                          },
+                        });
+                      }}
+                      placeholder={translations('form.label.customer_address')}
+                      className="text-sm"
+                    />
+                    {errorMsg.buyerAddress && (
+                      <ErrorBox msg={errorMsg.buyerAddress} />
+                    )}
+                  </div>
                 )}
               </div>
+            </section>
 
-              {/* Item */}
-              <div className="flex flex-col gap-1.5">
-                <Label>
-                  {translations('form.label.item')}
-                  <span className="text-red-500">*</span>
-                </Label>
-                <ReactSelect
-                  name="items"
-                  value={
-                    itemClientListingOptions?.find(
-                      (item) => item.value.id === selectedItem.productId,
-                    ) ?? null
-                  }
-                  placeholder={translations('form.input.item.placeholder')}
-                  options={itemClientListingOptions}
-                  styles={getStylesForSelectComponent()}
-                  isOptionDisabled={(option) => option.disabled}
-                  className="w-64 text-sm"
-                  isDisabled={order.buyerId == null || order.invoiceType === ''}
-                  onChange={(selectedOption) => {
-                    const selectedItemData = selectedOption?.value;
-
-                    if (selectedItemData) {
-                      const updatedItem =
-                        selectedItemData.productType === 'GOODS'
-                          ? {
-                              ...selectedItem,
-                              productId: selectedItemData.id,
-                              productType: selectedItemData.productType,
-                              hsnCode: selectedItemData.hsnCode,
-                              productName: selectedItemData.productName,
-                              unitPrice: selectedItemData.salesPrice,
-                              gstPerUnit: isGstApplicable(
-                                isGstApplicableForSalesOrders,
-                              )
-                                ? selectedItemData.gstPercentage
-                                : 0,
-                              batches: [],
-                              batch: null,
-                              expiryDate: '',
-                            }
-                          : {
-                              ...selectedItem,
-                              productId: selectedItemData.id,
-                              productType: selectedItemData.productType,
-                              sac: selectedItemData.sac,
-                              serviceName: selectedItemData.serviceName,
-                              unitPrice: selectedItemData.rate,
-                              gstPerUnit: isGstApplicable(
-                                isGstApplicableForSalesOrders,
-                              )
-                                ? selectedItemData.gstPercentage
-                                : 0,
-                              batches: [],
-                              batch: null,
-                              expiryDate: '',
-                            };
-
-                      setSelectedItem(updatedItem);
-
-                      if (
-                        selectedItemData.productType === 'GOODS' &&
-                        selectedItemData.skuId
-                      ) {
-                        GetProductBatchList({
-                          searchString: selectedItemData.skuId,
-                        })
-                          .then((res) => {
-                            const batches = res.data.data.data || [];
-                            setSelectedItem((prev) => ({ ...prev, batches }));
-
-                            setProductBatchesMap((prev) => ({
-                              ...prev,
-                              [selectedItemData.id]: batches,
-                            }));
-                          })
-                          .catch((err) => {
-                            toast.error(err.response.data.message);
-                          });
+            {/* Add Items Section */}
+            <section className="space-y-4 rounded-lg border border-neutral-200 bg-neutral-50/30 p-5">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-end gap-4">
+                  {/* Item Type */}
+                  <div className="flex flex-col gap-1.5">
+                    <Label>
+                      {translations('form.label.item_type')}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <ReactSelect
+                      name="itemType"
+                      isDisabled={
+                        order.buyerId === null || order.buyerId === ''
                       }
+                      placeholder={translations(
+                        'form.input.item_type.placeholder',
+                      )}
+                      options={itemTypeOptions}
+                      styles={getStylesForSelectComponent()}
+                      className="w-40 text-sm"
+                      value={
+                        itemTypeOptions.find(
+                          (option) => option.value === order.invoiceType,
+                        ) || null
+                      }
+                      onChange={(selectedOption) => {
+                        if (!selectedOption) return;
 
-                      saveDraftToSession({
-                        key: 'b2CInvoiceDraft',
-                        data: {
-                          ...order,
-                          itemDraft: updatedItem,
-                        },
-                      });
-                    }
-                  }}
-                />
-                {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
-              </div>
+                        const clearedItem = {
+                          productName: '',
+                          serviceName: '',
+                          sac: '',
+                          hsnCode: '',
+                          skuId: '',
+                          productType: '',
+                          productId: null,
+                          quantity: null,
+                          unitId: null,
+                          unitPrice: null,
+                          gstPerUnit: null,
+                          totalAmount: null,
+                          totalGstAmount: null,
+                          batch: null,
+                          batches: [],
+                          expiryDate: '',
+                        };
 
-              {/* Batch */}
-              <div className="flex flex-col gap-1.5">
-                <Label>Batch</Label>
-                <ReactSelect
-                  name="batch"
-                  value={
-                    selectedItem.batch
-                      ? {
-                          value: selectedItem.batch.id,
-                          label: `${selectedItem.batch.batchNo} & ${moment(selectedItem.batch.expiryDate).format('DD/MM/YYYY')}`,
+                        setSelectedItem(clearedItem);
+                        setOrder((prev) => ({
+                          ...prev,
+                          invoiceType: selectedOption.value,
+                        }));
+
+                        saveDraftToSession({
+                          key: 'b2CInvoiceDraft',
+                          data: {
+                            ...order,
+                            invoiceType: selectedOption.value,
+                            itemDraft: clearedItem,
+                          },
+                        });
+                      }}
+                    />
+                    {errorMsg.invoiceType && (
+                      <ErrorBox msg={errorMsg.invoiceType} />
+                    )}
+                  </div>
+
+                  {/* Item */}
+                  <div className="flex flex-col gap-1.5">
+                    <Label>
+                      {translations('form.label.item')}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <ReactSelect
+                      name="items"
+                      value={
+                        itemClientListingOptions?.find(
+                          (item) => item.value.id === selectedItem.productId,
+                        ) ?? null
+                      }
+                      placeholder={translations('form.input.item.placeholder')}
+                      options={itemClientListingOptions}
+                      styles={getStylesForSelectComponent()}
+                      isOptionDisabled={(option) => option.disabled}
+                      className="w-64 text-sm"
+                      isDisabled={
+                        order.buyerId == null || order.invoiceType === ''
+                      }
+                      onChange={(selectedOption) => {
+                        const selectedItemData = selectedOption?.value;
+
+                        if (selectedItemData) {
+                          const updatedItem =
+                            selectedItemData.productType === 'GOODS'
+                              ? {
+                                  ...selectedItem,
+                                  productId: selectedItemData.id,
+                                  productType: selectedItemData.productType,
+                                  hsnCode: selectedItemData.hsnCode,
+                                  productName: selectedItemData.productName,
+                                  skuId: selectedItemData.skuId,
+                                  unitPrice: selectedItemData.salesPrice,
+                                  gstPerUnit: isGstApplicable(
+                                    isGstApplicableForSalesOrders,
+                                  )
+                                    ? selectedItemData.gstPercentage
+                                    : 0,
+                                  batches: [],
+                                  batch: null,
+                                  expiryDate: '',
+                                }
+                              : {
+                                  ...selectedItem,
+                                  productId: selectedItemData.id,
+                                  productType: selectedItemData.productType,
+                                  sac: selectedItemData.sac,
+                                  serviceName: selectedItemData.serviceName,
+                                  unitPrice: selectedItemData.rate,
+                                  gstPerUnit: isGstApplicable(
+                                    isGstApplicableForSalesOrders,
+                                  )
+                                    ? selectedItemData.gstPercentage
+                                    : 0,
+                                  batches: [],
+                                  batch: null,
+                                  expiryDate: '',
+                                };
+
+                          setSelectedItem(updatedItem);
+
+                          if (
+                            selectedItemData.productType === 'GOODS' &&
+                            selectedItemData.skuId
+                          ) {
+                            GetProductBatchList({
+                              searchString: selectedItemData.skuId,
+                            })
+                              .then((res) => {
+                                const batches = res.data.data.data || [];
+                                setSelectedItem((prev) => ({
+                                  ...prev,
+                                  batches,
+                                }));
+
+                                setProductBatchesMap((prev) => ({
+                                  ...prev,
+                                  [selectedItemData.id]: batches,
+                                }));
+                              })
+                              .catch((err) => {
+                                toast.error(err.response.data.message);
+                              });
+                          }
+
+                          saveDraftToSession({
+                            key: 'b2CInvoiceDraft',
+                            data: {
+                              ...order,
+                              itemDraft: updatedItem,
+                            },
+                          });
                         }
-                      : null
-                  }
-                  className="w-48 text-sm"
-                  placeholder="Select Batch"
-                  options={selectedItem.batches?.map((b) => ({
-                    value: b.id,
-                    label: (
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm font-semibold">
-                          Batch: {b.batchNo}
-                        </span>
-                        <span className="text-xs text-neutral-500">
-                          Expiry: {moment(b.expiryDate).format('DD/MM/YYYY')}
-                        </span>
-                      </div>
-                    ),
-                    original: b,
-                    disabled: isItemAlreadyAdded(selectedItem.productId, b.id),
-                  }))}
-                  isOptionDisabled={(option) => option.disabled}
-                  styles={getStylesForSelectComponent()}
-                  isDisabled={
-                    order.buyerId == null ||
-                    selectedItem.productType !== 'GOODS'
-                  }
-                  onChange={(selectedOption) => {
-                    const batchData = selectedOption?.original;
-                    const updatedItem = {
-                      ...selectedItem,
-                      batch: batchData,
-                      expiryDate: batchData?.expiryDate || '',
-                    };
-                    setSelectedItem(updatedItem);
-                    saveDraftToSession({
-                      key: 'b2CInvoiceDraft',
-                      data: {
-                        ...order,
-                        itemDraft: updatedItem,
-                      },
-                    });
-                  }}
-                />
-              </div>
+                      }}
+                    />
+                    {errorMsg.orderItem && (
+                      <ErrorBox msg={errorMsg.orderItem} />
+                    )}
+                  </div>
 
-              {/* Quantity */}
-              <div className="flex w-28 flex-col gap-1.5">
-                <InputWithSelect
-                  id="quantity"
-                  name={translations('form.label.quantity')}
-                  required={true}
-                  disabled={order.buyerId == null}
-                  className="h-9"
-                  value={
-                    selectedItem.quantity == null || selectedItem.quantity === 0
-                      ? ''
-                      : selectedItem.quantity
-                  }
-                  onValueChange={(e) => {
-                    const inputValue = e.target.value;
-
-                    if (inputValue === '') {
-                      setSelectedItem((prev) => ({
-                        ...prev,
-                        quantity: 0,
-                        totalAmount: 0,
-                        totalGstAmount: 0,
-                      }));
-                      return;
-                    }
-
-                    if (!/^\d+$/.test(inputValue)) return;
-                    const value = Number(inputValue);
-                    if (value < 1) return;
-
-                    const totalAmt = parseFloat(
-                      (value * (selectedItem.unitPrice || 0)).toFixed(2),
-                    );
-                    const gstAmt = parseFloat(
-                      (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
-                    );
-
-                    const updatedItem = {
-                      ...selectedItem,
-                      quantity: value,
-                      totalAmount: totalAmt,
-                      totalGstAmount: gstAmt,
-                    };
-                    setSelectedItem(updatedItem);
-
-                    saveDraftToSession({
-                      key: 'b2CInvoiceDraft',
-                      data: {
-                        ...order,
-                        itemDraft: updatedItem,
-                      },
-                    });
-                  }}
-                  unit={selectedItem.unitId}
-                  onUnitChange={(val) => {
-                    setSelectedItem((prev) => {
-                      const updated = { ...prev, unitId: Number(val) };
-                      saveDraftToSession({
-                        key: 'b2CInvoiceDraft',
-                        data: {
-                          ...order,
-                          itemDraft: updated,
+                  {/* Batch */}
+                  <div className="flex flex-col gap-1.5">
+                    <Label>Batch</Label>
+                    <ReactSelect
+                      name="batch"
+                      value={
+                        selectedItem.batch
+                          ? {
+                              value: selectedItem.batch.id,
+                              label: `${selectedItem.batch.batchNo} & ${moment(selectedItem.batch.expiryDate).format('DD/MM/YYYY')}`,
+                            }
+                          : null
+                      }
+                      className="w-48 text-sm"
+                      placeholder="Select Batch"
+                      options={[
+                        ...(selectedItem.batches?.map((b) => ({
+                          value: b.id,
+                          label: (
+                            <div className="flex flex-col gap-1">
+                              <span className="text-sm font-semibold">
+                                Batch: {b.batchNo}
+                              </span>
+                              <span className="text-xs text-neutral-500">
+                                Expiry:{' '}
+                                {moment(b.expiryDate).format('DD/MM/YYYY')}
+                              </span>
+                            </div>
+                          ),
+                          original: b,
+                          disabled: isItemAlreadyAdded(
+                            selectedItem.productId,
+                            b.id,
+                          ),
+                        })) || []),
+                        {
+                          value: 'ADD_NEW_BATCH',
+                          label: (
+                            <span className="font-semibold text-primary">
+                              + Add a New Batch
+                            </span>
+                          ),
                         },
-                      });
-                      return updated;
-                    });
-                  }}
-                  units={units?.quantity}
-                />
-                {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
-              </div>
-
-              {/* Price */}
-              <div className="flex w-28 flex-col gap-1.5">
-                <Label>
-                  {translations('form.label.price')}
-                  <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  type="number"
-                  disabled={order.buyerId == null}
-                  value={
-                    selectedItem.unitPrice == null ||
-                    selectedItem.unitPrice === 0
-                      ? ''
-                      : selectedItem.unitPrice
-                  }
-                  className="h-9"
-                  onChange={(e) => {
-                    const inputValue = e.target.value;
-
-                    if (inputValue === '') {
-                      setSelectedItem((prevValue) => ({
-                        ...prevValue,
-                        unitPrice: 0,
-                        totalAmount: 0,
-                        totalGstAmount: 0,
-                      }));
-                      return;
-                    }
-
-                    const value = Number(inputValue);
-                    if (value < 0) return;
-
-                    const totalAmt = parseFloat(
-                      ((selectedItem.quantity || 0) * value).toFixed(2),
-                    );
-                    const gstAmt = parseFloat(
-                      (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(2),
-                    );
-
-                    setSelectedItem((prevValue) => ({
-                      ...prevValue,
-                      unitPrice: value,
-                      totalAmount: totalAmt,
-                      totalGstAmount: gstAmt,
-                    }));
-
-                    saveDraftToSession({
-                      key: 'b2CInvoiceDraft',
-                      data: {
-                        ...order,
-                        itemDraft: {
+                      ]}
+                      isOptionDisabled={(option) => option.disabled}
+                      styles={getStylesForSelectComponent()}
+                      isDisabled={
+                        order.buyerId == null ||
+                        selectedItem.productType !== 'GOODS'
+                      }
+                      onChange={(selectedOption) => {
+                        if (selectedOption?.value === 'ADD_NEW_BATCH') {
+                          setIsAddingBatchFor({
+                            skuId:
+                              selectedItem.skuId ||
+                              goodsData?.find(
+                                (g) => g.id === selectedItem.productId,
+                              )?.skuId,
+                            productName: selectedItem.productName,
+                            productId: selectedItem.productId,
+                          });
+                          return;
+                        }
+                        const batchData = selectedOption?.original;
+                        const updatedItem = {
                           ...selectedItem,
+                          batch: batchData,
+                          expiryDate: batchData?.expiryDate || '',
+                        };
+                        setSelectedItem(updatedItem);
+                        saveDraftToSession({
+                          key: 'b2CInvoiceDraft',
+                          data: {
+                            ...order,
+                            itemDraft: updatedItem,
+                          },
+                        });
+                      }}
+                    />
+                  </div>
+
+                  {/* Quantity */}
+                  <div className="flex w-28 flex-col gap-1.5">
+                    <InputWithSelect
+                      id="quantity"
+                      name={translations('form.label.quantity')}
+                      required={true}
+                      disabled={order.buyerId == null}
+                      className="h-9"
+                      value={
+                        selectedItem.quantity == null ||
+                        selectedItem.quantity === 0
+                          ? ''
+                          : selectedItem.quantity
+                      }
+                      onValueChange={(e) => {
+                        const inputValue = e.target.value;
+
+                        if (inputValue === '') {
+                          setSelectedItem((prev) => ({
+                            ...prev,
+                            quantity: 0,
+                            totalAmount: 0,
+                            totalGstAmount: 0,
+                          }));
+                          return;
+                        }
+
+                        if (!/^\d+$/.test(inputValue)) return;
+                        const value = Number(inputValue);
+                        if (value < 1) return;
+
+                        const totalAmt = parseFloat(
+                          (value * (selectedItem.unitPrice || 0)).toFixed(2),
+                        );
+                        const gstAmt = parseFloat(
+                          (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(
+                            2,
+                          ),
+                        );
+
+                        const updatedItem = {
+                          ...selectedItem,
+                          quantity: value,
+                          totalAmount: totalAmt,
+                          totalGstAmount: gstAmt,
+                        };
+                        setSelectedItem(updatedItem);
+
+                        saveDraftToSession({
+                          key: 'b2CInvoiceDraft',
+                          data: {
+                            ...order,
+                            itemDraft: updatedItem,
+                          },
+                        });
+                      }}
+                      unit={selectedItem.unitId}
+                      onUnitChange={(val) => {
+                        setSelectedItem((prev) => {
+                          const updated = { ...prev, unitId: Number(val) };
+                          saveDraftToSession({
+                            key: 'b2CInvoiceDraft',
+                            data: {
+                              ...order,
+                              itemDraft: updated,
+                            },
+                          });
+                          return updated;
+                        });
+                      }}
+                      units={units?.quantity}
+                    />
+                    {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
+                  </div>
+
+                  {/* Price */}
+                  <div className="flex w-28 flex-col gap-1.5">
+                    <Label>
+                      {translations('form.label.price')}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      type="number"
+                      disabled={order.buyerId == null}
+                      value={
+                        selectedItem.unitPrice == null ||
+                        selectedItem.unitPrice === 0
+                          ? ''
+                          : selectedItem.unitPrice
+                      }
+                      className="h-9"
+                      onChange={(e) => {
+                        const inputValue = e.target.value;
+
+                        if (inputValue === '') {
+                          setSelectedItem((prevValue) => ({
+                            ...prevValue,
+                            unitPrice: 0,
+                            totalAmount: 0,
+                            totalGstAmount: 0,
+                          }));
+                          return;
+                        }
+
+                        const value = Number(inputValue);
+                        if (value < 0) return;
+
+                        const totalAmt = parseFloat(
+                          ((selectedItem.quantity || 0) * value).toFixed(2),
+                        );
+                        const gstAmt = parseFloat(
+                          (totalAmt * (selectedItem.gstPerUnit / 100)).toFixed(
+                            2,
+                          ),
+                        );
+
+                        setSelectedItem((prevValue) => ({
+                          ...prevValue,
                           unitPrice: value,
                           totalAmount: totalAmt,
                           totalGstAmount: gstAmt,
+                        }));
+
+                        saveDraftToSession({
+                          key: 'b2CInvoiceDraft',
+                          data: {
+                            ...order,
+                            itemDraft: {
+                              ...selectedItem,
+                              unitPrice: value,
+                              totalAmount: totalAmt,
+                              totalGstAmount: gstAmt,
+                            },
+                          },
+                        });
+                      }}
+                    />
+                    {errorMsg.unitPrice && (
+                      <ErrorBox msg={errorMsg.unitPrice} />
+                    )}
+                  </div>
+
+                  {/* GST (%) */}
+                  {isGstApplicable(isGstApplicableForSalesOrders) && (
+                    <div className="flex w-16 flex-col gap-1.5">
+                      <Label>GST %</Label>
+                      <Input
+                        disabled
+                        value={selectedItem.gstPerUnit || ''}
+                        className="h-9 bg-neutral-100"
+                      />
+                    </div>
+                  )}
+
+                  {/* Total Value */}
+                  <div className="flex w-28 flex-col gap-1.5">
+                    <Label>{translations('form.label.value')}</Label>
+                    <Input
+                      disabled
+                      value={selectedItem.totalAmount || ''}
+                      className="h-9 bg-neutral-100 font-medium"
+                    />
+                  </div>
+
+                  {/* Tax Amount */}
+                  {isGstApplicable(isGstApplicableForSalesOrders) && (
+                    <div className="flex w-24 flex-col gap-1.5">
+                      <Label>Tax Amount</Label>
+                      <Input
+                        disabled
+                        value={selectedItem.totalGstAmount || ''}
+                        className="h-9 bg-neutral-100 font-medium"
+                      />
+                    </div>
+                  )}
+
+                  {/* Total Amount */}
+                  <div className="flex w-40 flex-col gap-1.5">
+                    <Label>Total Amount</Label>
+                    <Input
+                      disabled
+                      value={
+                        selectedItem.totalAmount != null
+                          ? (
+                              Number(selectedItem.totalAmount) +
+                              (isGstApplicable(isGstApplicableForSalesOrders)
+                                ? Number(selectedItem.totalGstAmount) || 0
+                                : 0)
+                            ).toFixed(2)
+                          : ''
+                      }
+                      className="h-9 bg-neutral-100 font-semibold text-primary"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-9 text-neutral-500 hover:text-red-500"
+                    onClick={() => {
+                      const clearedItem = {
+                        productName: '',
+                        serviceName: '',
+                        sac: '',
+                        hsnCode: '',
+                        skuId: '',
+                        productType: '',
+                        productId: null,
+                        quantity: null,
+                        unitId: null,
+                        unitPrice: null,
+                        gstPerUnit: 0,
+                        totalAmount: null,
+                        totalGstAmount: null,
+                        batch: null,
+                        batches: [],
+                        expiryDate: '',
+                      };
+                      setSelectedItem(clearedItem);
+
+                      saveDraftToSession({
+                        key: 'b2CInvoiceDraft',
+                        data: {
+                          ...order,
+                          itemDraft: clearedItem,
                         },
-                      },
-                    });
-                  }}
-                />
-                {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
-              </div>
+                      });
+                    }}
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="h-9"
+                    disabled={
+                      !selectedItem.productId ||
+                      !selectedItem.quantity ||
+                      selectedItem.quantity <= 0 ||
+                      !selectedItem.unitPrice ||
+                      selectedItem.unitPrice <= 0
+                    }
+                    onClick={() => {
+                      const isDuplicate = isItemAlreadyAdded(
+                        selectedItem.productId,
+                        selectedItem.batch?.id,
+                      );
 
-              {/* GST (%) */}
-              {isGstApplicable(isGstApplicableForSalesOrders) && (
-                <div className="flex w-16 flex-col gap-1.5">
-                  <Label>GST %</Label>
-                  <Input
-                    disabled
-                    value={selectedItem.gstPerUnit || ''}
-                    className="h-9 bg-neutral-100"
-                  />
+                      if (isDuplicate) {
+                        toast.error(
+                          selectedItem.batch
+                            ? 'This batch is already added.'
+                            : 'This item is already added.',
+                        );
+                        return;
+                      }
+
+                      const updatedOrderItems = [
+                        ...(order?.orderItems || []),
+                        {
+                          ...selectedItem,
+                          gstPercentage: selectedItem.gstPerUnit ?? 0,
+                        },
+                      ];
+
+                      const updatedOrder = {
+                        ...order,
+                        orderItems: updatedOrderItems,
+                      };
+
+                      const clearedItem = {
+                        productName: '',
+                        serviceName: '',
+                        sac: '',
+                        hsnCode: '',
+                        skuId: '',
+                        productType: '',
+                        productId: null,
+                        quantity: null,
+                        unitId: null,
+                        unitPrice: null,
+                        gstPerUnit: 0,
+                        totalAmount: null,
+                        totalGstAmount: null,
+                        batch: null,
+                        batches: [],
+                        expiryDate: '',
+                      };
+
+                      setOrder(updatedOrder);
+                      setSelectedItem(clearedItem);
+
+                      saveDraftToSession({
+                        key: 'b2CInvoiceDraft',
+                        data: {
+                          ...updatedOrder,
+                          itemDraft: clearedItem,
+                        },
+                      });
+
+                      setErrorMsg({});
+                    }}
+                    variant="blue_outline"
+                  >
+                    {translations('form.ctas.add')}
+                  </Button>
                 </div>
-              )}
-
-              {/* Total Value */}
-              <div className="flex w-28 flex-col gap-1.5">
-                <Label>{translations('form.label.value')}</Label>
-                <Input
-                  disabled
-                  value={selectedItem.totalAmount || ''}
-                  className="h-9 bg-neutral-100 font-medium"
-                />
               </div>
+            </section>
 
-              {/* Tax Amount */}
-              {isGstApplicable(isGstApplicableForSalesOrders) && (
-                <div className="flex w-24 flex-col gap-1.5">
-                  <Label>Tax Amount</Label>
-                  <Input
-                    disabled
-                    value={selectedItem.totalGstAmount || ''}
-                    className="h-9 bg-neutral-100 font-medium"
-                  />
+            {/* selected item table */}
+            <DataTable
+              data={order.orderItems}
+              columns={createSalesInvoiceColumns}
+            />
+          </div>
+          {/* Summary Footer Section */}
+          <div className="sticky bottom-0 z-20 -mx-4 border-t border-neutral-200 bg-white p-3 px-8 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-6">
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                    {translations('form.footer.gross_amount')}
+                  </span>
+                  <span className="text-sm font-medium text-neutral-700">
+                    ₹{' '}
+                    {grossAmt.toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
                 </div>
-              )}
 
-              {/* Total Amount */}
-              <div className="flex w-40 flex-col gap-1.5">
-                <Label>Total Amount</Label>
-                <Input
-                  disabled
-                  value={
-                    selectedItem.totalAmount != null
-                      ? (
-                          Number(selectedItem.totalAmount) +
-                          (isGstApplicable(isGstApplicableForSalesOrders)
-                            ? Number(selectedItem.totalGstAmount) || 0
-                            : 0)
-                        ).toFixed(2)
-                      : ''
-                  }
-                  className="h-9 bg-neutral-100 font-semibold text-primary"
-                />
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                    {translations('form.footer.tax_amount')}
+                  </span>
+                  <span className="text-sm font-medium text-neutral-700">
+                    ₹{' '}
+                    {totalGstAmt.toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+
+                <div className="h-8 w-[1px] bg-neutral-200"></div>
+
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-primary/70">
+                    Grand Total
+                  </span>
+                  <span className="text-sm font-bold text-primary">
+                    ₹{' '}
+                    {totalAmtWithGst.toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center justify-end gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-9 text-neutral-500 hover:text-red-500"
-                onClick={() => {
-                  const clearedItem = {
-                    productName: '',
-                    serviceName: '',
-                    sac: '',
-                    hsnCode: '',
-                    productType: '',
-                    productId: null,
-                    quantity: null,
-                    unitId: null,
-                    unitPrice: null,
-                    gstPerUnit: 0,
-                    totalAmount: null,
-                    totalGstAmount: null,
-                    batch: null,
-                    batches: [],
-                    expiryDate: '',
-                  };
-                  setSelectedItem(clearedItem);
-
-                  saveDraftToSession({
-                    key: 'b2CInvoiceDraft',
-                    data: {
-                      ...order,
-                      itemDraft: clearedItem,
-                    },
-                  });
-                }}
-              >
-                Clear
-              </Button>
-              <Button
-                size="sm"
-                className="h-9"
-                disabled={
-                  !selectedItem.productId ||
-                  !selectedItem.quantity ||
-                  selectedItem.quantity <= 0 ||
-                  !selectedItem.unitPrice ||
-                  selectedItem.unitPrice <= 0
-                }
-                onClick={() => {
-                  const isDuplicate = isItemAlreadyAdded(
-                    selectedItem.productId,
-                    selectedItem.batch?.id,
-                  );
-
-                  if (isDuplicate) {
-                    toast.error(
-                      selectedItem.batch
-                        ? 'This batch is already added.'
-                        : 'This item is already added.',
-                    );
-                    return;
-                  }
-
-                  const updatedOrderItems = [
-                    ...(order?.orderItems || []),
-                    {
-                      ...selectedItem,
-                      gstPercentage: selectedItem.gstPerUnit ?? 0,
-                    },
-                  ];
-
-                  const updatedOrder = {
-                    ...order,
-                    orderItems: updatedOrderItems,
-                  };
-
-                  const clearedItem = {
-                    productName: '',
-                    serviceName: '',
-                    sac: '',
-                    hsnCode: '',
-                    productType: '',
-                    productId: null,
-                    quantity: null,
-                    unitId: null,
-                    unitPrice: null,
-                    gstPerUnit: 0,
-                    totalAmount: null,
-                    totalGstAmount: null,
-                    batch: null,
-                    batches: [],
-                    expiryDate: '',
-                  };
-
-                  setOrder(updatedOrder);
-                  setSelectedItem(clearedItem);
-
-                  saveDraftToSession({
-                    key: 'b2CInvoiceDraft',
-                    data: {
-                      ...updatedOrder,
-                      itemDraft: clearedItem,
-                    },
-                  });
-
-                  setErrorMsg({});
-                }}
-                variant="blue_outline"
-              >
-                {translations('form.ctas.add')}
-              </Button>
+              <div className="flex items-center gap-3">
+                <Button size="sm" onClick={onCancel} variant="outline">
+                  {translations('form.ctas.cancel')}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => handleSubmit(order)}
+                  disabled={invoiceMutation.isPending}
+                >
+                  {invoiceMutation.isPending ? (
+                    <Loading />
+                  ) : (
+                    translations('form.ctas.create')
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
-        </section>
-
-        {/* selected item table */}
-        <DataTable
-          data={order.orderItems}
-          columns={createSalesInvoiceColumns}
+        </>
+      )}
+      {isAddingBatchFor && enterpriseId && (
+        <AddBatch
+          setIsAdding={(val) => {
+            if (!val) {
+              const { skuId, productId } = isAddingBatchFor;
+              if (skuId || productId) {
+                GetProductBatchList({ searchString: skuId || productId })
+                  .then((res) => {
+                    const batches = res.data.data.data || [];
+                    setSelectedItem((prev) => ({ ...prev, batches }));
+                    setProductBatchesMap((prev) => ({
+                      ...prev,
+                      [productId]: batches,
+                    }));
+                  })
+                  .catch((err) => {
+                    toast.error('Failed to refresh batches:', err);
+                  });
+              }
+              setIsAddingBatchFor(null);
+            }
+          }}
+          setIsEditing={() => {}}
+          initialSku={{
+            skuId: isAddingBatchFor?.skuId,
+            productName: isAddingBatchFor?.productName,
+          }}
         />
-      </div>
-      {/* Summary Footer Section */}
-      <div className="sticky bottom-0 z-20 -mx-4 border-t border-neutral-200 bg-white p-3 px-8 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-6">
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
-                {translations('form.footer.gross_amount')}
-              </span>
-              <span className="text-sm font-medium text-neutral-700">
-                ₹{' '}
-                {grossAmt.toLocaleString('en-IN', {
-                  minimumFractionDigits: 2,
-                })}
-              </span>
-            </div>
-
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
-                {translations('form.footer.tax_amount')}
-              </span>
-              <span className="text-sm font-medium text-neutral-700">
-                ₹{' '}
-                {totalGstAmt.toLocaleString('en-IN', {
-                  minimumFractionDigits: 2,
-                })}
-              </span>
-            </div>
-
-            <div className="h-8 w-[1px] bg-neutral-200"></div>
-
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary/70">
-                Grand Total
-              </span>
-              <span className="text-sm font-bold text-primary">
-                ₹{' '}
-                {totalAmtWithGst.toLocaleString('en-IN', {
-                  minimumFractionDigits: 2,
-                })}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button size="sm" onClick={onCancel} variant="outline">
-              {translations('form.ctas.cancel')}
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => handleSubmit(order)}
-              disabled={invoiceMutation.isPending}
-            >
-              {invoiceMutation.isPending ? (
-                <Loading />
-              ) : (
-                translations('form.ctas.create')
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
+      )}
     </Wrapper>
   );
 };

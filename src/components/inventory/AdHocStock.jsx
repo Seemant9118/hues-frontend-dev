@@ -28,6 +28,7 @@ import { Plus } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import ReactSelect from 'react-select';
 import { toast } from 'sonner';
+import AddBatch from '@/components/inventory/batch/AddBatch';
 import { DataTable } from '../table/data-table';
 import { Button } from '../ui/button';
 import ErrorBox from '../ui/ErrorBox';
@@ -42,6 +43,7 @@ import { AddHocItemsColumns } from './AdHocItemsColumns';
 const AdHocStock = ({ isStockIn, name, onClose }) => {
   const enterpriseId = getEnterpriseId();
   const [isAdding, setIsAdding] = useState(false);
+  const [isAddingBatchFor, setIsAddingBatchFor] = useState(null);
 
   const [selectedItem, setSelectedItem] = useState({
     productId: null,
@@ -414,7 +416,7 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
 
   return (
     <Wrapper className="flex h-full min-h-screen flex-col">
-      {!isAdding && (
+      {!isAdding && !isAddingBatchFor && (
         <>
           <SubHeader name={name} />
 
@@ -593,28 +595,48 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
                     }
                     className="w-full"
                     placeholder="Select Batch"
-                    options={selectedItem.batches?.map((b) => ({
-                      value: b.id,
-                      label: (
-                        <div className="flex flex-col gap-1">
-                          <span className="text-sm font-semibold">
-                            Batch: {b.batchNo}
+                    options={[
+                      ...(selectedItem.batches?.map((b) => ({
+                        value: b.id,
+                        label: (
+                          <div className="flex flex-col gap-1">
+                            <span className="text-sm font-semibold">
+                              Batch: {b.batchNo}
+                            </span>
+                            <span className="text-xs text-neutral-500">
+                              Expiry:{' '}
+                              {moment(b.expiryDate).format('DD/MM/YYYY')}
+                            </span>
+                          </div>
+                        ),
+                        original: b,
+                        disabled: isItemAlreadyAdded(
+                          selectedItem.productId,
+                          b.id,
+                        ),
+                      })) || []),
+                      {
+                        value: 'ADD_NEW_BATCH',
+                        label: (
+                          <span className="font-semibold text-primary">
+                            + Add a New Batch
                           </span>
-                          <span className="text-xs text-neutral-500">
-                            Expiry: {moment(b.expiryDate).format('DD/MM/YYYY')}
-                          </span>
-                        </div>
-                      ),
-                      original: b,
-                      disabled: isItemAlreadyAdded(
-                        selectedItem.productId,
-                        b.id,
-                      ),
-                    }))}
+                        ),
+                      },
+                    ]}
                     isOptionDisabled={(option) => option.disabled}
                     styles={getStylesForSelectComponent()}
                     isDisabled={!selectedItem.productId}
                     onChange={(selectedOption) => {
+                      if (selectedOption?.value === 'ADD_NEW_BATCH') {
+                        setIsAddingBatchFor({
+                          skuId: selectedItem.skuId,
+                          productName: selectedItem.productName,
+                          productId: selectedItem.productId,
+                        });
+                        return;
+                      }
+
                       const batchData = selectedOption?.original;
                       setSelectedItem((prev) => ({
                         ...prev,
@@ -820,6 +842,34 @@ const AdHocStock = ({ isStockIn, name, onClose }) => {
       )}
 
       {isAdding && <AddGoods setIsCreatingGoods={setIsAdding} />}
+
+      {isAddingBatchFor && (
+        <div className="h-full w-full">
+          <AddBatch
+            setIsAdding={(val) => {
+              if (!val) {
+                if (isAddingBatchFor?.skuId) {
+                  GetProductBatchList({
+                    searchString: isAddingBatchFor.skuId,
+                  }).then((res) => {
+                    const batches = res?.data?.data?.data || [];
+                    if (selectedItem.productId === isAddingBatchFor.productId) {
+                      setSelectedItem((prev) => ({ ...prev, batches }));
+                    }
+                    setProductBatchesMap((prev) => ({
+                      ...prev,
+                      [isAddingBatchFor.productId]: batches,
+                    }));
+                  });
+                }
+                setIsAddingBatchFor(null);
+              }
+            }}
+            setIsEditing={() => {}}
+            initialSku={isAddingBatchFor}
+          />
+        </div>
+      )}
     </Wrapper>
   );
 };

@@ -25,7 +25,7 @@ import { batchApi } from '@/api/inventories/goods/batch';
 import { MoveLeft } from 'lucide-react';
 import SubHeader from '@/components/ui/Sub-header';
 
-const AddBatch = ({ setIsAdding, setIsEditing, batchToEdit }) => {
+const AddBatch = ({ setIsAdding, setIsEditing, batchToEdit, initialSku }) => {
   const translations = useTranslations('batch.addBatch');
   const queryClient = useQueryClient();
 
@@ -52,8 +52,13 @@ const AddBatch = ({ setIsAdding, setIsEditing, batchToEdit }) => {
           : '',
         isActive: batchToEdit.isActive ?? true,
       });
+    } else if (initialSku) {
+      setFormData((prev) => ({
+        ...prev,
+        skuId: initialSku.skuId || '',
+      }));
     }
-  }, [batchToEdit]);
+  }, [batchToEdit, initialSku]);
 
   const debouncedLoadSkuOptions = useCallback(
     debounce((inputValue, callback) => {
@@ -187,7 +192,15 @@ const AddBatch = ({ setIsAdding, setIsEditing, batchToEdit }) => {
               className="text-sm"
               value={
                 formData.skuId
-                  ? { label: formData.skuId, value: formData.skuId }
+                  ? {
+                      label:
+                        initialSku && formData.skuId === initialSku.skuId
+                          ? `${capitalize(initialSku.productName)} (${
+                              initialSku.skuId
+                            })`
+                          : formData.skuId,
+                      value: formData.skuId,
+                    }
                   : null
               }
               onChange={(opt) => handleChange('skuId', opt?.value || '')}
