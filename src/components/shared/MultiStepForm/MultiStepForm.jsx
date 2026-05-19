@@ -181,7 +181,64 @@ export default function MultiStepForm({
         {/* Footer */}
         <div className="flex items-center justify-between border-t bg-white p-4 shadow-md">
           <div>
-            {onCancel && (
+            {formData?.totals ? (
+              <div className="flex items-center gap-8 text-neutral-800">
+                {/* Gross Amount */}
+                <div className="flex flex-col text-left">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    Gross Value
+                  </span>
+                  <span className="text-sm font-semibold text-neutral-700">
+                    ₹
+                    {(formData.totals.grossAmount || 0).toLocaleString(
+                      'en-IN',
+                      {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      },
+                    )}
+                  </span>
+                </div>
+
+                {formData.totals.gstApplicable && (
+                  <>
+                    {/* Tax Amount */}
+                    <div className="flex flex-col border-l border-neutral-200 pl-8 text-left">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                        Tax Amount
+                      </span>
+                      <span className="text-sm font-semibold text-orange-600">
+                        ₹
+                        {(formData.totals.totalGstAmount || 0).toLocaleString(
+                          'en-IN',
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          },
+                        )}
+                      </span>
+                    </div>
+
+                    {/* Grand Total */}
+                    <div className="flex flex-col border-l border-neutral-200 pl-8 text-right">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                        Grand Total
+                      </span>
+                      <span className="text-base font-extrabold text-green-600">
+                        ₹
+                        {(formData.totals.finalAmount || 0).toLocaleString(
+                          'en-IN',
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          },
+                        )}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : onCancel ? (
               <Button
                 size="sm"
                 variant="ghost"
@@ -190,10 +247,21 @@ export default function MultiStepForm({
               >
                 Cancel
               </Button>
-            )}
+            ) : null}
           </div>
 
           <div className="flex items-center gap-2">
+            {formData?.totals && onCancel && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={onCancel}
+                className="mr-2 text-muted-foreground transition-colors hover:text-destructive"
+              >
+                Cancel
+              </Button>
+            )}
+
             <Button
               debounceTime={0}
               size="sm"

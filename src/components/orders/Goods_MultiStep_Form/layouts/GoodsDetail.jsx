@@ -12,10 +12,8 @@ import {
   getStylesForSelectComponent,
   isGstApplicable,
 } from '@/appUtils/helperFunctions';
-import { useCreateSalesColumns } from '@/components/columns/useCreateSalesColumns';
 import { DataTable } from '@/components/table/data-table';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import useOrderTotals from '@/hooks/useOrderTotals';
 import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 import {
@@ -34,7 +32,7 @@ import { OrderDetails } from '@/services/Orders_Services/Orders_Services';
 import { getUnits } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useQuery } from '@tanstack/react-query';
-import { CreditCard, List, Package, Plus, User } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -426,6 +424,28 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
     gstApplicable,
   );
 
+  useEffect(() => {
+    setOrder((prev) => {
+      if (
+        prev.totals?.grossAmount === grossAmount &&
+        prev.totals?.totalGstAmount === totalGstAmount &&
+        prev.totals?.finalAmount === finalAmount &&
+        prev.totals?.gstApplicable === gstApplicable
+      ) {
+        return prev;
+      }
+      return {
+        ...prev,
+        totals: {
+          grossAmount,
+          totalGstAmount,
+          finalAmount,
+          gstApplicable,
+        },
+      };
+    });
+  }, [grossAmount, totalGstAmount, finalAmount, gstApplicable, setOrder]);
+
   const itemOptions =
     cta === 'offer' ? itemClientListingOptions : itemVendorListingOptions;
 
@@ -441,14 +461,250 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
   }, [selectedItem?.productId, itemOptions]);
 
   // columns
-  const createSalesColumns = useCreateSalesColumns(
-    isOrder,
-    isOfferType,
-    setOrder,
-    setSelectedItem,
-    isPurchasePage,
-    isGstApplicableForSalesOrders,
-    isGstApplicableForPurchaseOrders,
+  const columns = useMemo(
+    () => [
+      {
+        accessorKey: 'productName',
+        header: 'Item',
+        cell: ({ row }) => {
+          const item = row.original;
+          return (
+            <div className="flex flex-col items-start gap-1">
+              <span className="text-sm font-semibold text-neutral-800">
+                {item.productName || item.serviceName}
+              </span>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'quantity',
+        header: () => (
+          <div className="text-center text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+            Qty
+          </div>
+        ),
+        cell: ({ row }) => {
+          const item = row.original;
+          return (
+            <div className="text-center text-sm font-semibold text-neutral-600">
+              {item.quantity}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'unitPrice',
+        header: () => (
+          <div className="text-right text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+            Price
+          </div>
+        ),
+        cell: ({ row }) => {
+          const item = row.original;
+          return (
+            <div className="pr-2 text-right text-sm font-semibold text-neutral-600">
+              ₹
+              {Number(item.unitPrice || 0).toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'totalAmount',
+        header: () => (
+          <div className="text-right text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+            Value
+          </div>
+        ),
+        cell: ({ row }) => {
+          const item = row.original;
+          const value = Number(item.totalAmount) || 0;
+          return (
+            <div className="text-neutral-750 pr-2 text-right text-sm font-bold">
+              ₹
+              {value.toLocaleString('en-IN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </div>
+          );
+        },
+      },
+      ...(isGstApplicable(
+        isPurchasePage
+          ? isGstApplicableForPurchaseOrders
+          : isGstApplicableForSalesOrders,
+      )
+        ? [
+            {
+              accessorKey: 'gstPerUnit',
+              header: () => (
+                <div className="text-center text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  GST %
+                </div>
+              ),
+              cell: ({ row }) => {
+                const item = row.original;
+                return (
+                  <div className="text-center text-sm font-medium text-neutral-500">
+                    {item.gstPerUnit || 0}%
+                  </div>
+                );
+              },
+            },
+            {
+              accessorKey: 'totalGstAmount',
+              header: () => (
+                <div className="text-right text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  Tax
+                </div>
+              ),
+              cell: ({ row }) => {
+                const item = row.original;
+                const tax = Number(item.totalGstAmount) || 0;
+                return (
+                  <div className="pr-2 text-right text-sm font-semibold text-neutral-500">
+                    ₹
+                    {tax.toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                );
+              },
+            },
+            {
+              accessorKey: 'finalAmount',
+              header: () => (
+                <div className="text-right text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                  Total
+                </div>
+              ),
+              cell: ({ row }) => {
+                const item = row.original;
+                const total =
+                  Number(
+                    item.finalAmount || item.totalAmount + item.totalGstAmount,
+                  ) || 0;
+                return (
+                  <div className="pr-2 text-right text-sm font-bold text-neutral-800">
+                    ₹
+                    {total.toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                );
+              },
+            },
+          ]
+        : []),
+      {
+        id: 'actions',
+        header: '',
+        cell: ({ row }) => {
+          const item = row.original;
+          return (
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                title="Edit Item"
+                className="rounded p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-blue-600"
+                onClick={() => {
+                  setSelectedItem({
+                    ...item,
+                    productId: item.id || item.productId,
+                  });
+
+                  setOrder((prev) => {
+                    const updatedItems = prev.orderItems.filter(
+                      (oi) => oi.productId !== item.productId,
+                    );
+                    const updatedOrder = {
+                      ...prev,
+                      orderItems: updatedItems,
+                    };
+
+                    const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
+                    const prevDraft = SessionStorageService.get(key) || {};
+                    SessionStorageService.set(key, {
+                      ...prevDraft,
+                      ...updatedOrder,
+                      itemDraft: item,
+                    });
+
+                    return updatedOrder;
+                  });
+                }}
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                title="Delete Item"
+                className="rounded p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-red-500"
+                onClick={() => {
+                  setOrder((prev) => {
+                    const updatedItems = prev.orderItems.filter(
+                      (oi) => oi.productId !== item.productId,
+                    );
+                    const updatedOrder = {
+                      ...prev,
+                      orderItems: updatedItems,
+                    };
+
+                    const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
+                    const prevDraft = SessionStorageService.get(key) || {};
+                    SessionStorageService.set(key, {
+                      ...prevDraft,
+                      ...updatedOrder,
+                    });
+
+                    return updatedOrder;
+                  });
+                }}
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          );
+        },
+      },
+    ],
+    [
+      isPurchasePage,
+      isGstApplicableForPurchaseOrders,
+      isGstApplicableForSalesOrders,
+      cta,
+    ],
   );
 
   if (!enterpriseId) {
@@ -463,33 +719,27 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
   }
 
   return (
-    <div className="flex h-full flex-col gap-8">
+    <div className="flex min-h-[calc(100vh-200px)] flex-col gap-4">
       {/* 1. Section: Client/Vendor Information */}
       {isOfferType === 'GOODS' && (
-        <section className="flex flex-col gap-4 border-b border-neutral-100 pb-4">
-          <div className="flex items-center gap-2">
-            <User className="h-5 w-5 text-primary" />
-            <h3 className="text-lg font-semibold text-neutral-800">
-              {cta === 'offer'
-                ? translations('form.label.client')
-                : translations('form.label.vendor')}
-            </h3>
-          </div>
-
-          <div className="flex flex-col gap-4 px-1">
-            {cta === 'offer' ? (
-              <div className="flex max-w-md flex-col gap-2">
-                <Label className="text-sm font-medium">
-                  {translations('form.label.client')}{' '}
-                  <span className="text-red-500">*</span>
-                </Label>
-                <div className="flex w-full flex-col gap-1">
+        <div className="flex-shrink-0">
+          <span className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-primary">
+            {cta === 'offer' ? 'Client Details' : 'Vendor Details'}
+          </span>
+          <section className="border-b bg-white p-5 shadow-none">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {cta === 'offer' ? (
+                <div className="flex flex-col">
+                  <label className="mb-1.5 flex gap-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    {translations('form.label.client')}
+                    <span className="text-red-500">*</span>
+                  </label>
                   <Select
                     name="clients"
                     placeholder={translations('form.input.client.placeholder')}
                     options={clientOptions}
                     styles={getStylesForSelectComponent()}
-                    className="text-sm"
+                    className="text-sm font-medium"
                     classNamePrefix="select"
                     value={
                       clientOptions?.find(
@@ -549,22 +799,24 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
                       setIsOpen={setIsModalOpen}
                     />
                   )}
-                  {errorMsg.buyerId && <ErrorBox msg={errorMsg.buyerId} />}
+                  {errorMsg.buyerId && (
+                    <div className="mt-1">
+                      <ErrorBox msg={errorMsg.buyerId} />
+                    </div>
+                  )}
                 </div>
-              </div>
-            ) : (
-              <div className="flex max-w-md flex-col gap-2">
-                <Label className="text-sm font-medium">
-                  {translations('form.label.vendor')}{' '}
-                  <span className="text-red-500">*</span>
-                </Label>
-                <div className="flex w-full flex-col gap-1">
+              ) : (
+                <div className="flex flex-col">
+                  <label className="mb-1.5 flex gap-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                    {translations('form.label.vendor')}
+                    <span className="text-red-500">*</span>
+                  </label>
                   <Select
                     name="vendors"
                     placeholder={translations('form.input.vendor.placeholder')}
                     options={vendorOptions}
                     styles={getStylesForSelectComponent()}
-                    className="text-sm"
+                    className="text-sm font-medium"
                     classNamePrefix="select"
                     value={
                       vendorOptions?.find(
@@ -627,354 +879,385 @@ const GoodsDetail = ({ formData: order, setFormData: setOrder, onCancel }) => {
                     />
                   )}
                   {errorMsg.sellerEnterpriseId && (
-                    <ErrorBox msg={errorMsg.sellerEnterpriseId} />
+                    <div className="mt-1">
+                      <ErrorBox msg={errorMsg.sellerEnterpriseId} />
+                    </div>
                   )}
                 </div>
-              </div>
-            )}
-          </div>
-        </section>
+              )}
+            </div>
+          </section>
+        </div>
       )}
 
       {/* 2. Section: Items/Services Related Fields */}
-      <section className="flex flex-col gap-4 border-b border-neutral-100 pb-4">
-        <div className="flex items-center gap-2">
-          <Package className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold text-neutral-800">
-            {translations('title.sub_titles.add_item')}
-          </h3>
-        </div>
+      <div className="flex-shrink-0">
+        <span className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-primary">
+          Add Item
+        </span>
+        <section className="border-b bg-white p-4 shadow-none">
+          <div className="flex flex-col gap-4">
+            {/* Row 1: Item Select, Qty, Price */}
+            <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-4">
+              {/* Item Selection */}
+              <div className="flex flex-col gap-1.5">
+                <label className="flex gap-1 text-xs font-medium text-neutral-500">
+                  {translations('form.label.item')}
+                  <span className="text-red-500">*</span>
+                </label>
+                <Select
+                  name="items"
+                  value={selectedOption}
+                  placeholder={translations('form.input.item.placeholder')}
+                  options={itemOptions}
+                  styles={getStylesForSelectComponent()}
+                  isOptionDisabled={(option) => option.disabled}
+                  className="w-full text-sm font-medium"
+                  classNamePrefix="select"
+                  isDisabled={
+                    (cta === 'offer' && order.buyerId == null) ||
+                    (cta === 'bid' && order.sellerEnterpriseId == null) ||
+                    order.invoiceType === ''
+                  }
+                  onChange={(selectedOption) => {
+                    const selectedItemData = selectedOption?.value;
+                    if (!selectedItemData) return;
 
-        <div className="flex flex-col gap-6 px-1">
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-5">
-            {/* Item Selection */}
-            <div className="flex flex-col gap-2">
-              <Label className="text-sm font-medium">
-                {translations('form.label.item')}{' '}
-                <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                name="items"
-                value={selectedOption}
-                placeholder={translations('form.input.item.placeholder')}
-                options={itemOptions}
-                styles={getStylesForSelectComponent()}
-                isOptionDisabled={(option) => option.disabled}
-                isDisabled={
-                  (cta === 'offer' && order.buyerId == null) ||
-                  (cta === 'bid' && order.sellerEnterpriseId == null) ||
-                  order.invoiceType === ''
-                }
-                onChange={(selectedOption) => {
-                  const selectedItemData = selectedOption?.value;
-                  if (!selectedItemData) return;
+                    const isGstApplicableForPage = isPurchasePage
+                      ? isGstApplicable(isGstApplicableForPurchaseOrders)
+                      : isGstApplicable(isGstApplicableForSalesOrders);
 
-                  const isGstApplicableForPage = isPurchasePage
-                    ? isGstApplicable(isGstApplicableForPurchaseOrders)
-                    : isGstApplicable(isGstApplicableForSalesOrders);
+                    const gstPerUnit = isGstApplicableForPage
+                      ? Number(selectedItemData.gstPercentage) || 0
+                      : 0;
 
-                  const gstPerUnit = isGstApplicableForPage
-                    ? Number(selectedItemData.gstPercentage) || 0
-                    : 0;
+                    const updatedItem = {
+                      ...selectedItem,
+                      productId: selectedItemData.id,
+                      productType: 'GOODS',
+                      unitPrice:
+                        selectedItemData.salesPrice ??
+                        selectedItemData.rate ??
+                        selectedItemData.cataloguePrice ??
+                        0,
+                      gstPerUnit,
+                      productName: selectedItemData.name,
+                      hsnCode: selectedItemData.hsnCode,
+                    };
 
-                  const updatedItem = {
-                    ...selectedItem,
-                    productId: selectedItemData.id,
-                    productType: 'GOODS',
-                    unitPrice:
-                      selectedItemData.salesPrice ??
-                      selectedItemData.rate ??
-                      selectedItemData.cataloguePrice ??
-                      0,
-                    gstPerUnit,
-                    productName: selectedItemData.name,
-                    hsnCode: selectedItemData.hsnCode,
-                  };
-
-                  setSelectedItem(updatedItem);
-                  saveDraftToSession({
-                    cta,
-                    data: { ...order, itemDraft: updatedItem },
-                  });
-                }}
-              />
-              {errorMsg.orderItem && <ErrorBox msg={errorMsg.orderItem} />}
-            </div>
-
-            {/* Quantity */}
-            <div className="flex flex-col gap-2">
-              <InputWithSelect
-                id="quantity"
-                name={translations('form.label.quantity')}
-                required={true}
-                disabled={
-                  (cta === 'offer' && order.buyerId == null) ||
-                  order.sellerEnterpriseId == null
-                }
-                value={
-                  selectedItem.quantity == null || selectedItem.quantity === 0
-                    ? ''
-                    : selectedItem.quantity
-                }
-                onValueChange={handleQuantityChange}
-                unit={selectedItem.unitId}
-                onUnitChange={(val) => {
-                  setSelectedItem((prev) => {
-                    const updated = { ...prev, unitId: Number(val) };
+                    setSelectedItem(updatedItem);
                     saveDraftToSession({
                       cta,
-                      data: { ...order, itemDraft: updated },
+                      data: { ...order, itemDraft: updatedItem },
                     });
-                    return updated;
-                  });
-                }}
-                units={units?.quantity}
-                unitPlaceholder="Unit"
-                min={0}
-                step="any"
-              />
-              {errorMsg.quantity && <ErrorBox msg={errorMsg.quantity} />}
-            </div>
-
-            {/* Price */}
-            <div className="flex flex-col gap-2">
-              <Label className="text-sm font-medium">
-                {translations('form.label.price')}{' '}
-                <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                type="number"
-                placeholder="0.00"
-                min={1}
-                disabled={
-                  (cta === 'offer' && order.buyerId == null) ||
-                  order.sellerEnterpriseId == null
-                }
-                value={
-                  selectedItem.unitPrice == null || selectedItem.unitPrice === 0
-                    ? ''
-                    : selectedItem.unitPrice
-                }
-                className="border-neutral-200 bg-white"
-                onChange={handlePriceChange}
-              />
-              {errorMsg.unitPrice && <ErrorBox msg={errorMsg.unitPrice} />}
-            </div>
-
-            {/* Taxable Value */}
-            <div className="flex flex-col gap-2">
-              <Label className="text-sm font-medium">
-                {isOrder === 'invoice'
-                  ? translations('form.label.invoice_value')
-                  : translations('form.label.value')}
-                <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                disabled
-                value={selectedItem.totalAmount || '0.00'}
-                className="border-neutral-100 bg-neutral-50"
-              />
-              {errorMsg.totalAmount && <ErrorBox msg={errorMsg.totalAmount} />}
-            </div>
-
-            {/* GST% & Tax Amount (Conditional) */}
-            {isGstApplicable(
-              isPurchasePage
-                ? isGstApplicableForPurchaseOrders
-                : isGstApplicableForSalesOrders,
-            ) && (
-              <>
-                <div className="flex flex-col gap-2">
-                  <Label className="flex items-center text-sm font-medium">
-                    {translations('form.label.gst')}
-                    <span className="ml-1 text-xs text-neutral-400">(%)</span>
-                    <span className="ml-1 text-red-500">*</span>
-                  </Label>
-                  <Input
-                    disabled
-                    value={selectedItem.gstPerUnit || '0'}
-                    className="border-neutral-100 bg-neutral-50"
-                  />
-                  {errorMsg.gstPerUnit && (
-                    <ErrorBox msg={errorMsg.gstPerUnit} />
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label className="text-sm font-medium">
-                    {translations('form.label.tax_amount')}{' '}
-                    <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    disabled
-                    value={selectedItem.totalGstAmount || '0.00'}
-                    className="border-neutral-100 bg-neutral-50"
-                  />
-                  {errorMsg.totalGstAmount && (
-                    <ErrorBox msg={errorMsg.totalGstAmount} />
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label className="text-sm font-medium">
-                    {translations('form.label.amount')}{' '}
-                    <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    disabled
-                    value={selectedItem?.finalAmount || '0.00'}
-                    className="border-blue-100 bg-blue-50/30 font-semibold text-blue-800"
-                  />
-                  {errorMsg.finalAmount && (
-                    <ErrorBox msg={errorMsg.finalAmount} />
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const updatedItem = {
-                  productName: '',
-                  productType: 'GOODS',
-                  productId: null,
-                  quantity: null,
-                  unitId: null,
-                  unitPrice: null,
-                  gstPerUnit: null,
-                  totalAmount: null,
-                  totalGstAmount: null,
-                  finalAmount: '',
-                };
-                setSelectedItem(updatedItem);
-                saveDraftToSession({
-                  cta,
-                  data: { ...order, itemDraft: updatedItem },
-                });
-              }}
-            >
-              {translations('form.ctas.cancel')}
-            </Button>
-            <Button
-              size="sm"
-              className="max-w-[125px]"
-              disabled={
-                !selectedItem.productId ||
-                !selectedItem.quantity ||
-                selectedItem.quantity <= 0 ||
-                !selectedItem.unitPrice ||
-                selectedItem.unitPrice <= 0
-              }
-              onClick={() => {
-                const updatedOrderItems = [
-                  ...(order?.orderItems || []),
-                  {
-                    ...selectedItem,
-                    gstPercentage: selectedItem.gstPerUnit ?? 0,
-                    gstPerUnit: selectedItem.gstPerUnit ?? 0,
-                  },
-                ];
-                const updatedOrder = {
-                  ...order,
-                  orderItems: updatedOrderItems,
-                };
-                setOrder(updatedOrder);
-
-                const clearedItem = {
-                  productName: '',
-                  productType: 'GOODS',
-                  productId: null,
-                  quantity: null,
-                  unitId: null,
-                  unitPrice: null,
-                  gstPerUnit: null,
-                  totalAmount: null,
-                  totalGstAmount: null,
-                  finalAmount: '',
-                };
-                setSelectedItem(clearedItem);
-
-                const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
-                const { itemDraft, ...rest } =
-                  SessionStorageService.get(key) || {};
-                saveDraftToSession({
-                  cta,
-                  data: { ...rest, ...updatedOrder },
-                });
-                setErrorMsg({});
-              }}
-            >
-              {translations('form.ctas.add')}
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Section: DataTable */}
-      <section className="flex flex-col gap-4 border-b border-neutral-100 pb-4">
-        <div className="flex items-center gap-2">
-          <List className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold text-neutral-800">
-            Items Added
-          </h3>
-        </div>
-        <div className="overflow-hidden rounded-lg border border-neutral-100 shadow-sm">
-          <DataTable data={order.orderItems} columns={createSalesColumns} />
-        </div>
-      </section>
-
-      {/* 4. Section: Footers / Summary */}
-      <footer className="sticky bottom-0 z-20 mt-auto border-t border-neutral-200 bg-white/80 px-1 py-4 backdrop-blur-md">
-        <div className="flex flex-wrap items-center justify-between gap-6">
-          <div className="flex items-center gap-2 text-primary">
-            <CreditCard className="h-4 w-4" />
-            <span className="text-sm font-bold tracking-tight">Summary</span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-10">
-            <>
-              <div className="flex flex-col items-end">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
-                  {translations('form.footer.gross_amount')}
-                </span>
-                <span className="text-sm font-bold text-neutral-800">
-                  ₹ {grossAmount.toFixed(2)}
-                </span>
+                  }}
+                />
+                {errorMsg.orderItem && (
+                  <div className="mt-1">
+                    <ErrorBox msg={errorMsg.orderItem} />
+                  </div>
+                )}
               </div>
+
+              {/* Quantity */}
+              <div className="flex flex-col gap-1.5">
+                <InputWithSelect
+                  id="quantity"
+                  name={translations('form.label.quantity')}
+                  required={true}
+                  disabled={
+                    (cta === 'offer' && order.buyerId == null) ||
+                    order.sellerEnterpriseId == null
+                  }
+                  className="h-10 rounded-lg border-neutral-200 text-sm font-medium text-neutral-700 shadow-sm focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20"
+                  value={
+                    selectedItem.quantity == null || selectedItem.quantity === 0
+                      ? ''
+                      : selectedItem.quantity
+                  }
+                  onValueChange={handleQuantityChange}
+                  unit={selectedItem.unitId}
+                  onUnitChange={(val) => {
+                    setSelectedItem((prev) => {
+                      const updated = { ...prev, unitId: Number(val) };
+                      saveDraftToSession({
+                        cta,
+                        data: { ...order, itemDraft: updated },
+                      });
+                      return updated;
+                    });
+                  }}
+                  units={units?.quantity}
+                  unitPlaceholder="Unit"
+                  min={0}
+                  step="any"
+                />
+                {errorMsg.quantity && (
+                  <div className="mt-1">
+                    <ErrorBox msg={errorMsg.quantity} />
+                  </div>
+                )}
+              </div>
+
+              {/* Price */}
+              <div className="flex flex-col gap-1.5">
+                <label className="flex gap-1 text-xs font-medium text-neutral-500">
+                  {translations('form.label.price')}
+                  <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  min={1}
+                  disabled={
+                    (cta === 'offer' && order.buyerId == null) ||
+                    order.sellerEnterpriseId == null
+                  }
+                  value={
+                    selectedItem.unitPrice == null ||
+                    selectedItem.unitPrice === 0
+                      ? ''
+                      : selectedItem.unitPrice
+                  }
+                  className="h-10 w-full rounded-lg border-neutral-200 bg-white text-sm font-medium text-neutral-700 shadow-sm focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20"
+                  onChange={handlePriceChange}
+                />
+                {errorMsg.unitPrice && (
+                  <div className="mt-1">
+                    <ErrorBox msg={errorMsg.unitPrice} />
+                  </div>
+                )}
+              </div>
+
+              {/* Value */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-neutral-500">
+                  {isOrder === 'invoice'
+                    ? translations('form.label.invoice_value')
+                    : translations('form.label.value')}
+                </label>
+                <Input
+                  disabled
+                  value={selectedItem.totalAmount || '0.00'}
+                  className="h-10 w-full rounded-lg border-neutral-200 bg-neutral-50 text-sm font-medium text-neutral-500 shadow-sm"
+                />
+                {errorMsg.totalAmount && (
+                  <div className="mt-1">
+                    <ErrorBox msg={errorMsg.totalAmount} />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Row 2: Taxable Value, GST%, Tax Amount, Grand Total (Inc. GST), Buttons */}
+            <div
+              className={`grid grid-cols-1 items-end gap-4 ${
+                isGstApplicable(
+                  isPurchasePage
+                    ? isGstApplicableForPurchaseOrders
+                    : isGstApplicableForSalesOrders,
+                )
+                  ? 'md:grid-cols-4'
+                  : 'md:grid-cols-3'
+              }`}
+            >
               {isGstApplicable(
                 isPurchasePage
                   ? isGstApplicableForPurchaseOrders
                   : isGstApplicableForSalesOrders,
               ) && (
                 <>
-                  <div className="flex flex-col items-end">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
-                      {translations('form.footer.tax_amount')}
-                    </span>
-                    <span className="text-sm font-bold text-orange-600">
-                      ₹ {totalGstAmount.toFixed(2)}
-                    </span>
+                  {/* GST % */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-neutral-500">
+                      {translations('form.label.gst')} (%)
+                    </label>
+                    <Input
+                      disabled
+                      value={selectedItem.gstPerUnit || '0'}
+                      className="h-10 w-full rounded-lg border-neutral-200 bg-neutral-50 text-sm font-medium text-neutral-500 shadow-sm"
+                    />
+                    {errorMsg.gstPerUnit && (
+                      <div className="mt-1">
+                        <ErrorBox msg={errorMsg.gstPerUnit} />
+                      </div>
+                    )}
                   </div>
 
-                  <div className="flex flex-col items-end">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">
-                      {translations('form.footer.total_amount')}
-                    </span>
-                    <span className="text-sm font-bold text-green-600">
-                      ₹ {finalAmount.toFixed(2)}
-                    </span>
+                  {/* Tax Amount */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-medium text-neutral-500">
+                      {translations('form.label.tax_amount')}
+                    </label>
+                    <Input
+                      disabled
+                      value={selectedItem.totalGstAmount || '0.00'}
+                      className="h-10 w-full rounded-lg border-neutral-200 bg-neutral-50 text-sm font-medium text-neutral-500 shadow-sm"
+                    />
+                    {errorMsg.totalGstAmount && (
+                      <div className="mt-1">
+                        <ErrorBox msg={errorMsg.totalGstAmount} />
+                      </div>
+                    )}
                   </div>
                 </>
               )}
-            </>
+
+              {/* Amount (Grand Total) */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-blue-600">
+                  Total Amount (Inc. GST)
+                </label>
+                <div className="flex h-10 items-center rounded-lg border border-blue-100 bg-blue-50/30 px-3 text-sm font-bold text-blue-700 shadow-sm">
+                  ₹
+                  {(
+                    Number(selectedItem.finalAmount) ||
+                    (Number(selectedItem.totalAmount) || 0) +
+                      (isGstApplicable(
+                        isPurchasePage
+                          ? isGstApplicableForPurchaseOrders
+                          : isGstApplicableForSalesOrders,
+                      )
+                        ? Number(selectedItem.totalGstAmount) || 0
+                        : 0)
+                  ).toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+                {errorMsg.finalAmount && (
+                  <div className="mt-1">
+                    <ErrorBox msg={errorMsg.finalAmount} />
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex h-10 items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  disabled={
+                    !selectedItem.productId &&
+                    !selectedItem.quantity &&
+                    !selectedItem.unitPrice
+                  }
+                  onClick={() => {
+                    const updatedItem = {
+                      productName: '',
+                      productType: 'GOODS',
+                      productId: null,
+                      quantity: null,
+                      unitId: null,
+                      unitPrice: null,
+                      gstPerUnit: null,
+                      totalAmount: null,
+                      totalGstAmount: null,
+                      finalAmount: '',
+                    };
+                    setSelectedItem(updatedItem);
+                    saveDraftToSession({
+                      cta,
+                      data: { ...order, itemDraft: updatedItem },
+                    });
+                  }}
+                >
+                  Clear
+                </Button>
+                <Button
+                  size="sm"
+                  className="flex-1"
+                  disabled={
+                    !selectedItem.productId ||
+                    !selectedItem.quantity ||
+                    selectedItem.quantity <= 0 ||
+                    !selectedItem.unitPrice ||
+                    selectedItem.unitPrice <= 0
+                  }
+                  onClick={() => {
+                    const updatedOrderItems = [
+                      ...(order?.orderItems || []),
+                      {
+                        ...selectedItem,
+                        gstPercentage: selectedItem.gstPerUnit ?? 0,
+                        gstPerUnit: selectedItem.gstPerUnit ?? 0,
+                      },
+                    ];
+                    const updatedOrder = {
+                      ...order,
+                      orderItems: updatedOrderItems,
+                    };
+                    setOrder(updatedOrder);
+
+                    const clearedItem = {
+                      productName: '',
+                      productType: 'GOODS',
+                      productId: null,
+                      quantity: null,
+                      unitId: null,
+                      unitPrice: null,
+                      gstPerUnit: null,
+                      totalAmount: null,
+                      totalGstAmount: null,
+                      finalAmount: '',
+                    };
+                    setSelectedItem(clearedItem);
+
+                    const key = cta === 'offer' ? 'orderDraft' : 'bidDraft';
+                    const { itemDraft, ...rest } =
+                      SessionStorageService.get(key) || {};
+                    saveDraftToSession({
+                      cta,
+                      data: { ...rest, ...updatedOrder },
+                    });
+                    setErrorMsg({});
+                  }}
+                >
+                  <Plus size={15} strokeWidth={2.5} />
+                  Add Item
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
-      </footer>
+        </section>
+      </div>
+
+      {/* 3. Section: DataTable */}
+      <div className="flex-shrink-0">
+        <span className="mb-2 block flex-shrink-0 text-[10px] font-bold uppercase tracking-widest text-primary">
+          Line Items
+        </span>
+        <section className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-xl border-0 bg-white shadow-none">
+          {order.orderItems && order.orderItems.length > 0 ? (
+            <div className="min-h-0 w-full flex-1 overflow-auto">
+              <DataTable columns={columns} data={order.orderItems || []} />
+            </div>
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center bg-gray-100 p-4 text-center text-neutral-400">
+              <svg
+                className="mb-2 h-10 w-10 text-neutral-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-3m-11 0h3m-2 0a1 1 0 00-1 1v1a1 1 0 001 1h3a1 1 0 001-1v-1a1 1 0 00-1-1m-3 0h3"
+                />
+              </svg>
+              <p className="text-sm font-medium text-neutral-500">
+                No items added yet
+              </p>
+              <p className="mt-0.5 text-xs text-neutral-400">
+                Select and add items above to build your order.
+              </p>
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 };
