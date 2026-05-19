@@ -1,6 +1,10 @@
 import { goodsApi } from '@/api/inventories/goods/goods';
-import { safeJsonParse, saveDraftToSession } from '@/appUtils/helperFunctions';
-import { LocalStorageService, SessionStorageService } from '@/lib/utils';
+import {
+  getEnterpriseId,
+  safeJsonParse,
+  saveDraftToSession,
+} from '@/appUtils/helperFunctions';
+import { SessionStorageService } from '@/lib/utils';
 import {
   CreateProductGoods,
   UpdateProductGoods,
@@ -9,25 +13,18 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import Loading from '../ui/Loading';
 import Wrapper from '../wrappers/Wrapper';
 import MultiStepForm from './multi-step-form/MultiStepForm';
 import { stepsGoodsConfig } from './multi-step-form/goods-form-configs/stepsConfig';
-import Loading from '../ui/Loading';
 
 const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
-  const [enterpriseId, setEnterpriseId] = useState(null);
-  const [draftData, setDraftData] = useState(null);
-  const [isMounted, setIsMounted] = useState(false);
   const translation = useTranslations('components.addGoods');
   const queryClient = useQueryClient();
   const hasRestoredDraftRef = useRef(false);
-
-  useEffect(() => {
-    const eId = LocalStorageService.get('enterprise_Id');
-    setEnterpriseId(eId);
-    setDraftData(SessionStorageService.get(`${eId}_GoodsData`));
-    setIsMounted(true);
-  }, []);
+  const [enterpriseId, setEnterpriseId] = useState(null);
+  const [draftData, setDraftData] = useState(null);
+  const [isMounted, setIsMounted] = useState(false);
   const [goods, setGoods] = useState({
     productType: '',
     productName: '',
@@ -69,12 +66,24 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
   const [errors, setErrors] = useState(null);
 
   useEffect(() => {
+    const eId = getEnterpriseId();
+    setEnterpriseId(eId);
+    setDraftData(SessionStorageService.get(`${eId}_GoodsData`));
+    setGoods((prev) => ({
+      ...prev,
+      enterpriseId: eId,
+    }));
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (goodsToEdit) return; // no draft restore in edit
     if (!draftData || hasRestoredDraftRef.current) return;
 
     setGoods((prev) => ({
       ...prev,
       ...draftData,
+      enterpriseId: prev.enterpriseId || getEnterpriseId(),
 
       offers:
         Array.isArray(draftData.offers) && draftData.offers.length
@@ -221,12 +230,16 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
   };
 
   const handleSubmit = async (type = 'save') => {
-    const payload = buildFormData(goods);
+    const goodsWithEnterpriseId = {
+      ...goods,
+      enterpriseId: enterpriseId || getEnterpriseId(),
+    };
+    const payload = buildFormData(goodsWithEnterpriseId);
 
     if (type === 'save') {
       saveDraftToSession({
         key: `${enterpriseId}_GoodsData`,
-        data: goods,
+        data: goodsWithEnterpriseId,
       });
       setIsCreatingGoods(false);
       toast.success('Goods saved as draft');
