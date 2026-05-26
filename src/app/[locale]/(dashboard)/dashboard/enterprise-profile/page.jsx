@@ -1,9 +1,8 @@
 'use client';
 
-import { settingsAPI } from '@/api/settings/settingsApi';
 import { templateApi } from '@/api/templates_api/template_api';
 import { userAuth } from '@/api/user_auth/Users';
-import { capitalize, getEnterpriseId } from '@/appUtils/helperFunctions';
+import { capitalize } from '@/appUtils/helperFunctions';
 import Avatar from '@/components/ui/Avatar';
 import SubHeader from '@/components/ui/Sub-header';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +16,6 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
-import { getGstSettings } from '@/services/Settings_Services/SettingsService';
 import { getDocument } from '@/services/Template_Services/Template_Services';
 import { getProfileDetails } from '@/services/User_Auth_Service/UserAuthServices';
 import { useQuery } from '@tanstack/react-query';
@@ -27,7 +25,6 @@ import {
   Globe,
   Link2,
   Mail,
-  MapPin,
   Phone,
   Settings,
 } from 'lucide-react';
@@ -40,7 +37,6 @@ import { useState } from 'react';
 function EnterpriseProfile() {
   useMetaData(`Enterprise Profile`, 'HUES ENTEPRRISE PROFILE');
   const userId = LocalStorageService.get('user_profile');
-  const enterpriseId = getEnterpriseId();
   const translations = useTranslations('enterpriseProfile');
   const { hasPermission } = usePermission();
   const router = useRouter();
@@ -68,13 +64,6 @@ function EnterpriseProfile() {
     queryFn: () => getDocument(pvtUrl),
     enabled: !!pvtUrl,
     select: (res) => res.data.data,
-  });
-
-  // fetch gst related data
-  const { data: gstRegistrations } = useQuery({
-    queryKey: [settingsAPI.getGstSettings.endpointKey],
-    queryFn: () => getGstSettings({ id: enterpriseId }),
-    select: (data) => data.data.data,
   });
 
   const complianceItems = [
@@ -452,108 +441,6 @@ function EnterpriseProfile() {
                         </div>
                       </Card>
                     )}
-
-                    {/* GST REGISTRATIONS */}
-                    {gstRegistrations?.gsts?.length > 0 &&
-                      gstRegistrations.gsts.map((gst) => {
-                        const principalAddress =
-                          gst?.addresses?.find(
-                            (addr) =>
-                              addr.subType === 'PRINCIPAL_PLACE_OF_BUSINESS',
-                          ) || null;
-
-                        return (
-                          <Card key={gst.id} className="rounded-2xl border p-5">
-                            <h3 className="text-sm font-semibold uppercase tracking-wide text-primary">
-                              {translations(
-                                'tabs.content.tab1.sections.gstRegistrations.title',
-                              )}
-                            </h3>
-
-                            <p className="mt-2 text-xs text-muted-foreground">
-                              {translations(
-                                'tabs.content.tab1.sections.gstRegistrations.description',
-                              )}
-                            </p>
-
-                            <div className="mt-4 flex flex-col gap-4">
-                              <Card className="rounded-2xl border bg-gray-50 p-5">
-                                <div className="flex items-center justify-between">
-                                  <h4 className="text-base font-semibold">
-                                    {principalAddress?.pincodeEntity?.state ||
-                                      'State'}
-                                  </h4>
-
-                                  {gst?.isVerified && (
-                                    <Badge className="rounded-full bg-emerald-50 text-emerald-700">
-                                      {translations(
-                                        'tabs.content.tab1.sections.gstRegistrations.active',
-                                      )}
-                                    </Badge>
-                                  )}
-                                </div>
-
-                                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                                  <div className="flex flex-col gap-1">
-                                    <span className="text-xs text-muted-foreground">
-                                      {translations(
-                                        'tabs.content.tab1.sections.gstRegistrations.gstin',
-                                      )}
-                                    </span>
-
-                                    <span className="text-lg font-semibold">
-                                      {gst?.gst || '—'}
-                                    </span>
-                                  </div>
-
-                                  <div className="flex flex-col gap-2">
-                                    <span className="px-2 text-xs text-muted-foreground">
-                                      {translations(
-                                        'tabs.content.tab1.sections.gstRegistrations.gstStatus',
-                                      )}
-                                    </span>
-
-                                    <div className="flex flex-wrap items-center gap-2">
-                                      {gst?.isVerified && (
-                                        <Badge className="rounded-full bg-emerald-50 text-emerald-700">
-                                          {translations(
-                                            'tabs.content.tab1.sections.gstRegistrations.gstRegistered',
-                                          )}
-                                        </Badge>
-                                      )}
-
-                                      <Badge
-                                        variant="secondary"
-                                        className="rounded-full"
-                                      >
-                                        {gst?.registrationType ||
-                                          'Normal / Regular'}
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {principalAddress && (
-                                  <div className="mt-4 flex flex-col items-start gap-2 text-sm">
-                                    <div className="flex items-center gap-1">
-                                      <MapPin size={14} />
-                                      <p>
-                                        {translations(
-                                          'tabs.content.tab1.sections.gstRegistrations.principalPlace',
-                                        )}
-                                      </p>
-                                    </div>
-                                    <p>
-                                      {principalAddress?.address ||
-                                        'Principal address not available'}
-                                    </p>
-                                  </div>
-                                )}
-                              </Card>
-                            </div>
-                          </Card>
-                        );
-                      })}
                   </div>
 
                   {/* RIGHT SIDE (1/3) */}
