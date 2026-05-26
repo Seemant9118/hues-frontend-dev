@@ -176,15 +176,22 @@ export const useSalesColumns = (
         />
       ),
       cell: ({ row }) => {
-        const sellerStatus =
-          row.original?.negotiationStatus === 'WITHDRAWN'
-            ? 'WITHDRAWN'
-            : row.original?.metaData?.sellerData?.orderStatus;
+        const orderStatus = row.original?.metaData?.sellerData?.orderStatus;
         const paymentStatus = row.original?.metaData?.payment?.status;
+
+        const sellerStatus =
+          orderStatus === 'WITHDRAWN'
+            ? 'WITHDRAWN'
+            : orderStatus !== 'NOT_INVOICED'
+              ? orderStatus
+              : row.original?.negotiationStatus;
+
         return (
           <div className="flex w-44 flex-wrap gap-1">
             <ConditionalRenderingStatus status={sellerStatus} />
-            <ConditionalRenderingStatus status={paymentStatus} />
+            {orderStatus !== 'NOT_INVOICED' && (
+              <ConditionalRenderingStatus status={paymentStatus} />
+            )}
           </div>
         );
       },

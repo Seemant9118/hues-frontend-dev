@@ -132,6 +132,10 @@ const FilterInvoices = ({
       value: 'PAID',
       label: translations('form.input.select_status.options.option10'),
     },
+    {
+      value: 'WITHDRAWN',
+      label: translations('form.input.select_status.options.option5'),
+    },
   ];
 
   const optionsForPurchase = [

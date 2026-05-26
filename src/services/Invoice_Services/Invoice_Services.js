@@ -78,3 +78,7 @@ export const getItemsToCreateDebitNote = ({ id }) => {
     `${invoiceApi.getItemsToCreateDebitNote.endpoint}${id}`,
   );
 };
+
+export const withdrawInvoice = (data) => {
+  return APIinstance.put(invoiceApi.withdrawInvoice.endpoint, data);
+};

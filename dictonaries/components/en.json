@@ -444,6 +444,7 @@
                 "client_name": "Client name",
                 "vendor_name": "Vendor name",
                 "type": "Type",
+                "status": "Status",
                 "payment_status": "Payment status",
                 "gross_amount": "Gross amount",
                 "gst_amount": "GST amount",
@@ -458,7 +459,8 @@
             "label": {
                 "date": "Date",
                 "total_amount": "Total Amount",
-                "type": "Type"
+                "type": "Type",
+                "status": "Status"
             },
             "emptyStateComponent": {
                 "title": "No invoices yet",
@@ -1194,6 +1196,7 @@
             "BID_RECEIVED": "Bid received",
             "NEGOTIATION": "Negotiation",
             "INVOICED": "Invoiced",
+            "CONFIRMED": "Confirmed",
             "PARTIAL_INVOICED": "Partial Invoiced",
             "WITHDRAWN": "Withdrawn",
             "REJECTED": "Rejected",

@@ -382,11 +382,15 @@ const ViewOrder = () => {
 
   const OrderColumns = useSalesOrderColumns(orderDetails?.negotiationStatus);
 
-  // multiStatus components
+  const orderStatus = orderDetails?.metaData?.sellerData?.orderStatus;
+  const negotiationStatus = orderDetails?.negotiationStatus;
+
   const sellerStatus =
-    orderDetails?.negotiationStatus === 'WITHDRAWN'
+    negotiationStatus === 'WITHDRAWN'
       ? 'WITHDRAWN'
-      : orderDetails?.metaData?.sellerData?.orderStatus;
+      : orderStatus && orderStatus !== 'NOT_INVOICED'
+        ? orderStatus
+        : negotiationStatus;
 
   const multiStatus = (
     <div className="flex gap-2">
@@ -394,9 +398,11 @@ const ViewOrder = () => {
       <ConditionalRenderingStatus
         status={orderDetails?.metaData?.sellerData?.stockOut}
       />
-      <ConditionalRenderingStatus
-        status={orderDetails?.metaData?.payment?.status}
-      />
+      {orderStatus !== 'NOT_INVOICED' && (
+        <ConditionalRenderingStatus
+          status={orderDetails?.metaData?.payment?.status}
+        />
+      )}
     </div>
   );
 

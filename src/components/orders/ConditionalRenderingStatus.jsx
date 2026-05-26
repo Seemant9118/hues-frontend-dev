@@ -185,6 +185,7 @@ const defaultStatusResolver = ({ status, isPayment, isSellerPage, t }) => {
 
     case 'INVOICED':
     case 'PARTIAL_INVOICED':
+    case 'CONFIRMED':
       return { text: t(status), ...STATUS_UI.INFO };
 
     case 'REJECTED':

@@ -27,18 +27,25 @@ import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
 import { getDebitNoteByInvoice } from '@/services/Debit_Note_Services/DebitNoteServices';
 import { getDispatchNotes } from '@/services/Delivery_Process_Services/DeliveryProcessServices';
-import { getInvoice } from '@/services/Invoice_Services/Invoice_Services';
+import {
+  getInvoice,
+  withdrawInvoice,
+} from '@/services/Invoice_Services/Invoice_Services';
 import { getPaymentsByInvoiceId } from '@/services/Payment_Services/PaymentServices';
 import {
   getDocument,
   viewPdfInNewTab,
 } from '@/services/Template_Services/Template_Services';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import PINVerifyModal from '@/components/invoices/PINVerifyModal';
+import DynamicModal from '@/components/Modals/DynamicModal';
+import { Textarea } from '@/components/ui/textarea';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { debitNoteColumns } from './debitNoteColumns';
 import { useSalesInvoiceColumns } from './useSalesInvoiceColumns';
@@ -54,6 +61,42 @@ const ViewInvoice = () => {
   const [tab, setTab] = useState('overview');
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
   const [isCreatingDispatchNote, setIsCreatingDispatchNote] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [isPINModalOpen, setIsPINModalOpen] = useState(false);
+  const [withdrawReason, setWithdrawReason] = useState('');
+  const [isPINError, setIsPINError] = useState(false);
+
+  const queryClient = useQueryClient();
+
+  const withdrawMutation = useMutation({
+    mutationFn: withdrawInvoice,
+    onSuccess: () => {
+      toast.success('Invoice withdrawn successfully');
+      setIsPINModalOpen(false);
+      queryClient.invalidateQueries([
+        invoiceApi.getInvoice.endpointKey,
+        params.invoiceId,
+      ]);
+      router.push('/dashboard/sales/sales-invoices');
+    },
+    onError: (error) => {
+      if (error?.response?.data?.error === 'INVALID_PIN') {
+        setIsPINError(true);
+      }
+      toast.error(
+        error?.response?.data?.message || 'Failed to withdraw invoice',
+      );
+    },
+  });
+
+  const handleWithdrawConfirm = (pinData) => {
+    const payload = {
+      pin: pinData.pin,
+      invoiceId: Number(params.invoiceId),
+      reason: withdrawReason,
+    };
+    withdrawMutation.mutate(payload);
+  };
 
   const invoiceOrdersBreadCrumbs = [
     {
@@ -202,6 +245,14 @@ const ViewInvoice = () => {
     );
   };
 
+  const isWithdrawingInvoiceActive =
+    invoiceDetails?.invoiceDetails?.invoiceMetaData.debitNote?.status ===
+      'NOT_RAISED' &&
+    invoiceDetails?.invoiceDetails?.invoiceMetaData.creditNote?.status ===
+      'NOT_RAISED' &&
+    invoiceDetails?.invoiceDetails?.invoiceMetaData.payment?.status ===
+      'NOT_PAID';
+
   const dispatchNoteColumns = useDispatchNoteColumns();
   const paymentsColumns = usePaymentColumns();
   const invoiceItemsColumns = useSalesInvoiceColumns();
@@ -261,7 +312,9 @@ const ViewInvoice = () => {
               >
                 {!isRecordingPayment &&
                   !isCreatingDispatchNote &&
-                  !invoiceDetails?.invoiceDetails?.isFullyDispatched && (
+                  !invoiceDetails?.invoiceDetails?.isFullyDispatched &&
+                  invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
+                    ?.status !== 'WITHDRAWN' && (
                     <Button
                       variant="blue_outline"
                       size="sm"
@@ -272,6 +325,22 @@ const ViewInvoice = () => {
                     </Button>
                   )}
               </ProtectedWrapper>
+
+              {/* Withdraw CTA */}
+              {!isRecordingPayment &&
+                !isCreatingDispatchNote &&
+                isWithdrawingInvoiceActive && (
+                  <ProtectedWrapper permissionCode={'permission:sales-view'}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsWithdrawModalOpen(true)}
+                      className="border-red-500 font-bold text-red-500 hover:bg-red-50"
+                    >
+                      Withdraw
+                    </Button>
+                  </ProtectedWrapper>
+                )}
 
               {/* View CTA modal */}
               <ProtectedWrapper permissionCode={'permission:sales-document'}>
@@ -497,6 +566,56 @@ const ViewInvoice = () => {
               setIsCreatingDispatchNote={setIsCreatingDispatchNote}
             />
           )}
+
+          {/* Withdraw Confirmation Modal */}
+          <DynamicModal
+            isOpen={isWithdrawModalOpen}
+            onClose={() => setIsWithdrawModalOpen(false)}
+            title="Withdraw Invoice"
+            description="Are you sure you want to withdraw this invoice? This action cannot be undone."
+            buttons={[
+              {
+                label: 'Cancel',
+                variant: 'outline',
+                onClick: () => setIsWithdrawModalOpen(false),
+              },
+              {
+                label: 'Confirm',
+                variant: 'destructive',
+                onClick: () => {
+                  if (!withdrawReason.trim()) {
+                    toast.error('Reason is required');
+                    return;
+                  }
+                  setIsWithdrawModalOpen(false);
+                  setIsPINModalOpen(true);
+                },
+              },
+            ]}
+          >
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">
+                Reason for withdrawal <span className="text-red-500">*</span>
+              </label>
+              <Textarea
+                placeholder="Enter reason..."
+                value={withdrawReason}
+                onChange={(e) => setWithdrawReason(e.target.value)}
+                required
+              />
+            </div>
+          </DynamicModal>
+
+          {/* PIN Verification Modal */}
+          <PINVerifyModal
+            open={isPINModalOpen}
+            setOpen={setIsPINModalOpen}
+            handleCreateFn={handleWithdrawConfirm}
+            isPendingInvoice={withdrawMutation.isPending}
+            isPINError={isPINError}
+            setIsPINError={setIsPINError}
+            order={{}} // Passing empty object to avoid spreading null/undefined
+          />
         </Wrapper>
       )}
     </ProtectedWrapper>

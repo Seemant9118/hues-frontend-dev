@@ -69,4 +69,9 @@ export const invoiceApi = {
     endpoint: `/order/invoice/defective-items/`,
     endpointKey: 'get_items_to_create_debit_note',
   },
+  // 14. withdraw invoice
+  withdrawInvoice: {
+    endpoint: `/order/invoice/withdraw-invoice`,
+    endpointKey: 'withdraw_invoice',
+  },
 };

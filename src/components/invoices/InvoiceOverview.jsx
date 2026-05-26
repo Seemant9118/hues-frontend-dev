@@ -64,7 +64,7 @@ const InvoiceOverview = ({
 
           <section className="flex w-fit flex-col">
             <p className="text-sm text-gray-600">
-              {translations('label.payment_status')}
+              {translations('label.status')}
             </p>
             <div>{paymentStatus}</div>
           </section>

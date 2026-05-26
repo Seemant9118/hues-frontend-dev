@@ -15,6 +15,7 @@ import { Button } from '../ui/button';
 import Loading from '../ui/Loading';
 import Wrapper from '../wrappers/Wrapper';
 import { ProtectedWrapper } from '../wrappers/ProtectedWrapper';
+import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
 
 function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
   const translations = useTranslations('components.past_invoices');
@@ -93,6 +94,17 @@ function PastInvoices({ setIsGenerateInvoice, orderDetails }) {
                           {capitalize(invoice?.invoiceType)}
                         </span>
                       </h1>
+
+                      <div className="flex items-center gap-1 text-sm font-bold">
+                        <span className="font-bold text-[#ABB0C1]">
+                          {translations('label.status')} :{' '}
+                        </span>
+                        <span className="font-bold text-[#363940]">
+                          <ConditionalRenderingStatus
+                            status={invoice?.status}
+                          />
+                        </span>
+                      </div>
                     </div>
                   </div>
 
