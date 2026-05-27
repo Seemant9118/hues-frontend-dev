@@ -597,6 +597,8 @@ const ViewOrder = () => {
 
     // withdraw cta
     if (
+      !isGenerateInvoice &&
+      !isRecordingPayment &&
       orderDetails?.negotiationStatus === 'NEW' &&
       orderDetails?.metaData?.sellerData?.orderStatus === 'OFFER_SENT'
     ) {

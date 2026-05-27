@@ -115,7 +115,12 @@ const qcStatusResolver = ({ status }) => {
 };
 
 const defaultStatusResolver = ({ status, isPayment, isSellerPage, t }) => {
-  switch (status) {
+  const normalizedStatus =
+    typeof status === 'string'
+      ? status.trim().toUpperCase().replace(/\s+/g, '_')
+      : status;
+
+  switch (normalizedStatus) {
     case 'ACCEPTED':
       return {
         text: isPayment ? t('ACCEPTED.isPayment') : t('ACCEPTED.default'),
@@ -219,6 +224,24 @@ const defaultStatusResolver = ({ status, isPayment, isSellerPage, t }) => {
         text: 'Approved',
         ...STATUS_UI.SUCCESS,
       };
+    case 'POSTED_TO_TB':
+      return { text: 'Posted to TB', ...STATUS_UI.SUCCESS };
+    case 'VARIANCE_OPEN':
+      return { text: 'Variance Open', ...STATUS_UI.WARNING };
+    case 'IMPORTED':
+      return { text: 'Imported', ...STATUS_UI.INFO };
+    case 'EXPECTED':
+      return { text: 'Expected', ...STATUS_UI.INFO };
+    case 'FULLY_REALIZED':
+      return { text: 'Fully Realized', ...STATUS_UI.SUCCESS };
+    case 'SUPERSEDED':
+      return { text: 'Superseded', ...STATUS_UI.GRAY };
+    case 'CANCELLED':
+      return { text: 'Cancelled', ...STATUS_UI.ERROR };
+    case 'OVERDUE':
+      return { text: 'Overdue', ...STATUS_UI.ERROR };
+    case 'PARTIALLY_REALIZED':
+      return { text: 'Partially Realized', ...STATUS_UI.WARNING };
 
     default:
       return null;

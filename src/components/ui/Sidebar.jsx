@@ -328,7 +328,12 @@ const Sidebar = () => {
               icon: <BookOpen size={ICON_SIZE} />,
               path: '/dashboard/accounting/trial-balance',
             },
-          ],
+            isRouteEnabled('/dashboard/accounting/cash-flow') && {
+              name: 'sidebar.subTabs.cashFlow',
+              icon: <IndianRupee size={ICON_SIZE} />,
+              path: '/dashboard/accounting/cash-flow',
+            },
+          ].filter(Boolean),
         },
       hasPermission(PERMISSIONS.GST) && {
         name: 'sidebar.statutory',

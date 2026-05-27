@@ -15,6 +15,12 @@ export const FEATURE_FLAGS = {
           },
         },
       },
+      CASHFLOW: {
+        enabled: true,
+        label: 'Cash Flow Page',
+        routePrefixes: ['/dashboard/accounting/cash-flow'],
+        features: {},
+      },
     },
   },
   TRANSPORT: {

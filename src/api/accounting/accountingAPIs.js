@@ -7,4 +7,8 @@ export const accountingAPIs = {
     endpoint: `/finance/journal-entries/{id}/lines`,
     endpointKey: 'get_journal_entry',
   },
+  getCashFlow: {
+    endpoint: `/cash-flow/entries/`,
+    endpointKey: 'get_cash_flow_actual',
+  },
 };

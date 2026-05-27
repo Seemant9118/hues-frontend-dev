@@ -17,6 +17,12 @@ let isRefreshing = false; // true while a refresh call is in-flight
 let failedQueue = []; // requests waiting for the refresh to finish
 
 const forceLogout = () => {
+  if (
+    typeof window !== 'undefined' &&
+    window.location.search.includes('boneyard=true')
+  ) {
+    return;
+  }
   isRefreshing = false;
   failedQueue = [];
   toast.error('Session expired. Please log in again.');

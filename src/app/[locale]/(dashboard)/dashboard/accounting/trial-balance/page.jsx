@@ -17,10 +17,11 @@ import SubHeader from '@/components/ui/Sub-header';
 import { FeatureFlagWrapper } from '@/components/wrappers/FeatureFlagWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { getJournalEntries } from '@/services/Accounting_Services/AccountingServices';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { Skeleton } from 'boneyard-js/react';
 import { Download, Filter, Plus, RefreshCw } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
 import ReviewCorrectEntry from './ReviewCorrectEntry';
 import { useTrialBalanceWBColumns } from './useTrialBalanceWBColumns';
 
@@ -111,107 +112,109 @@ const TrialBalance = () => {
   const showTable = !isCreatingEntry && !reviewingEntry;
 
   return (
-    <Wrapper className="flex h-screen flex-col gap-3">
-      {showTable && (
-        <>
-          <SubHeader name="Trial Balance" />
-          <div className="flex flex-wrap items-center justify-between gap-2 border-gray-200 bg-white">
-            <div className="flex flex-wrap items-center gap-3">
-              <SearchInput
-                toSearchTerm={search}
-                setToSearchTerm={setSearch}
-                searchPlaceholder="Search events, documents, counterparties..."
-                className="w-[360px] rounded-sm border border-gray-200 bg-white text-sm"
-              />
+    <Skeleton name="trialBalance" loading={isEnteriesLoading}>
+      <Wrapper className="flex h-screen flex-col gap-3">
+        {showTable && (
+          <>
+            <SubHeader name="Trial Balance" />
+            <div className="flex flex-wrap items-center justify-between gap-2 border-gray-200 bg-white">
+              <div className="flex flex-wrap items-center gap-3">
+                <SearchInput
+                  toSearchTerm={search}
+                  setToSearchTerm={setSearch}
+                  searchPlaceholder="Search events, documents, counterparties..."
+                  className="w-[360px] rounded-sm border border-gray-200 bg-white text-sm"
+                />
 
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="h-10 w-[150px] gap-2 rounded-sm border border-gray-200 bg-white text-sm font-medium text-gray-800">
-                  <Filter className="h-4 w-4 text-gray-500" />
-                  <SelectValue placeholder="All" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="sales invoice">Sales Invoice</SelectItem>
-                  <SelectItem value="purchase invoice">
-                    Purchase Invoice
-                  </SelectItem>
-                  <SelectItem value="payment receipt">
-                    Payment Receipt
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <SelectTrigger className="h-10 w-[150px] gap-2 rounded-sm border border-gray-200 bg-white text-sm font-medium text-gray-800">
+                    <Filter className="h-4 w-4 text-gray-500" />
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="sales invoice">Sales Invoice</SelectItem>
+                    <SelectItem value="purchase invoice">
+                      Purchase Invoice
+                    </SelectItem>
+                    <SelectItem value="payment receipt">
+                      Payment Receipt
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
 
-              <Select value={sourceFilter} onValueChange={setSourceFilter}>
-                <SelectTrigger className="h-10 w-[170px] rounded-sm border border-gray-200 bg-white text-sm font-medium text-gray-800">
-                  <SelectValue placeholder="All Sources" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Sources</SelectItem>
-                  <SelectItem value="sales">Sales</SelectItem>
-                  <SelectItem value="purchases">Purchases</SelectItem>
-                  <SelectItem value="cashflow">Cashflow</SelectItem>
-                </SelectContent>
-              </Select>
+                <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                  <SelectTrigger className="h-10 w-[170px] rounded-sm border border-gray-200 bg-white text-sm font-medium text-gray-800">
+                    <SelectValue placeholder="All Sources" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Sources</SelectItem>
+                    <SelectItem value="sales">Sales</SelectItem>
+                    <SelectItem value="purchases">Purchases</SelectItem>
+                    <SelectItem value="cashflow">Cashflow</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Download className="h-4 w-4" />
+                  Export
+                </Button>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <RefreshCw className="h-4 w-4" />
+                  Sync
+                </Button>
+                <Button
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => {
+                    setIsCreatingEntry(true);
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                  New Entry
+                </Button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="gap-2">
-                <Download className="h-4 w-4" />
-                Export
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2">
-                <RefreshCw className="h-4 w-4" />
-                Sync
-              </Button>
-              <Button
-                size="sm"
-                className="gap-2"
-                onClick={() => {
-                  setIsCreatingEntry(true);
-                }}
-              >
-                <Plus className="h-4 w-4" />
-                New Entry
-              </Button>
-            </div>
-          </div>
+            {isEnteriesLoading ? (
+              <Loading />
+            ) : (
+              <>
+                {/* Case 1: no data → Empty stage */}
+                {!entries?.length ? (
+                  <EmptyStageComponent
+                    heading={'No Trial Balance Entries Found'}
+                  />
+                ) : (
+                  <InfiniteDataTable
+                    id="trial-balance-table"
+                    columns={trialBalanceColumns}
+                    data={entries}
+                    fetchNextPage={fetchNextPage}
+                    isFetching={isFetching}
+                    totalPages={paginationData?.totalPages}
+                    currFetchedPage={paginationData?.currFetchedPage}
+                  />
+                )}
+              </>
+            )}
+          </>
+        )}
 
-          {isEnteriesLoading ? (
-            <Loading />
-          ) : (
-            <>
-              {/* Case 1: no data → Empty stage */}
-              {!entries?.length ? (
-                <EmptyStageComponent
-                  heading={'No Trial Balance Entries Found'}
-                />
-              ) : (
-                <InfiniteDataTable
-                  id="trial-balance-table"
-                  columns={trialBalanceColumns}
-                  data={entries}
-                  fetchNextPage={fetchNextPage}
-                  isFetching={isFetching}
-                  totalPages={paginationData?.totalPages}
-                  currFetchedPage={paginationData?.currFetchedPage}
-                />
-              )}
-            </>
-          )}
-        </>
-      )}
+        {isCreatingEntry && (
+          <CreateNewEntry onCancel={() => setIsCreatingEntry(false)} />
+        )}
 
-      {isCreatingEntry && (
-        <CreateNewEntry onCancel={() => setIsCreatingEntry(false)} />
-      )}
-
-      {reviewingEntry && (
-        <ReviewCorrectEntry
-          entry={reviewingEntry}
-          onBack={() => setReviewingEntry(null)}
-        />
-      )}
-    </Wrapper>
+        {reviewingEntry && (
+          <ReviewCorrectEntry
+            entry={reviewingEntry}
+            onBack={() => setReviewingEntry(null)}
+          />
+        )}
+      </Wrapper>
+    </Skeleton>
   );
 };
 

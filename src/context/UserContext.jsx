@@ -16,6 +16,7 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const Token = LocalStorageService.get('token');
+
     const userProfile = LocalStorageService.get('user_profile');
 
     // Use regex to match `/login/*` paths

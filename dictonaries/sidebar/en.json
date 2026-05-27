@@ -26,6 +26,7 @@
             "goods": "Item Master",
             "services": "Service Master",
             "trialBalance": "Trial Balance",
+            "cashFlow": "Cash Flow",
             "transactions": "Stock Movements",
             "stocks": "Stock in Hand",
             "qc": "Quality Control",

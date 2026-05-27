@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { cookies } from 'next/headers';
 import { Toaster } from 'sonner';
 import './globals.css';
+import '../../bones/registry';
 // eslint-disable-next-line camelcase
 import ClarityScript from '@/appUtils/ClarityScript';
 import FCMProvider from '@/context/FCMProvider';

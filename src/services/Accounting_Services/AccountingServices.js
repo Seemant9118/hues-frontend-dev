@@ -12,3 +12,9 @@ export const getJournalEntry = ({ id }) => {
     accountingAPIs.getJournalEntry.endpoint.replace('{id}', id),
   );
 };
+
+export const getCashFlow = ({ page, limit, enterpriseId, category }) => {
+  return APIinstance.get(
+    `${accountingAPIs.getCashFlow.endpoint}${enterpriseId}?page=${page}&limit=${limit}&category=${category}`,
+  );
+};

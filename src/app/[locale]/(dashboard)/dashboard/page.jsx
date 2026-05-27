@@ -11,6 +11,7 @@ import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
 import SubHeader from '@/components/ui/Sub-header';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
+import Wrapper from '@/components/wrappers/Wrapper';
 import { usePermission } from '@/hooks/usePermissions';
 import { LocalStorageService } from '@/lib/utils';
 import {
@@ -19,6 +20,7 @@ import {
 } from '@/services/Dashboard_Services/DashboardServices';
 import { getReceivedInvitation } from '@/services/Invitation_Service/Invitation_Service';
 import { useQuery } from '@tanstack/react-query';
+import { Skeleton } from 'boneyard-js/react';
 import { Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -139,20 +141,45 @@ export default function Home() {
       enabled: hasPermission('permission:view-dashboard'),
     });
 
-  const salesAmountPaidData = salesAnalyticsData?.data?.map((item) => ({
-    label: item?.label,
-    sales: Number(item?.amountReceived?.toFixed(2)),
-  }));
+  const displaySalesAnalyticsData = salesAnalyticsData || {
+    summary: {
+      amountReceived: 0,
+      averageAmountReceived: 0,
+      totalDue: 0,
+      averageDue: 0,
+      totalOverdue: 0,
+      averageOverdue: 0,
+    },
+    data: Array.from({ length: 6 }, (_, i) => ({
+      label:
+        ['April', 'May', 'June', 'July', 'August', 'September'][i] ||
+        `Month ${i + 1}`,
+      amountReceived: 0,
+      totalDue: 0,
+      totalOverdue: 0,
+    })),
+  };
 
-  const salesTotalDueData = salesAnalyticsData?.data?.map((item) => ({
-    label: item?.label,
-    sales: Number(item?.totalDue?.toFixed(2)),
-  }));
+  const salesAmountPaidData = (displaySalesAnalyticsData?.data || [])?.map(
+    (item) => ({
+      label: item?.label,
+      sales: Number(item?.amountReceived?.toFixed(2)),
+    }),
+  );
 
-  const salesTotalOverdueData = salesAnalyticsData?.data?.map((item) => ({
-    label: item?.label,
-    sales: Number(item?.totalOverdue?.toFixed(2)),
-  }));
+  const salesTotalDueData = (displaySalesAnalyticsData?.data || [])?.map(
+    (item) => ({
+      label: item?.label,
+      sales: Number(item?.totalDue?.toFixed(2)),
+    }),
+  );
+
+  const salesTotalOverdueData = (displaySalesAnalyticsData?.data || [])?.map(
+    (item) => ({
+      label: item?.label,
+      sales: Number(item?.totalOverdue?.toFixed(2)),
+    }),
+  );
 
   // purchase
   const { data: purchaseAnalyticsData, isLoading: isPurchaseAnalyticsLoading } =
@@ -168,17 +195,42 @@ export default function Home() {
       enabled: hasPermission('permission:view-dashboard'),
     });
 
-  const purchaseAmountPaidData = purchaseAnalyticsData?.data?.map((item) => ({
+  const displayPurchaseAnalyticsData = purchaseAnalyticsData || {
+    summary: {
+      amountPaid: 0,
+      averageAmountPaid: 0,
+      totalDue: 0,
+      averageDue: 0,
+      totalOverdue: 0,
+      averageOverdue: 0,
+    },
+    data: Array.from({ length: 6 }, (_, i) => ({
+      label:
+        ['April', 'May', 'June', 'July', 'August', 'September'][i] ||
+        `Month ${i + 1}`,
+      amountPaid: 0,
+      totalDue: 0,
+      totalOverdue: 0,
+    })),
+  };
+
+  const purchaseAmountPaidData = (
+    displayPurchaseAnalyticsData?.data || []
+  )?.map((item) => ({
     label: item?.label,
     purchase: Number(item?.amountPaid?.toFixed(2)),
   }));
 
-  const purchaseTotalDueData = purchaseAnalyticsData?.data?.map((item) => ({
-    label: item?.label,
-    purchase: Number(item?.totalDue?.toFixed(2)),
-  }));
+  const purchaseTotalDueData = (displayPurchaseAnalyticsData?.data || [])?.map(
+    (item) => ({
+      label: item?.label,
+      purchase: Number(item?.totalDue?.toFixed(2)),
+    }),
+  );
 
-  const purchaseTotalOverdueData = purchaseAnalyticsData?.data?.map((item) => ({
+  const purchaseTotalOverdueData = (
+    displayPurchaseAnalyticsData?.data || []
+  )?.map((item) => ({
     label: item?.label,
     purchase: Number(item?.totalOverdue?.toFixed(2)),
   }));
@@ -209,138 +261,148 @@ export default function Home() {
 
   return (
     <ProtectedWrapper permissionCode="permission:view-dashboard">
-      <div className="flex h-full flex-col gap-3">
-        <SubHeader name={translations('title')}></SubHeader>
+      <Skeleton
+        name="dashboard"
+        loading={isSalesAnalyticsLoading || isPurchaseAnalyticsLoading}
+      >
+        <Wrapper>
+          <SubHeader name={translations('title')}></SubHeader>
 
-        {/* Banner */}
-        <InfoBanner
-          showSupportLink={false}
-          text={
-            <>
-              Build your{' '}
-              <span
-                className="cursor-pointer font-semibold underline-offset-2 hover:underline"
-                onClick={() => router.push('/dashboard/inventory/goods')}
-              >
-                Inventory
-              </span>
-              , add your{' '}
-              <span
-                className="cursor-pointer font-semibold underline-offset-2 hover:underline"
-                onClick={() => router.push('/dashboard/clients')}
-              >
-                Clients
-              </span>
-              , and start your{' '}
-              <span
-                className="cursor-pointer font-semibold underline-offset-2 hover:underline"
-                onClick={() => router.push('/dashboard/sales/sales-orders')}
-              >
-                Sales
-              </span>
-              —three quick steps to get Hues working for you.
-            </>
-          }
-        />
-        {/* Invitation modal */}
-        {enterpriseId &&
-          isEnterpriseOnboardingComplete &&
-          isReceivedInviteLoading && <Loading />}
-        {enterpriseId &&
-          isEnterpriseOnboardingComplete &&
-          !isReceivedInviteLoading &&
-          filteredData?.length > 0 && (
-            <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
-              <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
-                <Info size={14} />
-                {filteredData?.length === 1 ? (
-                  <>
-                    {translations('invites.prompt.one', {
-                      count: filteredData?.length,
-                    })}
-                  </>
-                ) : (
-                  <>
-                    {translations('invites.prompt.other', {
-                      count: filteredData?.length,
-                    })}
-                  </>
-                )}{' '}
-                {translations('invites.actionPrompt')}
-              </span>
-              <PendingInvitesModal
-                ctaName={'dashboard.invites.viewInvitesText'}
-                invitesTitle={'dashboard.invites.invitesTitle'}
-                invitesDetails={'dashboard.invites.invitesDetails'}
-                acceptCtaName={'dashboard.invites.handleAcceptCta'}
-                rejectCtaName={'dashboard.invites.handleRejectCta'}
-                acceptedMsg={'dashboard.invites.messages.accept'}
-                rejectedMsg={'dashboard.invites.messages.reject'}
-                data={filteredData}
-                isInviteModalOpen={isInviteModalOpen}
-                setIsInviteModalOpen={setIsInviteModalOpen}
-              />
-            </div>
-          )}
-
-        {/* dashboard analytics */}
-        {enterpriseId && isEnterpriseOnboardingComplete && (
-          <>
-            {isSalesAnalyticsLoading || isPurchaseAnalyticsLoading ? (
-              <Loading />
-            ) : salesAnalyticsData?.length === 0 &&
-              purchaseAnalyticsData?.length === 0 ? (
-              <EmptyStageComponent
-                heading={translations('emptyStateComponent.heading')}
-                subItems={keys}
-              />
-            ) : (
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <AnalyticsCard
-                  title={translations('analytics.sales')}
-                  tab={salestab}
-                  onTabChange={onSalesTabChange}
-                  dataGranularity={salesDataGranularity}
-                  setDataGranularity={setSalesDataGranularity}
-                  summary={summaryMapper(salesAnalyticsData?.summary)}
-                  tabsConfig={tabConfigs.sales}
-                  chartData={{
-                    totalAmount: salesAmountPaidData,
-                    totalDue: salesTotalDueData,
-                    totalOverdue: salesTotalOverdueData,
-                  }}
-                  lines={SalesLines}
-                  dateRange={salesDateRange}
-                  setDateRange={setSalesDateRange}
-                  translations={translations}
-                />
-                <AnalyticsCard
-                  title={translations('analytics.purchase')}
-                  tab={purchaseTab}
-                  onTabChange={onPurchaseTabChange}
-                  dataGranularity={purchaseDataGranularity}
-                  setDataGranularity={setPurchaseDataGranularity}
-                  summary={summaryMapper(purchaseAnalyticsData?.summary)}
-                  tabsConfig={tabConfigs.purchase}
-                  chartData={{
-                    totalAmount: purchaseAmountPaidData,
-                    totalDue: purchaseTotalDueData,
-                    totalOverdue: purchaseTotalOverdueData,
-                  }}
-                  lines={PurchaseLines}
-                  dateRange={purchaseDateRange}
-                  setDateRange={setPurchaseDateRange}
-                  translations={translations}
+          {/* Banner */}
+          <InfoBanner
+            showSupportLink={false}
+            text={
+              <>
+                Build your{' '}
+                <span
+                  className="cursor-pointer font-semibold underline-offset-2 hover:underline"
+                  onClick={() => router.push('/dashboard/inventory/goods')}
+                >
+                  Inventory
+                </span>
+                , add your{' '}
+                <span
+                  className="cursor-pointer font-semibold underline-offset-2 hover:underline"
+                  onClick={() => router.push('/dashboard/clients')}
+                >
+                  Clients
+                </span>
+                , and start your{' '}
+                <span
+                  className="cursor-pointer font-semibold underline-offset-2 hover:underline"
+                  onClick={() => router.push('/dashboard/sales/sales-orders')}
+                >
+                  Sales
+                </span>
+                —three quick steps to get Hues working for you.
+              </>
+            }
+          />
+          {/* Invitation modal */}
+          {enterpriseId &&
+            isEnterpriseOnboardingComplete &&
+            isReceivedInviteLoading && <Loading />}
+          {enterpriseId &&
+            isEnterpriseOnboardingComplete &&
+            !isReceivedInviteLoading &&
+            filteredData?.length > 0 && (
+              <div className="flex items-center justify-between rounded-md bg-[#288AF90A] p-2">
+                <span className="flex items-center gap-1 text-sm font-semibold text-[#121212]">
+                  <Info size={14} />
+                  {filteredData?.length === 1 ? (
+                    <>
+                      {translations('invites.prompt.one', {
+                        count: filteredData?.length,
+                      })}
+                    </>
+                  ) : (
+                    <>
+                      {translations('invites.prompt.other', {
+                        count: filteredData?.length,
+                      })}
+                    </>
+                  )}{' '}
+                  {translations('invites.actionPrompt')}
+                </span>
+                <PendingInvitesModal
+                  ctaName={'dashboard.invites.viewInvitesText'}
+                  invitesTitle={'dashboard.invites.invitesTitle'}
+                  invitesDetails={'dashboard.invites.invitesDetails'}
+                  acceptCtaName={'dashboard.invites.handleAcceptCta'}
+                  rejectCtaName={'dashboard.invites.handleRejectCta'}
+                  acceptedMsg={'dashboard.invites.messages.accept'}
+                  rejectedMsg={'dashboard.invites.messages.reject'}
+                  data={filteredData}
+                  isInviteModalOpen={isInviteModalOpen}
+                  setIsInviteModalOpen={setIsInviteModalOpen}
                 />
               </div>
             )}
-          </>
-        )}
 
-        {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
-          <RestrictedComponent />
-        )}
-      </div>
+          {/* dashboard analytics */}
+          {enterpriseId && isEnterpriseOnboardingComplete && (
+            <>
+              {!isSalesAnalyticsLoading &&
+              !isPurchaseAnalyticsLoading &&
+              (!salesAnalyticsData ||
+                salesAnalyticsData?.length === 0 ||
+                salesAnalyticsData?.data?.length === 0) &&
+              (!purchaseAnalyticsData ||
+                purchaseAnalyticsData?.length === 0 ||
+                purchaseAnalyticsData?.data?.length === 0) ? (
+                <EmptyStageComponent
+                  heading={translations('emptyStateComponent.heading')}
+                  subItems={keys}
+                />
+              ) : (
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <AnalyticsCard
+                    title={translations('analytics.sales')}
+                    tab={salestab}
+                    onTabChange={onSalesTabChange}
+                    dataGranularity={salesDataGranularity}
+                    setDataGranularity={setSalesDataGranularity}
+                    summary={summaryMapper(displaySalesAnalyticsData?.summary)}
+                    tabsConfig={tabConfigs.sales}
+                    chartData={{
+                      totalAmount: salesAmountPaidData,
+                      totalDue: salesTotalDueData,
+                      totalOverdue: salesTotalOverdueData,
+                    }}
+                    lines={SalesLines}
+                    dateRange={salesDateRange}
+                    setDateRange={setSalesDateRange}
+                    translations={translations}
+                  />
+                  <AnalyticsCard
+                    title={translations('analytics.purchase')}
+                    tab={purchaseTab}
+                    onTabChange={onPurchaseTabChange}
+                    dataGranularity={purchaseDataGranularity}
+                    setDataGranularity={setPurchaseDataGranularity}
+                    summary={summaryMapper(
+                      displayPurchaseAnalyticsData?.summary,
+                    )}
+                    tabsConfig={tabConfigs.purchase}
+                    chartData={{
+                      totalAmount: purchaseAmountPaidData,
+                      totalDue: purchaseTotalDueData,
+                      totalOverdue: purchaseTotalOverdueData,
+                    }}
+                    lines={PurchaseLines}
+                    dateRange={purchaseDateRange}
+                    setDateRange={setPurchaseDateRange}
+                    translations={translations}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </Wrapper>
+      </Skeleton>
+      {(!enterpriseId || !isEnterpriseOnboardingComplete) && (
+        <RestrictedComponent />
+      )}
     </ProtectedWrapper>
   );
 }
