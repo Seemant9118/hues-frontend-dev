@@ -519,7 +519,7 @@ const GSTR1 = () => {
   });
 
   return (
-    <ProtectedWrapper permissionCode="permission:sales-view">
+    <ProtectedWrapper permissionCode="permission:gst-view">
       {!enterpriseId || !isEnterpriseOnboardingComplete ? (
         <>
           {/* Headers */}

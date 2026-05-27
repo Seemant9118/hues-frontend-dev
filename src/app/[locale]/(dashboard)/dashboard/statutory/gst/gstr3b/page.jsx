@@ -1,7 +1,8 @@
 'use client';
 
-import Wrapper from '@/components/wrappers/Wrapper';
 import Gstr3bForm from '@/components/statutory/gstr3b/Gstr3bForm';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
+import Wrapper from '@/components/wrappers/Wrapper';
 import { useSearchParams } from 'next/navigation';
 
 const GSTR3B = () => {
@@ -9,9 +10,11 @@ const GSTR3B = () => {
   const period = searchParams.get('period');
 
   return (
-    <Wrapper className="h-screen bg-white">
-      <Gstr3bForm period={period} />
-    </Wrapper>
+    <ProtectedWrapper permissionCode="permission:gst-view">
+      <Wrapper className="h-screen bg-white">
+        <Gstr3bForm period={period} />
+      </Wrapper>
+    </ProtectedWrapper>
   );
 };
 

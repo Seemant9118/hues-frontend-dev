@@ -568,7 +568,7 @@ const GSTR1A = () => {
   });
 
   return (
-    <ProtectedWrapper permissionCode="permission:sales-view">
+    <ProtectedWrapper permissionCode="permission:gst-view">
       {!enterpriseId || !isEnterpriseOnboardingComplete ? (
         <>
           <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">

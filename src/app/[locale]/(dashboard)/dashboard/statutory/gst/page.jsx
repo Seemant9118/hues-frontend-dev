@@ -120,7 +120,7 @@ const GST = () => {
   }, [selectedPeriod, currentFinancialPeriod]);
 
   return (
-    <ProtectedWrapper permissionCode="permission:sales-view">
+    <ProtectedWrapper permissionCode="permission:gst-view">
       {!enterpriseId || !isEnterpriseOnboardingComplete ? (
         <div className="flex flex-col gap-4 p-6">
           <SubHeader name={translations('title')} />

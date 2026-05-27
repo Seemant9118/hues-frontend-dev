@@ -66,6 +66,7 @@ const PERMISSIONS = {
   ITEM_MASTERS: 'permission:item-masters-view',
   SALES: 'permission:sales-view',
   PURCHASE: 'permission:purchase-view',
+  GST: 'permission:gst-view',
   CLIENTS: 'permission:clients-view',
   VENDORS: 'permission:vendors-view',
   CUSTOMERS: 'permission:customers-view',
@@ -329,7 +330,7 @@ const Sidebar = () => {
             },
           ],
         },
-      hasPermission(PERMISSIONS.SALES) && {
+      hasPermission(PERMISSIONS.GST) && {
         name: 'sidebar.statutory',
         icon: <ReceiptIndianRupee size={ICON_SIZE} />,
         path: '/dashboard/statutory/gst',

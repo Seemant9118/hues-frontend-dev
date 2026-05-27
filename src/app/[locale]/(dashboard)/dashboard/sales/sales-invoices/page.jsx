@@ -486,19 +486,21 @@ const SalesInvoices = () => {
                 className="sticky top-0 z-10 flex items-center justify-between bg-white"
               >
                 <div className="flex items-center justify-center gap-2">
-                  <Tooltips
-                    trigger={
-                      <Button
-                        onClick={() => setIsSyncModalOpen(true)}
-                        variant="outline"
-                        size="sm"
-                      >
-                        <RefreshCw size={16} />
-                        Sync Invoices
-                      </Button>
-                    }
-                    content={'Sync Invoices from external sources'}
-                  />
+                  <ProtectedWrapper permissionCode={'permission:gst-actions'}>
+                    <Tooltips
+                      trigger={
+                        <Button
+                          onClick={() => setIsSyncModalOpen(true)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          <RefreshCw size={16} />
+                          Sync Invoices
+                        </Button>
+                      }
+                      content={'Sync Invoices from external sources'}
+                    />
+                  </ProtectedWrapper>
                   <Tooltips
                     trigger={
                       <Button
