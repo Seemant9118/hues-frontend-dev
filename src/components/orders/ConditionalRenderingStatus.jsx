@@ -232,7 +232,7 @@ const defaultStatusResolver = ({ status, isPayment, isSellerPage, t }) => {
       return { text: 'Imported', ...STATUS_UI.INFO };
     case 'EXPECTED':
       return { text: 'Expected', ...STATUS_UI.INFO };
-    case 'FULLY_REALIZED':
+    case 'REALIZED':
       return { text: 'Fully Realized', ...STATUS_UI.SUCCESS };
     case 'SUPERSEDED':
       return { text: 'Superseded', ...STATUS_UI.GRAY };
@@ -240,7 +240,7 @@ const defaultStatusResolver = ({ status, isPayment, isSellerPage, t }) => {
       return { text: 'Cancelled', ...STATUS_UI.ERROR };
     case 'OVERDUE':
       return { text: 'Overdue', ...STATUS_UI.ERROR };
-    case 'PARTIALLY_REALIZED':
+    case 'PARTIAL_REALIZED':
       return { text: 'Partially Realized', ...STATUS_UI.WARNING };
 
     default:

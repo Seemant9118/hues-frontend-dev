@@ -1,8 +1,8 @@
 import { capitalize, formatDate } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { useRouter } from '@/i18n/routing';
+import { cn } from '@/lib/utils';
 
 export const useTrialBalanceWBColumns = ({ onReview } = {}) => {
   const router = useRouter();
@@ -85,15 +85,14 @@ export const useTrialBalanceWBColumns = ({ onReview } = {}) => {
         return (
           <div className="flex items-center gap-2">
             {actions.map((action) => (
-              <Button
+              <button
                 key={`${row.original.id}-${action}`}
-                variant={action === 'Review' ? 'default' : 'outline'}
-                size="sm"
-                className={
+                className={cn(
+                  `flex items-center gap-1 rounded bg-gray-100 px-2 py-1 font-medium text-primary underline-offset-2 hover:underline`,
                   action === 'Review'
                     ? 'bg-[#163b7d] text-white hover:bg-[#0f2f63]'
-                    : 'text-gray-700'
-                }
+                    : 'bg-gray-100 text-primary',
+                )}
                 onClick={() => {
                   if (action === 'View') {
                     router.push(
@@ -106,7 +105,7 @@ export const useTrialBalanceWBColumns = ({ onReview } = {}) => {
                 }}
               >
                 {action}
-              </Button>
+              </button>
             ))}
           </div>
         );

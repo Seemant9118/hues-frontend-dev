@@ -148,9 +148,7 @@ const impendingColumns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="EXPECTED AMOUNT" />
     ),
-    cell: ({ row }) => (
-      <span>{formattedAmount(row.original.transactionAmount)}</span>
-    ),
+    cell: ({ row }) => <span>{formattedAmount(row.original.grossAmount)}</span>,
   },
   {
     accessorKey: 'settledAmount',
@@ -179,7 +177,7 @@ const impendingColumns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="CLASSIFICATION" />
     ),
-    cell: ({ row }) => convertSnakeToTitleCase(row.original.flowCategory),
+    cell: ({ row }) => convertSnakeToTitleCase(row.original.classification),
   },
   {
     accessorKey: 'sourceType',

@@ -1,7 +1,6 @@
 'use client';
 
 import { accountingAPIs } from '@/api/accounting/accountingAPIs';
-import { InfiniteDataTable } from '@/app/[locale]/(dashboard)/dashboard/admin/data/InfiniteDataTable';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import { Button } from '@/components/ui/button';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
@@ -22,6 +21,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { Skeleton } from 'boneyard-js/react';
 import { Download, Filter, RefreshCw } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
+import InfiniteDataTable from '@/components/table/infinite-data-table';
 import { useCashFlowColumns } from './useCashFlowColumns';
 
 const PAGE_LIMIT = 10;
