@@ -103,22 +103,37 @@ const makeActionsCell =
   (router, tab = 'impending') =>
   // eslint-disable-next-line react/display-name
   ({ row }) => (
-    <button
-      size="sm"
-      className="flex items-center gap-1 rounded bg-gray-100 px-2 py-1 font-medium text-primary underline-offset-2 hover:underline"
-      onClick={() => {
-        const bytes = new TextEncoder().encode(JSON.stringify(row.original));
-        const binary = Array.from(bytes, (byte) =>
-          String.fromCharCode(byte),
-        ).join('');
-        const payload = encodeURIComponent(btoa(binary));
-        router.push(
-          `/dashboard/accounting/cash-flow/${encodeURIComponent(row.original.id)}?entry=${payload}&tab=${tab}`,
-        );
-      }}
-    >
-      <Eye size={14} /> View
-    </button>
+    <div className="flex items-center gap-2">
+      <button
+        size="sm"
+        className="flex items-center gap-1 rounded bg-gray-100 px-2 py-1 font-medium text-primary underline-offset-2 hover:underline"
+        onClick={() => {
+          const bytes = new TextEncoder().encode(JSON.stringify(row.original));
+          const binary = Array.from(bytes, (byte) =>
+            String.fromCharCode(byte),
+          ).join('');
+          const payload = encodeURIComponent(btoa(binary));
+          router.push(
+            `/dashboard/accounting/cash-flow/${encodeURIComponent(row.original.id)}?entry=${payload}&tab=${tab}`,
+          );
+        }}
+      >
+        <Eye size={14} /> View
+      </button>
+      {row.original.journalEntryPublicId && (
+        <button
+          size="sm"
+          className="flex items-center gap-1 rounded bg-gray-100 px-2 py-1 font-medium text-black underline-offset-2 hover:underline"
+          onClick={() => {
+            router.push(
+              `/dashboard/accounting/trial-balance/${row.original.journalEntryPublicId}`,
+            );
+          }}
+        >
+          TB <ExternalLink size={14} />
+        </button>
+      )}
+    </div>
   );
 
 const actualActionsCell = () => <span className="text-gray-400">--</span>;

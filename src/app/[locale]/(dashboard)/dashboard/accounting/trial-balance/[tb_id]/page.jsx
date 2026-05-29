@@ -16,8 +16,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import Wrapper from '@/components/wrappers/Wrapper';
-import { useRouter } from '@/i18n/routing';
-import { ArrowLeft, FileText } from 'lucide-react';
+import { Link, useRouter } from '@/i18n/routing';
+import { ArrowLeft, ExternalLink, FileText } from 'lucide-react';
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { accountingAPIs } from '@/api/accounting/accountingAPIs';
@@ -105,18 +105,7 @@ const buildEntryData = (rawData) => {
           },
         ];
 
-  const counterpartyLine = mappedLines.find(
-    (line) =>
-      line.dimensionTags?.counterpartyId ||
-      line.dimensionTags?.counterpartyType,
-  );
-  const counterparty =
-    counterpartyLine?.subLedger ||
-    counterpartyLine?.dimensionTags?.counterpartyType ||
-    entry.counterparty ||
-    entry.sellerType ||
-    entry.buyerType ||
-    'System';
+  const counterparty = entry.buyerName || 'System';
 
   return {
     ...entry,
@@ -130,7 +119,6 @@ const buildEntryData = (rawData) => {
       .filter((l) => l.type === 'DEBIT')
       .reduce((s, l) => s + l.amount, 0),
     sourceModule: entry.sourceModule || 'N/A',
-    sourceRef: entry.sourceRef || entry.id || 'N/A',
     period: entry.fiscalPeriodId || entry.period || 'N/A',
     description: entry.description || 'No description provided.',
     entryDate: entry.entryDate || 'N/A',
@@ -139,15 +127,8 @@ const buildEntryData = (rawData) => {
     currencyCode: entry.currencyCode || 'N/A',
     exchangeRate: entry.exchangeRate || 'N/A',
     lines: mappedLines,
-    linkedDocuments: Array.isArray(entry.linkedDocuments)
-      ? entry.linkedDocuments
-      : [
-          entry.sourceModule &&
-            entry.sourceRef &&
-            `${entry.sourceModule} #${entry.sourceRef}`,
-          entry.entryNumber && `Entry #${entry.entryNumber}`,
-          entry.publicId,
-        ].filter(Boolean),
+    sourceRef: entry.sourceRef || 'N/A',
+    linkedDocument: entry.referenceNumber || 'N/A',
     tAccount: entry.tAccount || {
       debit: mappedLines
         .filter((l) => l.type === 'DEBIT')
@@ -237,23 +218,38 @@ const TrialBalanceEntryPage = ({ params }) => {
   const totalCredit = entry.lines
     .filter((l) => l.type === 'CREDIT')
     .reduce((s, l) => s + l.amount, 0);
+  let linkedDocumentUrl = null;
+  if (entry.sourceRef && entry.sourceRef !== 'N/A') {
+    const sourceModuleUpper = entry.sourceModule
+      ? entry.sourceModule.toUpperCase()
+      : '';
+    if (sourceModuleUpper === 'ORDER') {
+      linkedDocumentUrl = `/dashboard/sales/sales-orders/${entry.sourceRef}`;
+    } else if (sourceModuleUpper === 'INVOICED') {
+      linkedDocumentUrl = `/dashboard/sales/sales-invoices/${entry.sourceRef}`;
+    } else if (sourceModuleUpper === 'PAYMENT') {
+      linkedDocumentUrl = `/dashboard/sales/sales-payments/${entry.sourceRef}`;
+    }
+  }
+
   const overviewData = {
-    documentId: entry.documentId,
     counterparty: entry.counterparty,
     totalDebit,
     totalCredit,
     transactionType: <Badge variant="secondary">{entry.transactionType}</Badge>,
-    linkedDocuments: (
-      <>
-        {entry?.linkedDocuments?.map((doc) => (
-          <Badge variant="outline" key={doc}>
-            {doc}
-          </Badge>
-        ))}
-      </>
+    linkedDocument: linkedDocumentUrl ? (
+      <Link
+        href={linkedDocumentUrl}
+        className="flex items-center gap-2 text-primary hover:underline"
+      >
+        {entry.linkedDocument || 'N/A'}
+        <ExternalLink size={14} />
+      </Link>
+    ) : (
+      entry.linkedDocument || 'N/A'
     ),
     status: entry.status,
-    description: entry.description,
+    // description: entry.description,
   };
   const overviewLabels = Object.keys(overviewData).reduce(
     (labels, key) => ({
@@ -288,7 +284,7 @@ const TrialBalanceEntryPage = ({ params }) => {
           },
           {
             id: 'tb-[id]',
-            name: `Entry No. ${entry.documentId}`,
+            name: `Entry Details`,
             path: `/dashboard/accounting/trial-balance/${params.tb_id}`,
             onClick: () => {
               if (isReviewing) setIsReviewing(false);
@@ -515,9 +511,6 @@ const TrialBalanceEntryPage = ({ params }) => {
                         <TableHead className="text-xs font-bold uppercase tracking-wider text-gray-500">
                           Posting Role
                         </TableHead>
-                        <TableHead className="text-right text-xs font-bold uppercase tracking-wider text-gray-500">
-                          Pre-JE State
-                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -551,9 +544,6 @@ const TrialBalanceEntryPage = ({ params }) => {
                           </TableCell>
                           <TableCell className="text-sm text-gray-600">
                             {impact.postingRole || 'N/A'}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-sm text-gray-500">
-                            {formattedAmount(impact.preJeState)}
                           </TableCell>
                         </TableRow>
                       ))}

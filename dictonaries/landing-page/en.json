@@ -2,10 +2,10 @@
     "landingPage": {
         "nav": {
             "contactUs": "Contact Us",
-            "register": "Register"
+            "register": "Join Beta"
         },
         "badge": {
-            "verified": "🔥 Verified by Users. Endorsed by Professionals. Compliant by Design"
+            "verified": "🚀 Join our Exclusive Beta Trial — Experience the Next-Gen ERP Today"
         },
         "hero": {
             "title": {
@@ -14,9 +14,8 @@
                 "for": "for a",
                 "digitalBharat": "Digital Bharat"
             },
-            "description": "Hues isn’t just another ERP. It's your AI-powered command center for smarter business decisions, verifiable compliance, seamless collaboration — and peace of mind. Built on India’s Digital Public Infrastructure and hardened by blockchain.",
-            "cta": {
-                "tryForFree": "Try for Free"
+            "description": "Hues is an AI-powered ERP that streamlines operations, ensures compliance, and enables smarter business decisions.Now in Exclusive Beta — experience the future of enterprise management for free.","cta": {
+                "tryForFree": "Apply for Beta Access"
             },
             "imageAlt": "ERP Dashboard Preview"
         },
@@ -44,49 +43,47 @@
         },
         "builtSecure": {
             "title": {
-                "builtSecure": "Built Secure.",
-                "fromTheGroundUp": "From the Ground Up"
+                "line1": "Your data isn't just protected.",
+                "line2": "It's governed."
             },
-            "subtitle": "Your data isn't just protected — it's governed.",
-            "imageAlt": "ERP Dashboard Preview",
             "points": {
                 "smartAccessEngine": {
                     "title": "Smart Access Engine",
-                    "description": "Unified RBAC + ABAC: Role-based simplicity with context-aware precision. Every access request is logged, justified, and audit-ready."
+                    "description": "Unified RBAC + ABAC. Every access is scoped and logged."
                 },
                 "policyDrivenControls": {
-                    "title": "Policy-Driven Controls",
-                    "description": "From who sees what to how long it’s stored — Hues enforces your SOPs automatically."
+                    "title": "Policy-driven controls",
+                    "description": "Retention, visibility, and permissions enforced by rules."
                 },
-                "noBackdoors": {
-                    "title": "No Backdoors. No Workarounds.",
-                    "description": "Zero-trust architecture means no data leaves without verified consent. Ever."
+                "zeroTrust": {
+                    "title": "Zero-trust by default",
+                    "description": "Data never moves without explicit, verifiable consent."
                 }
             }
         },
         "onePlatform": {
             "title": {
-                "onePlatform": "One Platform.",
-                "allYourBusiness": "All Your Business",
-                "needs": "Needs."
+                "onePlatform": "One platform.",
+                "allYourBusiness": "All your business",
+                "needs": "needs."
             },
             "subtitle": "Comprehensive business management tools powered by AI",
             "cards": {
                 "vendorManagement": {
                     "title": "Vendor Management",
-                    "description": "From onboarding to e-invoicing — track every touchpoint."
+                    "description": "From onboarding to e-invoicing—tracked end to end."
                 },
                 "salesPurchaseAutomation": {
                     "title": "Sales & Purchase Automation",
-                    "description": "Real-time negotiation tools, SKU sync, offer/bid sharing."
+                    "description": "Offers, bids, SKUs, and negotiations—kept precise."
                 },
                 "taxLegalCompliance": {
                     "title": "Tax & Legal Compliance",
-                    "description": "DPDP, PMLA, GST, MCA — done.."
+                    "description": "DPDP, PMLA, GST, MCA—cleanly handled."
                 },
                 "builtInBiTools": {
-                    "title": " Built-in BI Tools",
-                    "description": "Live dashboards for Sales, Cash Flow, and Trial Balance"
+                    "title": "Built-in BI Tools",
+                    "description": "Live dashboards for sales, cash flow, and trial balance."
                 }
             }
         },
@@ -121,14 +118,14 @@
         },
         "pricing": {
             "title": {
-                "transparent": "Transparent",
-                "pricing": "Pricing.",
-                "startFor": "Start for ₹ 999/- month."
+                "transparent": "Exclusive Beta",
+                "pricing": "Trial.",
+                "startFor": "Get free access during the beta trial period."
             },
             "benefits": {
-                "freemiumForever": "✅ Freemium forever for solo-preneurs.",
-                "zeroLockIn": "✅ Zero Lock-in",
-                "noOnboardingFees": "✅ No onboarding fees. No guesswork. Just value"
+                "freemiumForever": "🎁 100% Free during the Beta period",
+                "zeroLockIn": "✅ Full features access",
+                "noOnboardingFees": "✅ Direct support from the HUES core engineering team"
             },
             "imageAlt": "Pricing UI"
         },
@@ -144,15 +141,21 @@
             "sectionTitle": "Contact Us",
             "contactForm": {
                 "title": {
-                    "getIn": "Get In",
-                    "touch": "Touch"
+                    "getIn": "Get in touch",
+                    "touch": ""
+                },
+                "labels": {
+                    "name": "Name",
+                    "email": "Email",
+                    "phone": "Phone",
+                    "message": "Message"
                 },
                 "emailLabel": "Email:",
                 "placeholders": {
                     "name": "Your name",
-                    "email": "Your email",
-                    "phone": "Your phone",
-                    "message": "Your message"
+                    "email": "you@company.com",
+                    "phone": "+91 98765 43210",
+                    "message": "How can we help?"
                 },
                 "button": {
                     "sendMessage": "Send Message"

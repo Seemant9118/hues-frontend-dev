@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { sendMessage } from '@/services/Admin_Services/AdminServices';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import { Mail, Send } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
@@ -44,10 +45,13 @@ const GetInTouch = () => {
           ? ''
           : t('errors.emailInvalid');
 
-      case 'mobileNumber':
+      case 'mobileNumber': {
         if (!trimmedValue) return t('errors.phoneRequired');
-        if (trimmedValue.length !== 10) return t('errors.phoneInvalid');
+        const digits = trimmedValue.replace(/\D/g, '');
+        if (digits.length !== 10 && digits.length !== 12)
+          return t('errors.phoneInvalid');
         return '';
+      }
 
       case 'message':
         return trimmedValue ? '' : t('errors.messageRequired');
@@ -77,9 +81,9 @@ const GetInTouch = () => {
     // limit message length
     if (name === 'message' && value.length > maxMessageLength) return;
 
-    // allow only numbers in mobileNumber
+    // allow numbers, spaces, plus, hyphens in mobileNumber
     if (name === 'mobileNumber') {
-      updatedValue = value.replace(/\D/g, '');
+      updatedValue = value.replace(/[^\d+ -]/g, '');
     }
 
     setFormData((prev) => ({
@@ -130,34 +134,32 @@ const GetInTouch = () => {
   };
 
   return (
-    <div className="mx-auto max-w-6xl">
-      {/* Heading */}
-      <div className="px-6 pt-20 text-center sm:mx-10">
-        <h2 className="text-xl font-semibold leading-tight sm:text-3xl md:text-4xl lg:text-5xl">
-          {t('title.getIn')}{' '}
-          <span className="inline-block font-handwriting text-2xl sm:text-4xl md:text-5xl lg:text-6xl">
-            {t('title.touch')}
-          </span>
-        </h2>
+    <div className="mx-auto max-w-5xl px-4 py-6 md:py-8">
+      <div className="grid gap-8 md:grid-cols-2 md:gap-10">
+        {/* Left Side */}
+        <div className="flex flex-col justify-start">
+          <h2 className="text-3xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl">
+            {t('title.getIn')}
+          </h2>
+          <div className="mt-4 flex items-center gap-3 text-base text-gray-600">
+            <Mail className="h-5 w-5 text-gray-500" />
+            <a
+              href="mailto:support@paraphernalia.in"
+              className="text-gray-700 hover:underline"
+            >
+              support@paraphernalia.in
+            </a>
+          </div>
+        </div>
 
-        <p className="mt-2 text-gray-600">
-          {t('emailLabel')}{' '}
-          <a
-            href="mailto:support@paraphernalia.in"
-            className="text-primary hover:underline"
-          >
-            support@paraphernalia.in
-          </a>
-        </p>
-      </div>
-
-      {/* Form Wrapper */}
-      <div className="mt-4 rounded-xl border border-gray-200 bg-white p-6 shadow-lg md:p-10">
-        <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-2">
-          {/* Left Side */}
-          <div className="flex flex-col gap-6">
+        {/* Right Side - Form */}
+        <div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {/* Name */}
             <div>
+              <label className="mb-1.5 block text-sm font-semibold text-gray-800">
+                {t('labels.name')}
+              </label>
               <Input
                 type="text"
                 name="name"
@@ -170,6 +172,9 @@ const GetInTouch = () => {
 
             {/* Email */}
             <div>
+              <label className="mb-1.5 block text-sm font-semibold text-gray-800">
+                {t('labels.email')}
+              </label>
               <Input
                 type="text"
                 name="email"
@@ -182,65 +187,58 @@ const GetInTouch = () => {
 
             {/* Phone */}
             <div>
-              <div className="relative flex items-center">
-                <span className="absolute left-2 text-sm text-gray-600">
-                  {formData.countryCode}
-                </span>
-
-                <Input
-                  type="text"
-                  name="mobileNumber"
-                  placeholder={t('placeholders.phone')}
-                  className="w-full py-2 pl-10 pr-3"
-                  value={formData.mobileNumber}
-                  onChange={(e) => {
-                    const onlyNumbers = e.target.value.replace(/\D/g, '');
-                    handleChange({
-                      target: { name: 'mobileNumber', value: onlyNumbers },
-                    });
-                  }}
-                />
-              </div>
-
+              <label className="mb-1.5 block text-sm font-semibold text-gray-800">
+                {t('labels.phone')}
+              </label>
+              <Input
+                type="text"
+                name="mobileNumber"
+                placeholder={t('placeholders.phone')}
+                value={formData.mobileNumber}
+                onChange={handleChange}
+              />
               {errors.mobileNumber && <ErrorBox msg={errors.mobileNumber} />}
             </div>
-          </div>
 
-          {/* Right Side */}
-          <div className="flex flex-col">
-            <Textarea
-              name="message"
-              placeholder={t('placeholders.message')}
-              value={formData.message}
-              onChange={handleChange}
-              rows={7}
-            />
-
-            <div className="mt-2 flex items-center justify-between">
-              {errors.message ? <ErrorBox msg={errors.message} /> : <span />}
-
-              <p className="text-sm text-gray-500">
-                {formData.message.length}/{maxMessageLength}
-              </p>
+            {/* Message */}
+            <div>
+              <label className="mb-1.5 block text-sm font-semibold text-gray-800">
+                {t('labels.message')}
+              </label>
+              <Textarea
+                name="message"
+                placeholder={t('placeholders.message')}
+                value={formData.message}
+                onChange={handleChange}
+                rows={5}
+              />
+              <div className="mt-1 flex items-center justify-between">
+                {errors.message ? <ErrorBox msg={errors.message} /> : <span />}
+                <p className="text-xs text-gray-400">
+                  {formData.message.length}/{maxMessageLength}
+                </p>
+              </div>
             </div>
-          </div>
 
-          {/* Button */}
-          <div className="mt-4 flex justify-center md:col-span-2">
-            <Button
-              type="submit"
-              size="sm"
-              className="px-10 py-3 font-semibold text-white shadow-sm transition"
-              disabled={sendMessageMutation?.isPending}
-            >
-              {sendMessageMutation?.isPending ? (
-                <Loading />
-              ) : (
-                t('button.sendMessage')
-              )}
-            </Button>
-          </div>
-        </form>
+            {/* Button */}
+            <div className="flex justify-start">
+              <Button
+                type="submit"
+                disabled={sendMessageMutation?.isPending}
+                className="flex w-40 items-center justify-center gap-2 rounded-sm shadow-sm transition-transform duration-300 hover:scale-105 hover:shadow-md"
+              >
+                {sendMessageMutation?.isPending ? (
+                  <Loading />
+                ) : (
+                  <>
+                    <Send size={14} />
+                    <span>{t('button.sendMessage')}</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
