@@ -2,16 +2,10 @@
 
 import { accountingAPIs } from '@/api/accounting/accountingAPIs';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
+import InfiniteDataTable from '@/components/table/infinite-data-table';
 import { Button } from '@/components/ui/button';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import SearchInput from '@/components/ui/SearchInput';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import SubHeader from '@/components/ui/Sub-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FeatureFlagWrapper } from '@/components/wrappers/FeatureFlagWrapper';
@@ -19,9 +13,8 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { getCashFlow } from '@/services/Accounting_Services/AccountingServices';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Skeleton } from 'boneyard-js/react';
-import { Download, Filter, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import InfiniteDataTable from '@/components/table/infinite-data-table';
 import { useCashFlowColumns } from './useCashFlowColumns';
 
 const PAGE_LIMIT = 10;
@@ -55,12 +48,9 @@ const CashFlow = () => {
   const [actualEntries, setActualEntries] = useState(null);
   const [actualPagination, setActualPagination] = useState(null);
   const [actualSearch, setActualSearch] = useState('');
-  const [actualCategoryFilter, setActualCategoryFilter] = useState('all');
-
   const [impendingEntries, setImpendingEntries] = useState(null);
   const [impendingPagination, setImpendingPagination] = useState(null);
   const [impendingSearch, setImpendingSearch] = useState('');
-  const [impendingCategoryFilter, setImpendingCategoryFilter] = useState('all');
 
   // columns
   const actualColumns = useCashFlowColumns({ tab: 'actual' });
@@ -235,8 +225,8 @@ const CashFlow = () => {
       name="cashFlow"
       loading={activeTab === 'actual' ? isActualLoading : isImpendingLoading}
     >
-      <Wrapper className="flex h-screen flex-col gap-3">
-        <section className="flex items-center justify-between py-1">
+      <Wrapper className="flex h-screen flex-col gap-2">
+        <section className="flex items-center justify-between">
           <SubHeader
             name={
               activeTab === 'actual'
@@ -245,10 +235,6 @@ const CashFlow = () => {
             }
           />
           <div className="flex items-center gap-2">
-            <Button disabled variant="outline" size="sm" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export
-            </Button>
             <Button disabled size="sm" className="gap-2">
               <RefreshCw className="h-4 w-4" />
               Sync Bank
@@ -257,7 +243,7 @@ const CashFlow = () => {
         </section>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
-          <section className="flex items-center justify-between py-1">
+          <section className="flex items-center justify-between">
             <TabsList>
               <TabsTrigger value="actual">Actual</TabsTrigger>
               <TabsTrigger value="impending">Impending Register</TabsTrigger>
@@ -275,30 +261,6 @@ const CashFlow = () => {
                 searchPlaceholder="Search transactions, references..."
                 className="w-[360px] rounded-sm border border-gray-200 bg-white text-sm"
               />
-              <Select
-                disabled
-                value={
-                  activeTab === 'actual'
-                    ? actualCategoryFilter
-                    : impendingCategoryFilter
-                }
-                onValueChange={
-                  activeTab === 'actual'
-                    ? setActualCategoryFilter
-                    : setImpendingCategoryFilter
-                }
-              >
-                <SelectTrigger className="h-10 w-[170px] gap-2 rounded-sm border border-gray-200 bg-white text-sm font-medium text-gray-800">
-                  <Filter className="h-4 w-4 text-gray-500" />
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="operating">Operating</SelectItem>
-                  <SelectItem value="investing">Investing</SelectItem>
-                  <SelectItem value="financing">Financing</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </section>
 

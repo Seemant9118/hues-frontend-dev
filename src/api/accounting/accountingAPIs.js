@@ -11,4 +11,12 @@ export const accountingAPIs = {
     endpoint: `/cash-flow/entries/`,
     endpointKey: 'get_cash_flow_actual',
   },
+  manualEnteriesCreated: {
+    endpoint: `/trial-balance/manual-journal-entries`,
+    endpointKey: 'manual_entries_created',
+  },
+  ledgerSubledgers: {
+    endpoint: `/trial-balance/ledger-subledgers`,
+    endpointKey: 'ledger_subledgers',
+  },
 };

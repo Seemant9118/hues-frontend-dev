@@ -18,3 +18,14 @@ export const getCashFlow = ({ page, limit, enterpriseId, category }) => {
     `${accountingAPIs.getCashFlow.endpoint}${enterpriseId}?page=${page}&limit=${limit}&category=${category}`,
   );
 };
+
+export const manualEnteriesCreated = (payload) => {
+  return APIinstance.post(
+    accountingAPIs.manualEnteriesCreated.endpoint,
+    payload,
+  );
+};
+
+export const getLedgerSubledgers = () => {
+  return APIinstance.get(accountingAPIs.ledgerSubledgers.endpoint);
+};

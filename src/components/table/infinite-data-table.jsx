@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { cn } from '@/lib/utils';
 import {
   flexRender,
   getCoreRowModel,
@@ -36,6 +37,8 @@ export default function InfiniteDataTable({
   rowSelection,
   onRowSelectionChange,
   getRowId,
+  className,
+  bodyClassName,
 }) {
   const tableContainerRef = useRef(null);
   const [sorting, setSorting] = useState([]);
@@ -132,13 +135,14 @@ export default function InfiniteDataTable({
   });
 
   return (
-    <div>
+    <div className={cn('flex min-h-0 flex-col', className)}>
       <div
         ref={tableContainerRef}
         id={id}
-        className={
-          'infinite-datatable-scrollable-body scrollBarStyles overflow-auto rounded-sm sm:h-[75dvh]'
-        }
+        className={cn(
+          'infinite-datatable-scrollable-body scrollBarStyles overflow-auto rounded-sm',
+          bodyClassName || 'sm:h-[75dvh]',
+        )}
       >
         <div className="inline-block min-w-full align-middle">
           <Table>

@@ -1,7 +1,7 @@
 'use client';
 
 import { accountingAPIs } from '@/api/accounting/accountingAPIs';
-import { InfiniteDataTable } from '@/app/[locale]/(dashboard)/dashboard/admin/data/InfiniteDataTable';
+import InfiniteDataTable from '@/components/table/infinite-data-table';
 import { Button } from '@/components/ui/button';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
@@ -10,9 +10,9 @@ import SubHeader from '@/components/ui/Sub-header';
 import { FeatureFlagWrapper } from '@/components/wrappers/FeatureFlagWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { getJournalEntries } from '@/services/Accounting_Services/AccountingServices';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { Skeleton } from 'boneyard-js/react';
-import { Download, Plus, RefreshCw } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
 import ReviewCorrectEntry from './ReviewCorrectEntry';
@@ -35,6 +35,7 @@ const TrialBalance = () => {
   // const [sourceFilter, setSourceFilter] = React.useState('all');
   const [isCreatingEntry, setIsCreatingEntry] = React.useState(false);
   const [reviewingEntry, setReviewingEntry] = React.useState(null);
+  const queryClient = useQueryClient();
 
   // Fetch enteries data with infinite scroll
   const {
@@ -110,8 +111,8 @@ const TrialBalance = () => {
       <Wrapper className="flex h-screen flex-col gap-3">
         {showTable && (
           <>
-            <SubHeader name="Trial Balance" />
-            <div className="flex flex-wrap items-center justify-between gap-2 border-gray-200 bg-white">
+            <section className="mt-2 flex items-center justify-between">
+              <SubHeader name="Trial Balance" />
               <div className="flex flex-wrap items-center gap-3">
                 <SearchInput
                   toSearchTerm={search}
@@ -120,41 +121,6 @@ const TrialBalance = () => {
                   className="w-[360px] rounded-sm border border-gray-200 bg-white text-sm"
                 />
 
-                {/* <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="h-10 w-[150px] gap-2 rounded-sm border border-gray-200 bg-white text-sm font-medium text-gray-800">
-                    <Filter className="h-4 w-4 text-gray-500" />
-                    <SelectValue placeholder="All" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="sales invoice">Sales Invoice</SelectItem>
-                    <SelectItem value="purchase invoice">
-                      Purchase Invoice
-                    </SelectItem>
-                    <SelectItem value="payment receipt">
-                      Payment Receipt
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={sourceFilter} onValueChange={setSourceFilter}>
-                  <SelectTrigger className="h-10 w-[170px] rounded-sm border border-gray-200 bg-white text-sm font-medium text-gray-800">
-                    <SelectValue placeholder="All Sources" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Sources</SelectItem>
-                    <SelectItem value="sales">Sales</SelectItem>
-                    <SelectItem value="purchases">Purchases</SelectItem>
-                    <SelectItem value="cashflow">Cashflow</SelectItem>
-                  </SelectContent>
-                </Select> */}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Download className="h-4 w-4" />
-                  Export
-                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -178,12 +144,14 @@ const TrialBalance = () => {
                   New Entry
                 </Button>
               </div>
-            </div>
+            </section>
 
             {isEnteriesLoading ? (
-              <Loading />
+              <div className="flex flex-1 items-center justify-center">
+                <Loading />
+              </div>
             ) : (
-              <>
+              <div className="flex min-h-0 flex-1 flex-col">
                 {/* Case 1: no data → Empty stage */}
                 {!entries?.length ? (
                   <EmptyStageComponent
@@ -198,15 +166,24 @@ const TrialBalance = () => {
                     isFetching={isFetching}
                     totalPages={paginationData?.totalPages}
                     currFetchedPage={paginationData?.currFetchedPage}
+                    className="flex min-h-0 flex-1 flex-col"
+                    bodyClassName="flex-1 min-h-0 scrollBarStyles overflow-auto rounded-sm"
                   />
                 )}
-              </>
+              </div>
             )}
           </>
         )}
 
         {isCreatingEntry && (
-          <CreateNewEntry onCancel={() => setIsCreatingEntry(false)} />
+          <CreateNewEntry
+            onCancel={() => {
+              setIsCreatingEntry(false);
+              queryClient.invalidateQueries([
+                accountingAPIs.getJournalEntries.endpointKey,
+              ]);
+            }}
+          />
         )}
 
         {reviewingEntry && (
