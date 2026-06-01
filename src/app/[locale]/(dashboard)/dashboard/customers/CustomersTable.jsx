@@ -25,6 +25,7 @@ export function CustomersTable({
   isFetching,
   totalPages,
   currFetchedPage,
+  onRowClick,
 }) {
   const tableContainerRef = React.useRef(null);
   const [isFetchingNextPage, setIsFetchingNextPage] = React.useState(false);
@@ -143,9 +144,12 @@ export function CustomersTable({
                       data-index={virtualRow.index}
                       ref={(node) => rowVirtualizer.measureElement(node)}
                       key={row.id}
-                      className={
-                        'border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700'
+                      onClick={
+                        onRowClick ? () => onRowClick(row.original) : undefined
                       }
+                      className={`border-y border-[#A5ABBD33] bg-[#ada9a919] font-semibold text-gray-700 ${
+                        onRowClick ? 'cursor-pointer hover:bg-gray-100/50' : ''
+                      }`}
                     >
                       {row.getVisibleCells().map((cell) => {
                         return (

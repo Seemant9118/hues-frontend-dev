@@ -181,7 +181,25 @@ export const checkVendorGSTApplicability = (vendor) => {
 };
 
 // Utility function to handle empty strings and undefined values
-export const formatValue = (value) => (value?.trim() ? value : '-');
+export const formatValue = (value) =>
+  value && value !== null && value !== undefined && value?.toString().trim()
+    ? value
+    : '-';
+
+export const formatDateCustom = (dateStr) => {
+  if (!dateStr) return '-';
+  try {
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch (e) {
+    return '-';
+  }
+};
 
 // to get data from JWT
 export const parseJwt = (token) => {

@@ -19,11 +19,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import Tooltips from '../auth/Tooltips';
-
-const COLLAPSED_COLUMN_LIMIT = 5;
+import { useRef, useState } from 'react';
 
 export default function InfiniteDataTable({
   id,
@@ -43,35 +39,6 @@ export default function InfiniteDataTable({
   const tableContainerRef = useRef(null);
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
-  const [isColumnsExpanded, setIsColumnsExpanded] = useState(false);
-
-  const hasCollapsibleColumns = (columns?.length || 0) > COLLAPSED_COLUMN_LIMIT;
-  const columnsBeforeToggle = useMemo(
-    () => columns?.slice(0, COLLAPSED_COLUMN_LIMIT) || [],
-    [columns],
-  );
-  const columnsAfterToggle = useMemo(() => {
-    if (!hasCollapsibleColumns || !isColumnsExpanded) {
-      return [];
-    }
-
-    return columns.slice(COLLAPSED_COLUMN_LIMIT);
-  }, [columns, hasCollapsibleColumns, isColumnsExpanded]);
-  const visibleColumns = useMemo(() => {
-    if (!hasCollapsibleColumns) {
-      return columns;
-    }
-
-    return [...columnsBeforeToggle, ...columnsAfterToggle];
-  }, [columns, columnsAfterToggle, columnsBeforeToggle, hasCollapsibleColumns]);
-  const renderedColumnCount =
-    (visibleColumns?.length || 1) + (hasCollapsibleColumns ? 1 : 0);
-
-  useEffect(() => {
-    if (!hasCollapsibleColumns) {
-      setIsColumnsExpanded(false);
-    }
-  }, [hasCollapsibleColumns]);
 
   const hasNextPage =
     totalPages && currFetchedPage ? currFetchedPage < totalPages : false;
@@ -84,7 +51,7 @@ export default function InfiniteDataTable({
 
   const table = useReactTable({
     data: data || [],
-    columns: visibleColumns,
+    columns,
     state: {
       sorting,
       columnFilters,
@@ -101,30 +68,6 @@ export default function InfiniteDataTable({
   });
 
   const { rows } = table.getRowModel();
-  const renderColumnToggle = () => (
-    <Tooltips
-      trigger={
-        <button
-          type="button"
-          className="rounded-sm border border-transparent p-1 text-gray-600 transition hover:border-gray-200 hover:bg-gray-100 hover:text-black"
-          onClick={() => setIsColumnsExpanded((prev) => !prev)}
-          aria-expanded={isColumnsExpanded}
-        >
-          {isColumnsExpanded ? (
-            <>
-              <PanelLeftClose className="h-4 w-4" />
-            </>
-          ) : (
-            <>
-              <PanelLeftOpen className="h-4 w-4" />
-            </>
-          )}
-        </button>
-      }
-      content={isColumnsExpanded ? 'Collapse columns' : 'Expand columns'}
-      side="top"
-    />
-  );
 
   // Virtualizer
   const rowVirtualizer = useVirtualizer({
@@ -149,21 +92,16 @@ export default function InfiniteDataTable({
             <TableHeader>
               {table.getHeaderGroups().map((hg) => (
                 <TableRow key={hg.id}>
-                  {hg.headers.map((header, index) => (
-                    <Fragment key={header.id}>
-                      <TableHead className="shrink-0 whitespace-nowrap">
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                      </TableHead>
-                      {hasCollapsibleColumns &&
-                        index === COLLAPSED_COLUMN_LIMIT - 1 && (
-                          <TableHead className="w-px shrink-0 whitespace-nowrap px-2 text-right">
-                            {renderColumnToggle()}
-                          </TableHead>
-                        )}
-                    </Fragment>
+                  {hg.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className="shrink-0 whitespace-nowrap"
+                    >
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                    </TableHead>
                   ))}
                 </TableRow>
               ))}
@@ -174,7 +112,7 @@ export default function InfiniteDataTable({
               {rows.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={renderedColumnCount}
+                    colSpan={columns?.length || 1}
                     className="h-32 text-center text-sm text-muted-foreground"
                   >
                     No results found
@@ -192,7 +130,7 @@ export default function InfiniteDataTable({
                     className="pointer-events-none"
                   >
                     <TableCell
-                      colSpan={renderedColumnCount}
+                      colSpan={columns?.length || 1}
                       className="border-0 bg-transparent p-0"
                       style={{
                         height: rowVirtualizer.getVirtualItems()[0]?.start ?? 0,
@@ -219,19 +157,16 @@ export default function InfiniteDataTable({
                             : undefined
                         }
                       >
-                        {row.getVisibleCells().map((cell, index) => (
-                          <Fragment key={cell.id}>
-                            <TableCell className="max-w-xl shrink-0 whitespace-nowrap px-4">
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext(),
-                              )}
-                            </TableCell>
-                            {hasCollapsibleColumns &&
-                              index === COLLAPSED_COLUMN_LIMIT - 1 && (
-                                <TableCell className="w-px shrink-0 px-2" />
-                              )}
-                          </Fragment>
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell
+                            key={cell.id}
+                            className="max-w-xl shrink-0 whitespace-nowrap px-4"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
                         ))}
                       </TableRow>
                     );
@@ -244,7 +179,7 @@ export default function InfiniteDataTable({
                     className="pointer-events-none"
                   >
                     <TableCell
-                      colSpan={renderedColumnCount}
+                      colSpan={columns?.length || 1}
                       className="border-0 bg-transparent p-0"
                       style={{
                         height:
@@ -260,7 +195,7 @@ export default function InfiniteDataTable({
               {rows.length > 0 && hasNextPage && (
                 <TableRow key="infinite-scroll-trigger">
                   <TableCell
-                    colSpan={renderedColumnCount}
+                    colSpan={columns?.length || 1}
                     className="border-0 p-0"
                   >
                     <div

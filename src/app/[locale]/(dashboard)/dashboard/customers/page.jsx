@@ -21,6 +21,7 @@ import {
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import { Download, PlusCircle, Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { CustomersTable } from './CustomersTable';
 import { useCustomersColumns } from './useCustomersColumns';
@@ -46,9 +47,15 @@ const CustomerPage = () => {
   );
 
   const { hasPermission } = usePermission();
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [customers, setCustomers] = useState(null);
   const [paginationData, setPaginationData] = useState({});
+
+  // onRowClick
+  const onRowClick = (row) => {
+    router.push(`/dashboard/customers/${row.id}`);
+  };
 
   // get customers data
   const {
@@ -267,6 +274,7 @@ const CustomerPage = () => {
                       }
                       totalPages={paginationData?.totalPages}
                       currFetchedPage={paginationData?.currFetchedPage}
+                      onRowClick={onRowClick}
                     />
                   )}
                 </>

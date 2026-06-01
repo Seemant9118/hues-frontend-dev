@@ -51,6 +51,24 @@
                     "rejected": "अस्वीकृत"
                 }
             }
+        },
+        "customerDetails": {
+            "title1": "ग्राहक",
+            "title2": "ग्राहक विवरण",
+            "tabs": {
+                "tab1": {
+                    "title": "अवलोकन",
+                    "content": {
+                        "overview_labels": {
+                            "name": "नाम",
+                            "enterprise_type": "उद्यम प्रकार",
+                            "email": "ईमेल",
+                            "phone": "फोन नंबर",
+                            "address": "उद्यम का पता"
+                        }
+                    }
+                }
+            }
         }
     }
 }

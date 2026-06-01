@@ -23,3 +23,13 @@ export const getSearchedCustomers = ({ page, limit, data }) => {
     data,
   );
 };
+
+export const getCustomer = (id) => {
+  return APIinstance.get(`${customerApis.getCustomer.endpoint}${id}`);
+};
+
+export const getCustomerLedger = ({ customerId }) => {
+  return APIinstance.get(
+    `${customerApis.getCustomerLedger.endpoint}${customerId}`,
+  );
+};

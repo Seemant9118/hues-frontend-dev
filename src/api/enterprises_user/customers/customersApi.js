@@ -11,4 +11,12 @@ export const customerApis = {
     endpoint: `/enterprise/customer/searchcustomer`,
     endpointKey: 'get_searched_csutomers',
   },
+  getCustomer: {
+    endpoint: `/enterprise/customer/get/`,
+    endpointKey: 'get_customer',
+  },
+  getCustomerLedger: {
+    endpoint: `/financial-summary/customer/`,
+    endpointKey: 'get_customer_ledger',
+  },
 };

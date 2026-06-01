@@ -39,4 +39,9 @@ export const clientEnterprise = {
     endpoint: `/enterprise/client/downloadsamplefile`,
     endpointKey: 'get_client_sample_file',
   },
+  // 9. get Ledger data for client
+  getClientLedger: {
+    endpoint: `/financial-summary/client/`,
+    endpointKey: 'get_client_ledger',
+  },
 };

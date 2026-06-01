@@ -45,3 +45,9 @@ export function bulkUploadVendors(data) {
 export function getVendorSampleFile() {
   return APIinstance.get(vendorEnterprise.getVendorSample.endpoint);
 }
+
+export function getVendorLedger({ vendorId }) {
+  return APIinstance.get(
+    `${vendorEnterprise.getVendorLedger.endpoint}${vendorId}`,
+  );
+}

@@ -39,4 +39,9 @@ export const vendorEnterprise = {
     endpoint: `/enterprise/vendor/downloadsamplefile`,
     endpointKey: 'get_vendor_sample_file',
   },
+  // 9. get Ledger data for vendor
+  getVendorLedger: {
+    endpoint: `/financial-summary/vendor/`,
+    endpointKey: 'get_vendor_ledger',
+  },
 };

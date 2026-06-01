@@ -45,3 +45,9 @@ export function bulkUploadClients(data) {
 export function getClientSampleFile() {
   return APIinstance.get(clientEnterprise.getClientSample.endpoint);
 }
+
+export function getClientLedger({ clientId }) {
+  return APIinstance.get(
+    `${clientEnterprise.getClientLedger.endpoint}${clientId}`,
+  );
+}

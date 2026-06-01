@@ -51,6 +51,24 @@
                     "rejected": "Declined by customer"
                 }
             }
+        },
+        "customerDetails": {
+            "title1": "Customers",
+            "title2": "Customer Details",
+            "tabs": {
+                "tab1": {
+                    "title": "Overview",
+                    "content": {
+                        "overview_labels": {
+                            "name": "Name",
+                            "enterprise_type": "Enterprise Type",
+                            "email": "Email",
+                            "phone": "Phone Number",
+                            "address": "Enterprise Address"
+                        }
+                    }
+                }
+            }
         }
     }
 }
