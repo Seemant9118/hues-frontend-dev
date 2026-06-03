@@ -7,6 +7,7 @@ import {
   formattedAmount,
 } from '@/appUtils/helperFunctions';
 import InfoBanner from '@/components/auth/InfoBanner';
+import TicketChatModal from '@/components/Modals/TicketChatModal';
 import TicketModal from '@/components/Modals/TicketModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import AccessDenied from '@/components/shared/AccessDenied';
@@ -21,14 +22,20 @@ import {
   getVendor,
   getVendorLedger,
 } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
-import { useQuery } from '@tanstack/react-query';
-import { MessageSquare, Plus } from 'lucide-react';
+import {
+  createManualTicket,
+  getTickets,
+  updateTicketStatus,
+} from '@/services/Tickets_Services/Tickets_Services';
+import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
+import { Plus, Ticket } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import React, { useState } from 'react';
-import { useLedgerColumns } from './columns/useLedgerColumns';
-import { useDocumentsColumns } from './columns/useDocumentsColumns';
+import { toast } from 'sonner';
 import { useAuthorizedPersonColumns } from './columns/useAuthorizedPersonsColumns';
+import { useDocumentsColumns } from './columns/useDocumentsColumns';
+import { useLedgerColumns } from './columns/useLedgerColumns';
 
 export default function VendorsDetailsPage() {
   const { vendorId } = useParams();
@@ -41,32 +48,20 @@ export default function VendorsDetailsPage() {
   const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [ticketForm, setTicketForm] = useState({
     title: '',
-    category: '',
+    category: 'MANUAL',
+    priority: 'LOW',
     description: '',
-    transaction: '',
-    status: 'Open',
+    context: 'INVOICE',
+    subCategory: 'AMOUNT_MISMATCH',
+    referenceNumber: '',
+    referenceDate: '',
+    contextId: null,
   });
-  const [tickets, setTickets] = useState([
-    {
-      id: 1,
-      title: 'Invoice discrepancy',
-      category: 'Payment',
-      description:
-        'The amount on invoice INV-001 does not match the payment advice.',
-      transaction: 'INV-001',
-      date: 'Mar 10, 2024',
-      status: 'Open',
-    },
-    {
-      id: 2,
-      title: 'Delivery delay inquiry',
-      category: 'Delivery',
-      description: 'Shipment has been delayed at the transit hub for 2 days.',
-      transaction: '',
-      date: 'Feb 25, 2024',
-      status: 'Resolved',
-    },
-  ]);
+
+  const [createdTickets, setCreatedTickets] = useState([]);
+  const [localMessages, setLocalMessages] = useState({});
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [selectedChatTicket, setSelectedChatTicket] = useState(null);
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -120,57 +115,188 @@ export default function VendorsDetailsPage() {
     },
   });
 
+  // api call to fetch tickets
+  const {
+    data: ticketsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isTicketsLoading,
+    refetch: refetchTickets,
+  } = useInfiniteQuery({
+    queryKey: ['tickets', vendorId],
+    queryFn: ({ pageParam = 1 }) => {
+      const targetEnterpriseId = vendorDetails?.vendor?.id || vendorDetails?.id;
+      const targetEnterpriseType = vendorDetails?.vendor?.id
+        ? 'ENTERPRISE'
+        : 'UNCONFIRMED_ENTERPRISE';
+      return getTickets({
+        page: pageParam,
+        limit: 10,
+        targetEnterpriseId,
+        targetEnterpriseType,
+      });
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const totalPages = Number(lastPage?.data?.data?.totalPages ?? 0);
+      if (totalPages > 0) {
+        const nextPage = (Array.isArray(allPages) ? allPages.length : 0) + 1;
+        return nextPage <= totalPages ? nextPage : undefined;
+      }
+      const ticketsArray =
+        lastPage?.data?.data?.data ||
+        lastPage?.data?.data ||
+        lastPage?.data ||
+        [];
+      return ticketsArray.length === 10 ? allPages.length + 1 : undefined;
+    },
+    enabled: tab === 'tickets' && !!vendorId && !!vendorDetails,
+  });
+
+  const tickets = React.useMemo(() => {
+    const fetched =
+      ticketsData?.pages.flatMap((page) => {
+        const list =
+          page?.data?.data?.data || page?.data?.data || page?.data || [];
+        return Array.isArray(list) ? list : [];
+      }) || [];
+    return [...createdTickets, ...fetched];
+  }, [ticketsData, createdTickets]);
+
+  const updateStatusMutation = useMutation({
+    mutationFn: updateTicketStatus,
+    onSuccess: (data, variables) => {
+      refetchTickets();
+      setSelectedChatTicket((prevSelected) => {
+        const prevId = prevSelected?.id || prevSelected?._id;
+        if (prevSelected && prevId === variables.ticketId) {
+          return { ...prevSelected, status: variables.status.status };
+        }
+        return prevSelected;
+      });
+      toast.success('Ticket status updated successfully');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to update status');
+    },
+  });
+
+  const createManualTicketMutation = useMutation({
+    mutationFn: createManualTicket,
+    onSuccess: () => {
+      toast.success('Ticket created successfully');
+      refetchTickets();
+      setIsTicketModalOpen(false);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to create ticket');
+    },
+  });
+
+  const handleOpenChatModal = (ticket) => {
+    setSelectedChatTicket(ticket);
+    setIsChatModalOpen(true);
+  };
+
+  const handleChatStatusChange = (ticketId, newStatus) => {
+    updateStatusMutation.mutate({
+      ticketId,
+      status: { status: newStatus },
+    });
+  };
+
+  const handleChatSendMessage = (ticketId, messageText) => {
+    if (!messageText.trim()) return;
+    const now = new Date();
+    const timeString = now.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    const newMessage = {
+      id: Date.now(),
+      sender: 'agent',
+      text: messageText,
+      time: timeString,
+    };
+
+    setLocalMessages((prev) => ({
+      ...prev,
+      [ticketId]: [...(prev[ticketId] || []), newMessage],
+    }));
+
+    setSelectedChatTicket((prevSelected) => {
+      const prevId = prevSelected?.id || prevSelected?._id;
+      if (prevSelected && prevId === ticketId) {
+        return {
+          ...prevSelected,
+          messages: [...(prevSelected.messages || []), newMessage],
+        };
+      }
+      return prevSelected;
+    });
+  };
+
+  const getTicketForChatModal = (ticket) => {
+    if (!ticket) return null;
+    const tId = ticket.id || ticket._id;
+    return {
+      ...ticket,
+      id: tId,
+      messages: [...(ticket.messages || []), ...(localMessages[tId] || [])],
+    };
+  };
+
   const handleOpenCreateModal = () => {
     setSelectedTicketId(null);
     setTicketForm({
       title: '',
-      category: '',
+      category: 'MANUAL',
+      priority: 'LOW',
       description: '',
-      transaction: '',
-      status: 'Open',
+      context: 'INVOICE',
+      subCategory: 'AMOUNT_MISMATCH',
+      referenceNumber: '',
+      referenceDate: '',
+      contextId: null,
     });
     setModalMode('create');
     setIsTicketModalOpen(true);
   };
 
-  const handleOpenEditModal = (ticket) => {
-    setSelectedTicketId(ticket.id);
-    setTicketForm({
-      title: ticket.title,
-      category: ticket.category,
-      description: ticket.description || '',
-      transaction: ticket.transaction || '',
-      status: ticket.status || 'Open',
-    });
-    setModalMode('edit');
-    setIsTicketModalOpen(true);
-  };
-
-  const handleTicketFormSubmit = (e) => {
+  const handleTicketFormSubmit = (e, extraData) => {
     e.preventDefault();
-    if (!ticketForm.title.trim() || !ticketForm.category) return;
+    if (!ticketForm.title.trim()) {
+      toast.error('Please fill all required fields');
+      return;
+    }
 
     if (modalMode === 'create') {
-      const today = new Date();
-      const formattedDate = today.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-      const newTicket = {
-        id: Date.now(),
+      const payload = {
         title: ticketForm.title,
-        category: ticketForm.category,
         description: ticketForm.description,
-        transaction: ticketForm.transaction,
-        date: formattedDate,
-        status: 'Open',
+        priority: ticketForm.priority,
+        category: 'MANUAL',
+        subCategory: ticketForm.subCategory,
+        severity: ticketForm.priority,
+        contextType: ticketForm.context,
+        targetEnterpriseId: Number(extraData?.targetEnterpriseId),
+        targetEnterpriseType: extraData?.targetEnterpriseType,
       };
-      setTickets([newTicket, ...tickets]);
+
+      if (ticketForm.referenceNumber) {
+        payload.referenceNumber = ticketForm.referenceNumber;
+        payload.contextId = ticketForm.contextId;
+        if (ticketForm.referenceDate) {
+          payload.referenceDate = ticketForm.referenceDate;
+        }
+      }
+
+      createManualTicketMutation.mutate(payload);
     } else {
-      setTickets(
-        tickets.map((t) =>
-          t.id === selectedTicketId
+      setCreatedTickets((prev) =>
+        prev.map((t) =>
+          (t.id || t._id) === selectedTicketId
             ? {
                 ...t,
                 title: ticketForm.title,
@@ -182,9 +308,8 @@ export default function VendorsDetailsPage() {
             : t,
         ),
       );
+      setIsTicketModalOpen(false);
     }
-
-    setIsTicketModalOpen(false);
   };
 
   const documentRows = React.useMemo(
@@ -406,41 +531,112 @@ export default function VendorsDetailsPage() {
                 )}
               </div>
             </TabsContent>
-
             <TabsContent value="tickets">
               <div className="flex flex-col gap-2">
                 <div className="flex flex-col gap-3">
-                  {tickets.map((ticket) => (
-                    <div
-                      key={ticket.id}
-                      onClick={() => handleOpenEditModal(ticket)}
-                      className="border-gray-150 flex cursor-pointer items-center justify-between rounded-xl border bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-                    >
-                      <div className="flex items-start gap-3.5">
-                        <div className="rounded-lg bg-gray-50 p-2.5 text-gray-500">
-                          <MessageSquare size={18} />
+                  {isTicketsLoading && tickets.length === 0 ? (
+                    <p className="p-6 text-center text-sm text-gray-500">
+                      Loading tickets...
+                    </p>
+                  ) : tickets.length === 0 ? (
+                    <p className="p-6 text-center text-sm text-gray-500">
+                      No tickets found.
+                    </p>
+                  ) : (
+                    tickets.map((ticket) => (
+                      <div
+                        key={ticket.id || ticket._id}
+                        className="border-gray-150 flex items-center justify-between rounded-xl border bg-white p-4 shadow-sm hover:shadow-md"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="shrink-0 rounded-lg bg-gray-50 p-2.5 text-gray-500">
+                            <Ticket size={18} />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              {ticket.ticketNumber && (
+                                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-sans text-[10px] font-bold text-slate-500">
+                                  {ticket.ticketNumber}
+                                </span>
+                              )}
+                              <h3 className="text-sm font-bold leading-snug text-gray-800">
+                                {ticket.title}
+                              </h3>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-sans text-xs font-medium text-gray-500">
+                              <span className="font-semibold text-slate-700">
+                                {ticket.subCategory &&
+                                  `${capitalize(ticket.subCategory.replace(/_/g, ' '))}`}
+                              </span>
+                              {ticket.referenceNumber && (
+                                <>
+                                  <span className="text-slate-300">•</span>
+                                  <span className="rounded bg-blue-50/50 px-1.5 py-0.5 font-semibold text-primary">
+                                    Ref: {ticket.referenceNumber}
+                                  </span>
+                                </>
+                              )}
+                              <>
+                                <span className="text-slate-300">•</span>
+                                <span>
+                                  {ticket.date ||
+                                    (ticket.createdAt
+                                      ? new Date(
+                                          ticket.createdAt,
+                                        ).toLocaleDateString('en-US', {
+                                          month: 'short',
+                                          day: 'numeric',
+                                          year: 'numeric',
+                                        })
+                                      : '')}
+                                </span>
+                              </>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="text-sm font-bold leading-snug text-gray-800">
-                            {ticket.title}
-                          </h3>
-                          <p className="mt-0.5 font-sans text-xs font-medium text-gray-500">
-                            {ticket.category} • {ticket.date}
-                          </p>
+                        <div className="flex shrink-0 items-center gap-3">
+                          <span
+                            className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${
+                              ticket.status === 'OPEN'
+                                ? 'border-amber-200/50 bg-amber-50 text-amber-600'
+                                : ticket.status === 'WAITING'
+                                  ? 'border-blue-200/50 bg-blue-50 text-blue-600'
+                                  : ticket.status === 'RESOLVED'
+                                    ? 'border-emerald-200/50 bg-emerald-50 text-emerald-600'
+                                    : 'border-gray-200/50 bg-gray-50 text-gray-600'
+                            }`}
+                          >
+                            {ticket.status}
+                          </span>
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenChatModal(ticket);
+                            }}
+                            size="sm"
+                          >
+                            {['RESOLVED', 'CLOSED'].includes(ticket.status)
+                              ? 'View Chat'
+                              : 'Action'}
+                          </Button>
                         </div>
                       </div>
-                      <span
-                        className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${
-                          ticket.status === 'Open'
-                            ? 'border-amber-200/50 bg-amber-50 text-amber-600'
-                            : 'border-emerald-200/50 bg-emerald-50 text-emerald-600'
-                        }`}
-                      >
-                        {ticket.status}
-                      </span>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
+
+                {hasNextPage && (
+                  <div className="mt-3 flex justify-center">
+                    <Button
+                      onClick={() => fetchNextPage()}
+                      disabled={isFetchingNextPage}
+                      variant="outline"
+                      size="sm"
+                    >
+                      {isFetchingNextPage ? 'Loading...' : 'Load More'}
+                    </Button>
+                  </div>
+                )}
 
                 <TicketModal
                   isOpen={isTicketModalOpen}
@@ -450,11 +646,25 @@ export default function VendorsDetailsPage() {
                   setTicketForm={setTicketForm}
                   onSubmit={handleTicketFormSubmit}
                   onDelete={() => {
-                    setTickets(
-                      tickets.filter((t) => t.id !== selectedTicketId),
+                    setCreatedTickets((prev) =>
+                      prev.filter((t) => (t.id || t._id) !== selectedTicketId),
                     );
                     setIsTicketModalOpen(false);
                   }}
+                  targetType="vendor"
+                  targetDetails={vendorDetails}
+                  targetName={
+                    vendorDetails?.vendor?.name ||
+                    vendorDetails?.invitation?.userDetails?.name
+                  }
+                />
+
+                <TicketChatModal
+                  isOpen={isChatModalOpen}
+                  onOpenChange={setIsChatModalOpen}
+                  ticket={getTicketForChatModal(selectedChatTicket)}
+                  onStatusChange={handleChatStatusChange}
+                  onSendMessage={handleChatSendMessage}
                 />
               </div>
             </TabsContent>
