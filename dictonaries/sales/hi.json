@@ -97,7 +97,9 @@
                     "footer_ctas": {
                         "wait_response": "प्रतिक्रिया की प्रतीक्षा",
                         "negotiate": "मोलभाव करें",
-                        "accept": "स्वीकार करें"
+                        "negotiateByBehalf": "की ओर से मोलभाव करें",
+                        "accept": "स्वीकार करें",
+                        "acceptByBehalf": "की ओर से स्वीकार करें"
                     }
                 },
                 "fileUploader": {

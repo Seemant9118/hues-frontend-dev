@@ -7,6 +7,8 @@ import { orderApi } from '@/api/order_api/order_api';
 import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import DynamicModal from '@/components/Modals/DynamicModal';
+import ProxyAcceptanceModal from '@/components/Modals/ProxyAcceptanceModal';
+import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import PINVerifyModal from '@/components/invoices/PINVerifyModal';
@@ -34,6 +36,7 @@ import {
 } from '@/services/Invoice_Services/Invoice_Services';
 import {
   bulkNegotiateAcceptOrReject,
+  bulkNegotiateAcceptOrRejectOnBehalf,
   OrderDetails,
   remindOrder,
   updateOrderForUnrepliedSales,
@@ -43,9 +46,11 @@ import { stockOut } from '@/services/Stock_In_Stock_Out_Services/StockInOutServi
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Check,
+  CheckCheck,
   Eye,
   FileText,
   Handshake,
+  HeartHandshake,
   IndianRupee,
   Package,
   Pencil,
@@ -118,6 +123,8 @@ const ViewOrder = () => {
   const [tab, setTab] = useState('overview');
   // const [files, setFiles] = useState([]);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [proxyModalOpen, setProxyModalOpen] = useState(false);
+  const [isNegotiateOnBehalf, setIsNegotiateOnBehalf] = useState(false);
   const [isPINError, setIsPINError] = useState(false);
   const [modalData, setModalData] = useState({
     isOpen: false,
@@ -145,7 +152,9 @@ const ViewOrder = () => {
     },
     {
       id: 3,
-      name: translations('title.negotiation'),
+      name: isNegotiateOnBehalf
+        ? 'Review on Behalf'
+        : translations('title.negotiation'),
       path: `/dashboard/sales/sales-orders/${params.order_id}`,
       show: isNegotiation, // Show only if isNegotiation is true
     },
@@ -180,7 +189,10 @@ const ViewOrder = () => {
     const state = searchParams.get('state');
     setIsEditingOrder(state === 'editOrder');
     setIsEditingServiceOrder(state === 'editServiceOrder');
-    setIsNegotiation(state === 'negotiation');
+    setIsNegotiation(
+      state === 'negotiation' || state === 'negotiationByBehalf',
+    );
+    setIsNegotiateOnBehalf(state === 'negotiationByBehalf');
     setIsGenerateInvoice(state === 'generateInvoice');
     setIsRecordingPayment(state === 'recordPayment');
     setViewNegotiationHistory(state === 'negotiationHistory');
@@ -192,7 +204,9 @@ const ViewOrder = () => {
     let newPath = `/dashboard/sales/sales-orders/${params.order_id}`;
 
     if (isNegotiation) {
-      newPath += '?state=negotiation';
+      newPath += isNegotiateOnBehalf
+        ? '?state=negotiationByBehalf'
+        : '?state=negotiation';
     } else if (isGenerateInvoice) {
       newPath += '?state=generateInvoice';
     } else if (isRecordingPayment) {
@@ -211,6 +225,7 @@ const ViewOrder = () => {
     router.push(newPath);
   }, [
     isNegotiation,
+    isNegotiateOnBehalf,
     isGenerateInvoice,
     viewNegotiationHistory,
     isRecordingPayment,
@@ -275,11 +290,41 @@ const ViewOrder = () => {
     },
   });
 
+  const acceptOnBehalfMutation = useMutation({
+    mutationKey: orderApi.bulkNegotiateAcceptOrRejectOnBehalf.endpointKey,
+    mutationFn: bulkNegotiateAcceptOrRejectOnBehalf,
+    onSuccess: () => {
+      toast.success(translations('successMsg.order_accepted'));
+      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
+    },
+    onError: (error) => {
+      toast.error(
+        error.response.data.message || translations('errorMsg.common'),
+      );
+    },
+  });
+
   const handleAccept = () => {
     acceptMutation.mutate({
       orderId: Number(params.order_id),
       status: 'ACCEPTED',
     });
+  };
+
+  const handleProxyAccept = (proxyData) => {
+    // FORMDATA
+    const formData = new FormData();
+    formData.append('orderId', Number(params.order_id));
+    formData.append('status', 'ACCEPTED');
+    formData.append('isProxy', true);
+    formData.append('reason', proxyData.reason);
+    formData.append('consentNote', proxyData.consentNote);
+    if (proxyData.files && proxyData.files.length > 0) {
+      proxyData.files.forEach((file) => {
+        formData.append('files', file);
+      });
+    }
+    acceptOnBehalfMutation.mutate(formData);
   };
 
   const stockOutMutation = useMutation({
@@ -300,7 +345,7 @@ const ViewOrder = () => {
     mutationKey: [invoiceApi.acceptOrder.endpointKey],
     mutationFn: acceptOrder,
     onSuccess: (res) => {
-      toast.success(translations('successMsg.order_accepted'));
+      toast.success(translations('ctas.mark_as_confirmed_offline.successMsg'));
       setModalData((prev) => ({
         ...prev,
         isOpen: false,
@@ -312,7 +357,9 @@ const ViewOrder = () => {
     },
     onError: (error) => {
       toast.error(
-        error.response.data.message || translations('errorMsg.common'),
+        error.response.data.message ||
+          translations('ctas.mark_as_confirmed_offline.errorMsg') ||
+          translations('errorMsg.common'),
       );
     },
   });
@@ -322,7 +369,7 @@ const ViewOrder = () => {
     mutationKey: [invoiceApi.withDrawOrder.endpointKey],
     mutationFn: withDrawOrder,
     onSuccess: () => {
-      toast.success(translations('ctas.withdraw.successMsg'));
+      toast.success(translations('ctas.cancel.successMsg'));
       setModalData((prev) => ({
         ...prev,
         isOpen: false,
@@ -337,7 +384,7 @@ const ViewOrder = () => {
       }
       toast.error(
         error.response?.data?.message ||
-          translations('ctas.withdraw.errorMsg') ||
+          translations('ctas.cancel.errorMsg') ||
           translations('errorMsg.common'),
       );
     },
@@ -409,6 +456,7 @@ const ViewOrder = () => {
   // maintain ctas in sales order
   const ctaList = [];
   if (orderDetails) {
+    const threeDotActions = [];
     // negotiation ctas
     if (
       !isGenerateInvoice &&
@@ -424,21 +472,52 @@ const ViewOrder = () => {
         ) {
           if (orderDetails?.orderType === 'PURCHASE' && !isNegotiation) {
             ctaList.push({
-              icon: <Handshake size={14} />,
+              isDropdown: true,
               label: translations('ctas.footer_ctas.negotiate'),
-              onClick: () => setIsNegotiation(true),
               variant: 'blue_outline',
+              actions: [
+                {
+                  key: 'negotiate',
+                  label: translations('ctas.footer_ctas.negotiate'),
+                  icon: Handshake,
+                  onClick: () => setIsNegotiation(true),
+                },
+                orderDetails?.negotiationStatus === 'NEGOTIATION' && {
+                  key: 'negotiateByBehalf',
+                  label: translations('ctas.footer_ctas.negotiateByBehalf'),
+                  icon: HeartHandshake,
+                  onClick: () => {
+                    setIsNegotiation(true);
+                    setIsNegotiateOnBehalf(true);
+                  },
+                },
+              ],
             });
             ctaList.push({
-              icon: <Check size={14} />,
+              isDropdown: true,
               label: acceptMutation.isPending ? (
                 <Loading size={14} />
               ) : (
                 translations('ctas.footer_ctas.accept')
               ),
-              onClick: handleAccept,
-              disabled: acceptMutation.isPending,
               variant: 'default',
+              disabled: acceptMutation.isPending,
+              actions: [
+                {
+                  key: 'accept',
+                  label: translations('ctas.footer_ctas.accept'),
+                  icon: Check,
+                  onClick: handleAccept,
+                  disabled: acceptMutation.isPending,
+                },
+                orderDetails?.negotiationStatus === 'NEGOTIATION' && {
+                  key: 'acceptByBehalf',
+                  label: translations('ctas.footer_ctas.acceptByBehalf'),
+                  icon: CheckCheck,
+                  onClick: () => setProxyModalOpen(true),
+                  disabled: acceptMutation.isPending,
+                },
+              ],
             });
           }
         }
@@ -450,16 +529,52 @@ const ViewOrder = () => {
         ) {
           if (orderDetails?.orderStatus === 'BID_SUBMITTED' && !isNegotiation) {
             ctaList.push({
-              icon: <Handshake size={14} />,
+              isDropdown: true,
               label: translations('ctas.footer_ctas.negotiate'),
-              onClick: () => setIsNegotiation(true),
               variant: 'blue_outline',
+              actions: [
+                {
+                  key: 'negotiate',
+                  label: translations('ctas.footer_ctas.negotiate'),
+                  icon: Handshake,
+                  onClick: () => setIsNegotiation(true),
+                },
+                orderDetails?.negotiationStatus === 'NEGOTIATION' && {
+                  key: 'negotiateByBehalf',
+                  label: translations('ctas.footer_ctas.negotiateByBehalf'),
+                  icon: HeartHandshake,
+                  onClick: () => {
+                    setIsNegotiation(true);
+                    setIsNegotiateOnBehalf(true);
+                  },
+                },
+              ],
             });
             ctaList.push({
-              icon: <Check size={14} />,
-              label: translations('ctas.footer_ctas.accept'),
-              onClick: handleAccept,
+              isDropdown: true,
+              label: acceptMutation.isPending ? (
+                <Loading size={14} />
+              ) : (
+                translations('ctas.footer_ctas.accept')
+              ),
               variant: 'default',
+              disabled: acceptMutation.isPending,
+              actions: [
+                {
+                  key: 'accept',
+                  label: translations('ctas.footer_ctas.accept'),
+                  icon: Check,
+                  onClick: handleAccept,
+                  disabled: acceptMutation.isPending,
+                },
+                orderDetails?.negotiationStatus === 'NEGOTIATION' && {
+                  key: 'acceptByBehalf',
+                  label: translations('ctas.footer_ctas.acceptByBehalf'),
+                  icon: CheckCheck,
+                  onClick: () => setProxyModalOpen(true),
+                  disabled: acceptMutation.isPending,
+                },
+              ],
             });
           }
         }
@@ -499,8 +614,9 @@ const ViewOrder = () => {
       !viewNegotiationHistory
     ) {
       if (hasPermission('permission:sales-edit')) {
-        ctaList.push({
-          icon: <Pencil size={14} />,
+        threeDotActions.push({
+          key: 'revise',
+          icon: Pencil,
           label: translations('ctas.more.revise'),
           onClick: () => {
             if (orderDetails?.invoiceType === 'GOODS') {
@@ -509,7 +625,27 @@ const ViewOrder = () => {
               setIsEditingServiceOrder(true);
             }
           },
-          variant: 'warning',
+        });
+      }
+    }
+
+    // marked as confirmed (offline)
+    if (
+      !isGenerateInvoice &&
+      !isRecordingPayment &&
+      !isNegotiation &&
+      orderDetails.negotiationStatus === 'NEW' &&
+      orderDetails?.orderType === 'SALES' &&
+      orderDetails?.buyerType === 'UNINVITED-ENTERPRISE' &&
+      orderDetails?.metaData?.sellerData?.orderStatus === 'OFFER_SENT'
+    ) {
+      if (hasPermission('permission:sales-edit')) {
+        ctaList.push({
+          icon: <Check size={14} />,
+          label: translations('ctas.mark_as_confirmed_offline.cta'),
+          onClick: () =>
+            acceptOrderMutation.mutate({ orderId: Number(params.order_id) }),
+          variant: 'default',
         });
       }
     }
@@ -523,7 +659,7 @@ const ViewOrder = () => {
         orderDetails?.negotiationStatus === 'PARTIAL_INVOICED' ||
         (orderDetails.negotiationStatus === 'NEW' &&
           orderDetails?.orderType === 'SALES')) &&
-      !viewNegotiationHistory
+      orderDetails?.buyerType === 'ENTERPRISE'
     ) {
       if (hasPermission('permission:sales-invoice-create')) {
         ctaList.push({
@@ -531,11 +667,6 @@ const ViewOrder = () => {
           label: translations('ctas.generate_invoice'),
           onClick: () => {
             if (
-              orderDetails?.buyerType === 'UNINVITED-ENTERPRISE' &&
-              orderDetails?.metaData?.sellerData?.orderStatus === 'OFFER_SENT'
-            ) {
-              acceptOrderMutation.mutate({ orderId: Number(params.order_id) });
-            } else if (
               orderDetails?.buyerType === 'ENTERPRISE' &&
               orderDetails?.metaData?.sellerData?.orderStatus === 'OFFER_SENT'
             ) {
@@ -595,7 +726,7 @@ const ViewOrder = () => {
       }
     }
 
-    // withdraw cta
+    // cancel cta
     if (
       !isGenerateInvoice &&
       !isRecordingPayment &&
@@ -603,13 +734,23 @@ const ViewOrder = () => {
       orderDetails?.metaData?.sellerData?.orderStatus === 'OFFER_SENT'
     ) {
       if (hasPermission('permission:sales-edit')) {
-        ctaList.push({
-          icon: <X size={14} />,
-          label: translations('ctas.withdraw.cta'),
+        threeDotActions.push({
+          key: 'cancel',
+          icon: X,
+          label: translations('ctas.cancel.cta'),
           onClick: () => setWithdrawModalOpen(true),
-          variant: 'outline',
         });
       }
+    }
+
+    if (threeDotActions.length > 0) {
+      ctaList.push({
+        isDropdown: true,
+        isThreeDots: true,
+        label: 'more-actions',
+        variant: 'outline',
+        actions: threeDotActions,
+      });
     }
   }
 
@@ -656,6 +797,16 @@ const ViewOrder = () => {
           isPendingInvoice={withdrawOrderMutation.isPending}
         />
 
+        <ProxyAcceptanceModal
+          open={proxyModalOpen}
+          setOpen={setProxyModalOpen}
+          orderId={params.order_id}
+          orderRefNumber={orderDetails?.referenceNumber}
+          userRole="Sender"
+          onConfirm={handleProxyAccept}
+          isPending={acceptOnBehalfMutation.isPending}
+        />
+
         {!isEditingOrder &&
           !isEditingServiceOrder &&
           !isLoading &&
@@ -695,19 +846,59 @@ const ViewOrder = () => {
 
                   {/* Dynamic CTAs */}
                   {ctaList.length > 0 &&
-                    ctaList.map((cta) => (
-                      <Button
-                        key={cta.label}
-                        size="sm"
-                        variant={cta.variant || 'default'}
-                        onClick={cta.onClick}
-                        disabled={cta.disabled}
-                        className={cta.className || 'item-center flex gap-1'}
-                      >
-                        {cta.icon}
-                        {cta.label}
-                      </Button>
-                    ))}
+                    ctaList.map((cta) => {
+                      if (cta.isHide) return null;
+                      if (cta.isDropdown) {
+                        const visibleActions = (cta.actions || []).filter(
+                          (action) => !!action && !action.isHide,
+                        );
+                        if (visibleActions.length === 0) return null;
+                        if (visibleActions.length === 1) {
+                          const singleAction = visibleActions[0];
+                          const ActionIcon = singleAction.icon;
+                          return (
+                            <Button
+                              key={singleAction.key || singleAction.label}
+                              size="sm"
+                              variant={cta.variant || 'default'}
+                              onClick={singleAction.onClick}
+                              disabled={singleAction.disabled || cta.disabled}
+                              className={
+                                cta.className ||
+                                'item-center flex gap-1 font-bold'
+                              }
+                            >
+                              {ActionIcon && <ActionIcon size={14} />}
+                              {singleAction.label}
+                            </Button>
+                          );
+                        }
+                        return (
+                          <ActionsDropdown
+                            key={cta.label}
+                            label={cta.label}
+                            variant={cta.variant}
+                            disabled={cta.disabled}
+                            actions={visibleActions}
+                            isThreeDots={cta.isThreeDots}
+                            isHide={cta.isHide}
+                          />
+                        );
+                      }
+                      return (
+                        <Button
+                          key={cta.label}
+                          size="sm"
+                          variant={cta.variant || 'default'}
+                          onClick={cta.onClick}
+                          disabled={cta.disabled}
+                          className={cta.className || 'item-center flex gap-1'}
+                        >
+                          {cta.icon}
+                          {cta.label}
+                        </Button>
+                      );
+                    })}
                 </div>
               </section>
 
@@ -831,6 +1022,8 @@ const ViewOrder = () => {
                     orderDetails={orderDetails}
                     isNegotiation={isNegotiation}
                     setIsNegotiation={setIsNegotiation}
+                    isNegotiateOnBehalf={isNegotiateOnBehalf}
+                    setIsNegotiateOnBehalf={setIsNegotiateOnBehalf}
                   />
                 )}
 

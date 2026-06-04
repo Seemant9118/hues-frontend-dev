@@ -14,6 +14,7 @@ import { useTranslations } from 'next-intl';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import InvoicePDFViewModal from './InvoicePDFViewModal';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import Loading from '../ui/Loading';
@@ -241,24 +242,28 @@ export default function TicketChatModal({
                       {/* Attachments inside bubble */}
                       {msg.attachments && msg.attachments.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-2 border-t border-dashed border-white/20 pt-2">
-                          {msg.attachments.map((attachment) => (
-                            <a
-                              key={attachment.id}
-                              href={attachment?.document?.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={`flex max-w-[200px] items-center gap-1.5 overflow-hidden truncate rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-all ${
-                                isMyComment
-                                  ? 'border-blue-500 bg-blue-700/30 text-blue-100 hover:bg-blue-700/50'
-                                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                              }`}
-                            >
-                              <Paperclip size={12} className="shrink-0" />
-                              <span className="truncate">
-                                {attachment?.fileName}
-                              </span>
-                            </a>
-                          ))}
+                          {msg.attachments.map((attachment) => {
+                            return (
+                              <InvoicePDFViewModal
+                                key={attachment.id}
+                                cta={
+                                  <div
+                                    className={`flex max-w-[200px] cursor-pointer items-center gap-1.5 overflow-hidden truncate rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-all ${
+                                      isMyComment
+                                        ? 'border-blue-500 bg-blue-700/30 text-blue-100 hover:bg-blue-700/50'
+                                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                                    }`}
+                                  >
+                                    <Paperclip size={12} className="shrink-0" />
+                                    <span className="truncate">
+                                      {attachment?.fileName}
+                                    </span>
+                                  </div>
+                                }
+                                Url={attachment?.document?.url}
+                              />
+                            );
+                          })}
                         </div>
                       )}
                     </div>

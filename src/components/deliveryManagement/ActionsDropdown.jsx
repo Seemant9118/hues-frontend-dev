@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 
 export default function ActionsDropdown({
@@ -15,8 +15,18 @@ export default function ActionsDropdown({
   disabled = false,
   label = 'Actions',
   variant = 'default',
+  isThreeDots = false,
+  isHide = false,
 }) {
   const [open, setOpen] = useState(false);
+
+  const visibleActions = (actions || []).filter(
+    (action) => !!action && !action.isHide,
+  );
+
+  if (isHide || visibleActions.length === 0) {
+    return null;
+  }
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -24,20 +34,29 @@ export default function ActionsDropdown({
         <Button
           size="sm"
           variant={variant}
-          className="font-bold"
+          className={`font-bold`}
           disabled={disabled}
         >
-          {label}
-          {open ? (
-            <ChevronUp className="ml-1 h-4 w-4" />
+          {isThreeDots ? (
+            <>
+              <span className="sr-only">Open actions menu</span>
+              <MoreVertical className="h-4 w-4" />
+            </>
           ) : (
-            <ChevronDown className="ml-1 h-4 w-4" />
+            <>
+              {label}
+              {open ? (
+                <ChevronUp className="ml-1 h-4 w-4" />
+              ) : (
+                <ChevronDown className="ml-1 h-4 w-4" />
+              )}
+            </>
           )}
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-fit">
-        {actions.map((action) => (
+        {visibleActions.map((action) => (
           <DropdownMenuItem
             key={action.key}
             className={`flex items-center justify-center gap-2 font-semibold ${action.className || ''}`}

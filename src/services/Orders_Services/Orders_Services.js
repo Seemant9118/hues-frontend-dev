@@ -66,8 +66,22 @@ export const bulkNegotiateAcceptOrReject = (data) => {
   return APIinstance.post(orderApi.bulkNegotiateAcceptOrReject.endpoint, data);
 };
 
+export const bulkNegotiateAcceptOrRejectOnBehalf = (data) => {
+  return APIinstance.post(
+    orderApi.bulkNegotiateAcceptOrRejectOnBehalf.endpoint,
+    data,
+  );
+};
+
 export const createBulkNegotiaion = (data) => {
   return APIinstance.post(orderApi.createBulkNegotiation.endpoint, data);
+};
+
+export const createBulkNegotiationOnBehalf = (data) => {
+  return APIinstance.post(
+    orderApi.createBulkNegotiationOnBehalf.endpoint,
+    data,
+  );
 };
 
 export const updateOrder = (id, data) => {

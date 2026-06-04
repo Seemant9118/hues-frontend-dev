@@ -79,6 +79,11 @@
                     "payment_advice": "Send Payment Advise",
                     "generate_invoice": "Invoice",
                     "stock-in": "Stock in",
+                    "cancel": {
+                        "cta": "Cancel",
+                        "successMsg": "Order cancelled successfully",
+                        "errorMsg": "Oops! Something didn’t go as planned Try again?"
+                    },
                     "withdraw": {
                         "cta": "Withdraw",
                         "successMsg": "Order withdrawn successfully",
@@ -94,7 +99,9 @@
                     "footer_ctas": {
                         "wait_response": "Awaiting response",
                         "negotiate": "Review",
-                        "accept": "Accept"
+                        "negotiateByBehalf": "Review on behalf",
+                        "accept": "Accept",
+                        "acceptByBehalf": "Accept on behalf"
                     }
                 },
                 "fileUploader": {

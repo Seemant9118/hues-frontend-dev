@@ -78,11 +78,19 @@ export const orderApi = {
     endpoint: `/order/negotiation/bulk/updatestatus`,
     endpointKey: 'bulk_Negotiation_accept_reject',
   },
+  bulkNegotiateAcceptOrRejectOnBehalf: {
+    endpoint: `/order/negotiation/bulk/updatestatus-on-behalf`,
+    endpointKey: 'bulk_Negotiation_accept_reject_on_behalf',
+  },
 
   // 14. createbulkNegotiation
   createBulkNegotiation: {
     endpoint: `/order/negotiation/bulk/create`,
     endpointKey: 'create_bulk_negotiation',
+  },
+  createBulkNegotiationOnBehalf: {
+    endpoint: `/order/negotiation/bulk/create-on-behalf`,
+    endpointKey: 'create_bulk_negotiation_on_behalf',
   },
 
   // 15. updateOrder

@@ -7,8 +7,9 @@ import { orderApi } from '@/api/order_api/order_api';
 import { capitalize, formattedAmount } from '@/appUtils/helperFunctions';
 import { GetNegotiationDetails } from '@/services/Orders_Services/Orders_Services';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText } from 'lucide-react';
 import React, { useState } from 'react';
+import InvoicePDFViewModal from '../Modals/InvoicePDFViewModal';
 import {
   Table,
   TableBody,
@@ -28,12 +29,15 @@ export default function NegotiationHistory({ orderId }) {
   };
 
   // Fetch negotiationDetails
-  const { data: negotiationData } = useQuery({
+  const { data: rawData } = useQuery({
     queryKey: [orderApi.getNegotiationDetails.endpointKey],
     queryFn: () => GetNegotiationDetails({ orderId }),
     enabled: !!orderId,
     select: (data) => data?.data?.data,
   });
+
+  const negotiationData = rawData?.negotiations || [];
+  const documents = rawData?.documents || [];
 
   return (
     <div>
@@ -69,15 +73,52 @@ export default function NegotiationHistory({ orderId }) {
                       )
                     ) : null}
                   </TableCell>
-                  <TableCell>{capitalize(entry.negotiatedBy)}</TableCell>
+                  <TableCell>
+                    {capitalize(entry.negotiatedBy)}
+                    {entry.data?.some((item) => item.isOnBehalfAction) && (
+                      <span className="ml-2 rounded bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-800">
+                        On Behalf
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell>{`${entry.time} | ${entry.date}`}</TableCell>
                   <TableCell>{formattedAmount(entry.totalAmount)}</TableCell>
                 </TableRow>
 
-                {expandedRows.includes(index) && entry.data.length > 0 && (
+                {expandedRows.includes(index) && entry.data?.length > 0 && (
                   <TableRow>
                     <TableCell />
                     <TableCell colSpan={3} className="p-0">
+                      {entry.data?.[0]?.isOnBehalfAction && (
+                        <div className="flex flex-col gap-1.5 border-b bg-slate-50 p-4 text-xs">
+                          <div className="flex gap-2">
+                            <span className="w-32 font-semibold text-slate-700">
+                              Action on Behalf:
+                            </span>
+                            <span className="text-slate-600">Yes</span>
+                          </div>
+                          {entry.data[0]?.onBehalfReason && (
+                            <div className="flex gap-2">
+                              <span className="w-32 font-semibold text-slate-700">
+                                Reason:
+                              </span>
+                              <span className="text-slate-600">
+                                {entry.data[0].onBehalfReason}
+                              </span>
+                            </div>
+                          )}
+                          {entry.data[0]?.onBehalfConsentNote && (
+                            <div className="flex gap-2">
+                              <span className="w-32 font-semibold text-slate-700">
+                                Consent Note:
+                              </span>
+                              <span className="text-slate-600">
+                                {entry.data[0].onBehalfConsentNote}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -124,6 +165,31 @@ export default function NegotiationHistory({ orderId }) {
           )}
         </TableBody>
       </Table>
+
+      {documents?.length > 0 && (
+        <div className="mt-6 rounded-sm border bg-white p-4">
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <FileText className="h-4 w-4 text-blue-500" />
+            Supporting Evidence / Attachments ({documents.length})
+          </h3>
+          <div className="flex flex-wrap gap-3">
+            {documents.map((doc) => (
+              <InvoicePDFViewModal
+                key={doc.attachmentid}
+                cta={
+                  <div className="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-xs font-medium text-blue-600 transition-colors hover:bg-slate-50">
+                    <FileText className="h-4 w-4 flex-shrink-0 text-red-500" />
+                    <span className="max-w-xs truncate">
+                      {doc.attachmentfilename}
+                    </span>
+                  </div>
+                }
+                Url={doc.documenturl}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -83,9 +83,19 @@
                     "record_payment": "Log payment",
                     "generate_invoice": "Invoice",
                     "stock-out": "Stock out",
+                    "mark_as_confirmed_offline": {
+                        "cta": "Mark as Confirmed (Offline)",
+                        "successMsg": "Order marked as confirmed successfully",
+                        "errorMsg": "Oops! Something didn’t go as planned Try again?"
+                    },
                     "withdraw": {
                         "cta": "Withdraw",
                         "successMsg": "Order withdrawn successfully",
+                        "errorMsg": "Oops! Something didn’t go as planned Try again?"
+                    },
+                    "cancel": {
+                        "cta": "Cancel",
+                        "successMsg": "Order cancelled successfully",
                         "errorMsg": "Oops! Something didn’t go as planned Try again?"
                     },
                     "view": {
@@ -98,7 +108,9 @@
                     "footer_ctas": {
                         "wait_response": "Awaiting Response",
                         "negotiate": "Review",
-                        "accept": "Accept"
+                        "negotiateByBehalf": "Review on behalf",
+                        "accept": "Accept",
+                        "acceptByBehalf": "Accept on behalf"
                     }
                 },
                 "fileUploader": {
