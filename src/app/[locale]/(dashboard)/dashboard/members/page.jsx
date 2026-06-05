@@ -3,7 +3,9 @@
 import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
-import MemberInviteModal from '@/components/membersInvite/MemberInviteModal';
+import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
+import AddInternalMemberModal from '@/components/membersInvite/AddInternalMemberModal';
+import CreateExternalMemberModal from '@/components/membersInvite/CreateExternalMemberModal';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
@@ -32,9 +34,10 @@ const MembersPage = () => {
 
   const translation = useTranslations('members');
   const { hasPermission } = usePermission();
-  const [isInvitingMembers, setIsInvitingMembers] = useState(false);
   const [isMemberEditing, setIsMemberEditing] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [isAddInternalOpen, setIsAddInternalOpen] = useState(false);
+  const [isCreateExternalOpen, setIsCreateExternalOpen] = useState(false);
 
   const { data: membersList, isLoading } = useQuery({
     queryKey: [
@@ -74,18 +77,32 @@ const MembersPage = () => {
           <SubHeader name={translation('header')} className="z-10 bg-white">
             <div className="flex items-center justify-center gap-2">
               <ProtectedWrapper permissionCode={'permission:members-create'}>
-                <Button onClick={() => setIsInvitingMembers(true)} size="sm">
-                  <UserPlus size={16} />
-                  {'Invite Members'}
-                </Button>
-                <MemberInviteModal
-                  isModalOpen={isInvitingMembers}
-                  setIsModalOpen={setIsInvitingMembers}
+                <ActionsDropdown
+                  label={'Invite Members'}
+                  actions={[
+                    {
+                      key: 'invite-internal',
+                      label: 'Add Internal Member',
+                      icon: UserPlus,
+                      onClick: () => setIsAddInternalOpen(true),
+                    },
+                  ]}
                 />
+
+                <AddInternalMemberModal
+                  isOpen={isAddInternalOpen}
+                  setIsOpen={setIsAddInternalOpen}
+                />
+
+                <CreateExternalMemberModal
+                  isOpen={isCreateExternalOpen}
+                  setIsOpen={setIsCreateExternalOpen}
+                />
+
                 {selectedMember && (
-                  <MemberInviteModal
-                    isModalOpen={isMemberEditing}
-                    setIsModalOpen={setIsMemberEditing}
+                  <AddInternalMemberModal
+                    isOpen={isMemberEditing}
+                    setIsOpen={setIsMemberEditing}
                     membersInfo={selectedMember}
                     isEditMode={true}
                   />
@@ -121,9 +138,9 @@ const MembersPage = () => {
               <p className="max-w-96 text-center">
                 {translation('empty.description')}
               </p>
-              <ProtectedWrapper permissionCode={'permission:members-create'}>
-                <MemberInviteModal />
-              </ProtectedWrapper>
+              <ProtectedWrapper
+                permissionCode={'permission:members-create'}
+              ></ProtectedWrapper>
             </div>
           )}
         </Wrapper>
