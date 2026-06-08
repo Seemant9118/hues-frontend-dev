@@ -48,7 +48,7 @@ export default function AddInternalMemberModal({
     designation: '',
     department: '',
     employeeCode: '',
-    joiningDate: '',
+    dateOfJoining: '',
     agreement: 'none',
     status: true,
   });
@@ -81,8 +81,8 @@ export default function AddInternalMemberModal({
         designation: membersInfo.designation || '',
         department: membersInfo.department || '',
         employeeCode: membersInfo.employeeCode || '',
-        joiningDate: membersInfo.joiningDate
-          ? moment(membersInfo.joiningDate).format('YYYY-MM-DD')
+        dateOfJoining: membersInfo.dateOfJoining
+          ? moment(membersInfo.dateOfJoining).format('YYYY-MM-DD')
           : '',
         agreement: membersInfo.agreement || 'none',
         status: membersInfo.isActive ?? true,
@@ -97,7 +97,7 @@ export default function AddInternalMemberModal({
         designation: '',
         department: '',
         employeeCode: '',
-        joiningDate: '',
+        dateOfJoining: '',
         agreement: 'none',
         status: true,
       });
@@ -169,7 +169,7 @@ export default function AddInternalMemberModal({
       designation: formData.designation,
       department: formData.department,
       employeeCode: formData.employeeCode,
-      joiningDate: formData.joiningDate || null,
+      dateOfJoining: formData.dateOfJoining || null,
       isActive: formData.status,
     };
 
@@ -329,8 +329,8 @@ export default function AddInternalMemberModal({
                     <Calendar className="mr-2 h-4 w-4 text-[#A5ABBD]" />
                     <input
                       type="date"
-                      name="joiningDate"
-                      value={formData.joiningDate}
+                      name="dateOfJoining"
+                      value={formData.dateOfJoining}
                       onChange={handleChange}
                       style={{ colorScheme: 'light' }}
                       className="w-full cursor-pointer bg-transparent text-sm focus:outline-none"
