@@ -88,14 +88,22 @@ const MembersPage = () => {
             setIsOpen={setIsCreateExternalOpen}
           />
 
-          {selectedMember && (
+          {selectedMember &&
+          selectedMember.membershipType === 'EXTERNAL_MEMBER' ? (
+            <CreateExternalMemberModal
+              isOpen={isMemberEditing}
+              setIsOpen={setIsMemberEditing}
+              membersInfo={selectedMember}
+              isEditMode={true}
+            />
+          ) : selectedMember ? (
             <AddInternalMemberModal
               isOpen={isMemberEditing}
               setIsOpen={setIsMemberEditing}
               membersInfo={selectedMember}
               isEditMode={true}
             />
-          )}
+          ) : null}
 
           <>
             <SubHeader name={translation('header')} className="z-10 bg-white">

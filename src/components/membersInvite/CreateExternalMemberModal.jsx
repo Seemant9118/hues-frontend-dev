@@ -1,16 +1,15 @@
 'use client';
 
 import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
-import {
-  getEnterpriseId,
-  convertSnakeToTitleCase,
-} from '@/appUtils/helperFunctions';
-import ErrorBox from '@/components/ui/ErrorBox';
 import { rolesApi } from '@/api/rolesApi/rolesApi';
-import { getRoles } from '@/services/Roles_Services/Roles_Services';
+import {
+  convertSnakeToTitleCase,
+  getEnterpriseId,
+} from '@/appUtils/helperFunctions';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -20,9 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { sendInviteToExternalMember } from '@/services/Associate_Members_Services/AssociateMembersServices';
+import {
+  sendInviteToExternalMember,
+  updateAssociateMember,
+} from '@/services/Associate_Members_Services/AssociateMembersServices';
 import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
+import { getRoles } from '@/services/Roles_Services/Roles_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Check,
@@ -39,7 +42,12 @@ import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 const PAGE = 1;
 const LIMIT = 100;
 
-export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
+export default function CreateExternalMemberModal({
+  isOpen,
+  setIsOpen,
+  membersInfo = null,
+  isEditMode = false,
+}) {
   const enterpriseId = getEnterpriseId();
   const queryClient = useQueryClient();
 
@@ -59,7 +67,23 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
     },
   });
 
-  const { isPending } = inviteMutation;
+  const updateMemberMutation = useMutation({
+    mutationKey: [associateMemberApi.updateAssociateMember.endpointKey],
+    mutationFn: updateAssociateMember,
+    onSuccess: () => {
+      toast.success('External Member updated successfully!');
+      queryClient.invalidateQueries([
+        associateMemberApi.getAllAssociateMembers.endpointKey,
+        enterpriseId,
+      ]);
+      setIsOpen(false);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to update member');
+    },
+  });
+
+  const isPending = inviteMutation.isPending || updateMemberMutation.isPending;
 
   const [step, setStep] = useState(1);
   const [contactMode, setContactMode] = useState('Client'); // 'Client' or 'Vendor'
@@ -189,18 +213,21 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
 
   const validateStep2 = () => {
     const newErrors = {};
-    if (!memberIdentity.legalName.trim()) {
-      newErrors.legalName = 'Legal name is required';
+    if (!isEditMode) {
+      if (!memberIdentity.legalName.trim()) {
+        newErrors.legalName = 'Legal name is required';
+      }
+      if (!memberIdentity.email.trim()) {
+        newErrors.email = 'Registered email is required';
+      }
     }
-    if (!memberIdentity.email.trim()) {
-      newErrors.email = 'Registered email is required';
-    } else {
+    if (memberIdentity.email && memberIdentity.email.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(memberIdentity.email.trim())) {
         newErrors.email = 'Invalid email format';
       }
     }
-    if (memberIdentity.phone.trim()) {
+    if (memberIdentity.phone && memberIdentity.phone.trim()) {
       const cleanedPhone = memberIdentity.phone.trim().replace(/[\s-]/g, '');
       const phoneRegex = /^\+?[0-9]{10,15}$/;
       if (!phoneRegex.test(cleanedPhone)) {
@@ -210,14 +237,14 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
     if (!memberIdentity.roles || memberIdentity.roles.length === 0) {
       newErrors.roles = 'Member roles are required';
     }
-    if (memberIdentity.gstin.trim()) {
+    if (memberIdentity.gstin && memberIdentity.gstin.trim()) {
       const gstinRegex =
         /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i;
       if (!gstinRegex.test(memberIdentity.gstin.trim())) {
         newErrors.gstin = 'Invalid GSTIN format (e.g. 27AABCM1234A1Z5)';
       }
     }
-    if (memberIdentity.pan.trim()) {
+    if (memberIdentity.pan && memberIdentity.pan.trim()) {
       const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i;
       if (!panRegex.test(memberIdentity.pan.trim())) {
         newErrors.pan = 'Invalid PAN format (e.g. AABCM1234A)';
@@ -227,8 +254,76 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Sync step when entering edit mode
+  useEffect(() => {
+    if (isEditMode) {
+      setStep(2);
+    } else {
+      setStep(1);
+    }
+  }, [isEditMode, isOpen]);
+
+  // Sync membersInfo into Member Identity in edit mode
+  useEffect(() => {
+    setErrors({});
+    if (isEditMode && membersInfo) {
+      const userDetails = membersInfo.invitation?.userDetails || {};
+
+      let memberName = '';
+      if (membersInfo.sourceEnterpriseId?.id === enterpriseId) {
+        memberName = membersInfo.enterpriseId?.name || '';
+      } else {
+        memberName = membersInfo.sourceEnterpriseId?.name || '';
+      }
+      if (!memberName) {
+        memberName = membersInfo.name || membersInfo.enterpriseId?.name || '';
+      }
+
+      let { mobileNumber } = membersInfo;
+      if (!mobileNumber) {
+        mobileNumber = membersInfo.invitation?.userDetails?.mobileNumber;
+        if (!mobileNumber && membersInfo.invitation?.invitationIdentifier) {
+          if (/^\d+$/.test(membersInfo.invitation.invitationIdentifier)) {
+            mobileNumber = membersInfo.invitation.invitationIdentifier;
+          }
+        }
+      }
+
+      let { email } = membersInfo;
+      if (!email) {
+        email = membersInfo.invitation?.userDetails?.email;
+        if (!email && membersInfo.invitation?.invitationIdentifier) {
+          if (membersInfo.invitation.invitationIdentifier.includes('@')) {
+            email = membersInfo.invitation.invitationIdentifier;
+          }
+        }
+      }
+
+      setMemberIdentity({
+        legalName: memberName || userDetails.name || '',
+        tradeName: membersInfo.enterpriseId?.name || '',
+        email: email || '',
+        phone: mobileNumber || '',
+        roles: membersInfo.roles?.map((role) => role.roleId) || [],
+        gstin: membersInfo.enterpriseId?.gsts?.[0]?.gst || '',
+        pan: membersInfo.panNumber || '',
+      });
+    } else {
+      setMemberIdentity({
+        legalName: '',
+        tradeName: '',
+        email: '',
+        phone: '',
+        roles: [],
+        gstin: '',
+        pan: '',
+      });
+    }
+  }, [membersInfo, isEditMode, isOpen, enterpriseId]);
+
   // Sync selected contact details into Member Identity when selected contact changes
   useEffect(() => {
+    if (isEditMode) return;
     setErrors({});
     if (selectedContact) {
       setMemberIdentity({
@@ -241,10 +336,11 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
         pan: selectedContact.pan,
       });
     }
-  }, [selectedContact]);
+  }, [selectedContact, isEditMode]);
 
   // Sync selected contact when contactMode (Client/Vendor) or contactsList changes
   useEffect(() => {
+    if (isEditMode) return;
     if (contactsList.length > 0) {
       const exists = contactsList.find((c) => c.id === selectedContactId);
       if (!exists) {
@@ -255,7 +351,7 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
       setSelectedContactId('');
       setSelectedContact(null);
     }
-  }, [contactMode, contactsList]);
+  }, [contactMode, contactsList, isEditMode]);
 
   // Handle contact dropdown change
   const handleContactChange = (val) => {
@@ -301,6 +397,36 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
     }
   };
 
+  const handleUpdate = () => {
+    if (!validateStep2()) {
+      return;
+    }
+
+    const payload = {
+      name: memberIdentity.legalName,
+      countryCode: memberIdentity.phone ? '+91' : undefined,
+      mobileNumber: memberIdentity.phone,
+      email: memberIdentity.email,
+      enterpriseId,
+      rolesIds: memberIdentity.roles,
+      isActive: membersInfo?.isActive ?? true,
+    };
+
+    // Filter out undefined, null, empty string, or empty arrays from payload
+    const cleanPayload = Object.fromEntries(
+      Object.entries(payload).filter(([, value]) => {
+        if (value === undefined || value === null || value === '') return false;
+        if (Array.isArray(value) && value.length === 0) return false;
+        return true;
+      }),
+    );
+
+    updateMemberMutation.mutate({
+      id: membersInfo.id,
+      data: cleanPayload,
+    });
+  };
+
   const handleSubmit = () => {
     if (!consentAccepted) {
       setErrors({
@@ -326,7 +452,7 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
         setIsOpen(open);
         if (!open) {
           // Reset state on close
-          setStep(1);
+          setStep(isEditMode ? 2 : 1);
           setContactMode('Client');
           setSelectedContactId('');
           setSelectedContact(null);
@@ -347,68 +473,70 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
       <DialogContent className="max-w-[700px] gap-0 overflow-hidden rounded-lg border border-gray-100 bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between border-b border-gray-100 pb-4">
           <DialogTitle className="text-xl font-bold text-[#0D3B66]">
-            Create External Member
+            {isEditMode ? 'Edit External Member' : 'Create External Member'}
           </DialogTitle>
         </div>
 
         {/* Stepper Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 bg-[#fafafa]/50 px-2 py-6">
-          {/* Step 1 Item */}
-          <div className="flex items-center gap-2">
-            {step > 1 ? (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
-                <Check className="h-4 w-4" />
-              </div>
-            ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
-                <Link2 className="h-4 w-4" />
-              </div>
-            )}
-            <span
-              className={`text-sm font-bold ${step >= 1 ? 'text-[#0D3B66]' : 'text-gray-400'}`}
-            >
-              Link Contact
-            </span>
-          </div>
-
-          <ChevronRight className="h-4 w-4 text-gray-300" />
-
-          {/* Step 2 Item */}
-          <div className="flex items-center gap-2">
-            {step > 2 ? (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
-                <Check className="h-4 w-4" />
-              </div>
-            ) : (
-              <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full ${step === 2 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'}`}
+        {!isEditMode && (
+          <div className="flex items-center justify-between border-b border-gray-100 bg-[#fafafa]/50 px-2 py-6">
+            {/* Step 1 Item */}
+            <div className="flex items-center gap-2">
+              {step > 1 ? (
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
+                  <Check className="h-4 w-4" />
+                </div>
+              ) : (
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
+                  <Link2 className="h-4 w-4" />
+                </div>
+              )}
+              <span
+                className={`text-sm font-bold ${step >= 1 ? 'text-[#0D3B66]' : 'text-gray-400'}`}
               >
-                <User className="h-4 w-4" />
-              </div>
-            )}
-            <span
-              className={`text-sm font-bold ${step >= 2 ? 'text-[#0D3B66]' : 'text-gray-400'}`}
-            >
-              Member Identity
-            </span>
-          </div>
-
-          <ChevronRight className="h-4 w-4 text-gray-300" />
-
-          {/* Step 3 Item */}
-          <div className="flex items-center gap-2">
-            <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${step === 3 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'}`}
-            >
-              <FileText className="h-4 w-4" />
+                Link Contact
+              </span>
             </div>
-            <span
-              className={`text-sm font-bold ${step === 3 ? 'text-[#0D3B66]' : 'text-gray-400'}`}
-            >
-              Consent
-            </span>
+
+            <ChevronRight className="h-4 w-4 text-gray-300" />
+
+            {/* Step 2 Item */}
+            <div className="flex items-center gap-2">
+              {step > 2 ? (
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
+                  <Check className="h-4 w-4" />
+                </div>
+              ) : (
+                <div
+                  className={`flex h-8 w-8 items-center justify-center rounded-full ${step === 2 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'}`}
+                >
+                  <User className="h-4 w-4" />
+                </div>
+              )}
+              <span
+                className={`text-sm font-bold ${step >= 2 ? 'text-[#0D3B66]' : 'text-gray-400'}`}
+              >
+                Member Identity
+              </span>
+            </div>
+
+            <ChevronRight className="h-4 w-4 text-gray-300" />
+
+            {/* Step 3 Item */}
+            <div className="flex items-center gap-2">
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-full ${step === 3 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'}`}
+              >
+                <FileText className="h-4 w-4" />
+              </div>
+              <span
+                className={`text-sm font-bold ${step === 3 ? 'text-[#0D3B66]' : 'text-gray-400'}`}
+              >
+                Consent
+              </span>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Form Content */}
         <div className="navScrollBarStyles max-h-[60vh] min-h-[320px] overflow-y-auto py-6 pr-1">
@@ -568,6 +696,7 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
                     value={memberIdentity.legalName}
                     onChange={handleInputChange}
                     required
+                    disabled={isEditMode}
                     className="h-10 rounded-md border border-gray-200 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
                   />
                   {errors.legalName && <ErrorBox msg={errors.legalName} />}
@@ -582,6 +711,7 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
                     name="tradeName"
                     value={memberIdentity.tradeName}
                     onChange={handleInputChange}
+                    disabled={isEditMode}
                     className="h-10 rounded-md border border-gray-200 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
@@ -591,7 +721,8 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
                 {/* Registered Email */}
                 <div className="flex flex-col gap-1.5">
                   <Label className="text-sm font-bold text-[#0D3B66]">
-                    Registered Email <span className="text-red-500">*</span>
+                    Registered Email{' '}
+                    {!isEditMode && <span className="text-red-500">*</span>}
                   </Label>
                   <Input
                     type="email"
@@ -599,6 +730,7 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
                     value={memberIdentity.email}
                     onChange={handleInputChange}
                     required
+                    disabled={isEditMode}
                     className="h-10 rounded-md border border-gray-200 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
                   />
                   {errors.email && <ErrorBox msg={errors.email} />}
@@ -613,6 +745,7 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
                     name="phone"
                     value={memberIdentity.phone}
                     onChange={handleInputChange}
+                    disabled={isEditMode}
                     className="h-10 rounded-md border border-gray-200 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
                   />
                   {errors.phone && <ErrorBox msg={errors.phone} />}
@@ -686,6 +819,7 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
                     name="gstin"
                     value={memberIdentity.gstin}
                     onChange={handleInputChange}
+                    disabled={isEditMode}
                     className="h-10 rounded-md border border-gray-200 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
                   />
                   {errors.gstin && <ErrorBox msg={errors.gstin} />}
@@ -700,6 +834,7 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
                     name="pan"
                     value={memberIdentity.pan}
                     onChange={handleInputChange}
+                    disabled={isEditMode}
                     className="h-10 rounded-md border border-gray-200 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
                   />
                   {errors.pan && <ErrorBox msg={errors.pan} />}
@@ -756,38 +891,56 @@ export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
 
         {/* Footer Actions */}
         <div className="mt-2 flex items-center justify-between border-t border-gray-100 pt-4">
-          {/* Left Buttons: Cancel (Step 1) or Back (Step 2 & 3) */}
-          {step === 1 ? (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              size="sm"
-            >
-              Cancel
-            </Button>
+          {isEditMode ? (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsOpen(false)}
+                size="sm"
+              >
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleUpdate} disabled={isPending}>
+                {isPending ? 'Updating...' : 'Update Member'}
+              </Button>
+            </>
           ) : (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={prevStep}
-              size="sm"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Back
-            </Button>
-          )}
+            <>
+              {/* Left Buttons: Cancel (Step 1) or Back (Step 2 & 3) */}
+              {step === 1 ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsOpen(false)}
+                  size="sm"
+                >
+                  Cancel
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={prevStep}
+                  size="sm"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Back
+                </Button>
+              )}
 
-          {/* Right Buttons: Continue (Step 1 & 2) or Create Member (Step 3) */}
-          {step < 3 ? (
-            <Button type="button" onClick={nextStep} size="sm">
-              Continue
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button size="sm" onClick={handleSubmit} disabled={isPending}>
-              {isPending ? 'Sending...' : 'Create Member'}
-            </Button>
+              {/* Right Buttons: Continue (Step 1 & 2) or Create Member (Step 3) */}
+              {step < 3 ? (
+                <Button type="button" onClick={nextStep} size="sm">
+                  Continue
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button size="sm" onClick={handleSubmit} disabled={isPending}>
+                  {isPending ? 'Sending...' : 'Create Member'}
+                </Button>
+              )}
+            </>
           )}
         </div>
       </DialogContent>

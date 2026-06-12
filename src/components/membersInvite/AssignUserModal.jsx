@@ -54,20 +54,14 @@ export default function AssignUserModal({
     enabled: !!isOpen && !!enterpriseId,
   });
 
-  // Compute role options based on selected member's roles
+  // Compute role options based on external member's roles
   const optionsForRoles = React.useMemo(() => {
-    if (!membersList) return [];
-
-    const selectedMember = membersList.find(
-      (m) => String(m.userId) === String(formData.userId),
-    );
-
-    const rolesSource = selectedMember?.roles || editUser?.roles || [];
+    const rolesSource = memberDetails?.roles || [];
     return rolesSource.map((role) => ({
       value: role?.roleId || role?.id,
       label: convertSnakeToTitleCase(role?.name),
     }));
-  }, [formData.userId, membersList, editUser]);
+  }, [memberDetails]);
 
   useEffect(() => {
     if (!membersList) return;

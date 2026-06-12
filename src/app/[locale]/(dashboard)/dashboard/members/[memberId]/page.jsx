@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
+import { usePermission } from '@/hooks/usePermissions';
 import {
   getMember,
   removeExternalMember,
@@ -28,6 +29,7 @@ import { useDelegatesColumns } from './useDelegatesColumns';
 
 export default function MemberDetailsPage() {
   const queryClient = useQueryClient();
+  const { hasPermission } = usePermission();
   const { memberId } = useParams();
   const translation = useTranslations('members');
   const enterpriseId = getEnterpriseId();
@@ -126,13 +128,35 @@ export default function MemberDetailsPage() {
       }
     }
 
-    const membershipTypeLabel = isExternalMember
-      ? translation('tableColumns.statuses.external') || 'External'
-      : translation('tableColumns.statuses.internal') || 'Internal';
+    let membershipTypeLabel = '';
+    let badgeClass = '';
+    if (isExternalMember) {
+      const isSent =
+        Number(enterpriseId) === Number(memberDetails.enterpriseId?.id);
+      if (isSent) {
+        membershipTypeLabel = `${translation('tableColumns.statuses.external') || 'External'} (Sent)`;
+        badgeClass =
+          'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-50';
+      } else {
+        membershipTypeLabel = `${translation('tableColumns.statuses.external') || 'External'} (Received)`;
+        badgeClass =
+          'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50';
+      }
+    } else {
+      membershipTypeLabel =
+        translation('tableColumns.statuses.internal') || 'Internal';
+    }
 
     return {
       name: memberName || '-',
-      membershipType: <Badge variant="secondary">{membershipTypeLabel}</Badge>,
+      membershipType: (
+        <Badge
+          className={badgeClass}
+          variant={badgeClass ? undefined : 'secondary'}
+        >
+          {membershipTypeLabel}
+        </Badge>
+      ),
       email: email || '-',
       phone: formattedMobile,
       designation: designation || '-',
@@ -206,7 +230,8 @@ export default function MemberDetailsPage() {
                   )}
                 </TabsList>
 
-                {detailTab === 'delegates' &&
+                {hasPermission('permission:members-edit') &&
+                  detailTab === 'delegates' &&
                   memberDetails?.membershipType === 'EXTERNAL_MEMBER' &&
                   enterpriseId !== memberDetails?.enterpriseId?.id && (
                     <Button

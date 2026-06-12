@@ -10,6 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { usePermission } from '@/hooks/usePermissions';
 import {
   acceptInvite,
   rejectInvite,
@@ -34,6 +35,7 @@ export const useInviteeMembersColumns = (
   enterpriseId,
 ) => {
   const queryClient = useQueryClient();
+  const { hasPermission } = usePermission();
 
   const generateLinkMutation = useMutation({
     mutationFn: generateLink,
@@ -128,9 +130,17 @@ export const useInviteeMembersColumns = (
   };
 
   const handleInactive = (id, member) => {
+    const cleanMember = Object.fromEntries(
+      Object.entries(member).filter(([, value]) => {
+        if (value === undefined || value === null || value === '') return false;
+        if (Array.isArray(value) && value.length === 0) return false;
+        return true;
+      }),
+    );
+
     updateMemberMutation.mutate({
       id,
-      data: member,
+      data: cleanMember,
     });
   };
 
@@ -177,13 +187,33 @@ export const useInviteeMembersColumns = (
       ),
       cell: ({ row }) => {
         const { membershipType } = row.original;
-        const membershipTypeMap = {
-          EXTERNAL_MEMBER: translation('tableColumns.statuses.external'),
-        };
+        const isExternal = membershipType === 'EXTERNAL_MEMBER';
+        const isSent =
+          Number(enterpriseId) === Number(row.original.enterpriseId?.id);
+
+        if (isExternal) {
+          if (isSent) {
+            return (
+              <Badge className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-50">
+                {`${
+                  translation('tableColumns.statuses.external') || 'External'
+                } (Sent)`}
+              </Badge>
+            );
+          } else {
+            return (
+              <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+                {`${
+                  translation('tableColumns.statuses.external') || 'External'
+                } (Received)`}
+              </Badge>
+            );
+          }
+        }
+
         return (
           <Badge variant="secondary">
-            {membershipTypeMap[membershipType] ||
-              translation('tableColumns.statuses.internal')}
+            {translation('tableColumns.statuses.internal') || 'Internal'}
           </Badge>
         );
       },
@@ -370,8 +400,10 @@ export const useInviteeMembersColumns = (
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const membershipType = row.original?.membershipType;
-        if (membershipType !== 'INTERNAL') {
+        if (
+          !hasPermission('permission:members-edit') ||
+          Number(enterpriseId) !== Number(row.original?.enterpriseId?.id)
+        ) {
           return null;
         }
 
@@ -421,17 +453,14 @@ export const useInviteeMembersColumns = (
                       onClick={() =>
                         handleInactive(id, {
                           enterpriseId,
-                          name:
-                            row.original.invitation?.userDetails?.name || '',
+                          name: row.original.invitation?.userDetails?.name,
                           mobileNumber:
-                            row.original.invitation?.userDetails
-                              ?.mobileNumber || '',
+                            row.original.invitation?.userDetails?.mobileNumber,
                           countryCode:
-                            row.original.invitation?.userDetails?.countryCode ||
-                            '',
+                            row.original.invitation?.userDetails?.countryCode,
                           rolesIds: row.original.roles
                             ?.map((role) => role.roleId)
-                            .filter((id) => id != null), // filter out null/undefined
+                            .filter((id) => id != null),
                           isActive: false,
                         })
                       }
@@ -449,17 +478,14 @@ export const useInviteeMembersColumns = (
                       onClick={() =>
                         handleInactive(id, {
                           enterpriseId,
-                          name:
-                            row.original.invitation?.userDetails?.name || '',
+                          name: row.original.invitation?.userDetails?.name,
                           mobileNumber:
-                            row.original.invitation?.userDetails
-                              ?.mobileNumber || '',
+                            row.original.invitation?.userDetails?.mobileNumber,
                           countryCode:
-                            row.original.invitation?.userDetails?.countryCode ||
-                            '',
+                            row.original.invitation?.userDetails?.countryCode,
                           rolesIds: row.original.roles
                             ?.map((role) => role.roleId)
-                            .filter((id) => id != null), // filter out null/undefined
+                            .filter((id) => id != null),
                           isActive: true,
                         })
                       }
