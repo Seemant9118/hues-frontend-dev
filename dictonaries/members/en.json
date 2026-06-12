@@ -8,17 +8,23 @@
       "description": "You haven't added any members yet. Start by adding your first members to keep track of your enterprise authorities"
     },
     "tableColumns": {
-      "name": "NAME",
-      "joiningDate": "JOINING DATE",
-      "phoneNumber": "PHONE NUMBER",
-      "emailId": "EMAIL ID",
-      "role": "ROLE",
-      "invitation": "INVITATION STATUS",
+      "name": "Name",
+      "membershipType": "Membership Type",
+      "joiningDate": "Joining Date",
+      "phoneNumber": "Phone Number",
+      "emailId": "Email ID",
+      "designation": "Designation",
+      "department": "Department",
+      "employeeCode": "Employee Code",
+      "role": "Role",
+      "invitation": "Invitation Status",
       "statuses": {
         "pending": "Pending",
         "rejected": "Rejected",
         "active": "Active",
-        "inactive": "Inactive"
+        "inactive": "Inactive",
+        "internal": "Internal",
+        "external": "External"
       },
       "actions" : {
         "edit": "Edit",

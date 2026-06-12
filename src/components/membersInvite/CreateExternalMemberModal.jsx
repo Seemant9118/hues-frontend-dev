@@ -1,6 +1,15 @@
 'use client';
 
+import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
+import {
+  getEnterpriseId,
+  convertSnakeToTitleCase,
+} from '@/appUtils/helperFunctions';
+import ErrorBox from '@/components/ui/ErrorBox';
+import { rolesApi } from '@/api/rolesApi/rolesApi';
+import { getRoles } from '@/services/Roles_Services/Roles_Services';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { sendInviteToExternalMember } from '@/services/Associate_Members_Services/AssociateMembersServices';
+import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
+import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Check,
   ChevronLeft,
@@ -20,79 +33,100 @@ import {
   User,
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 
-// Mock Contact Entities
-const mockContacts = [
-  {
-    id: 'meridian',
-    tradeName: 'Meridian Finance',
-    legalName: 'Meridian Financial Services Ltd.',
-    gstin: '27AABCM1234A1Z5',
-    pan: 'AABCM1234A',
-    email: 'contact@meridianfinance.com',
-    phone: '+91 98765 43210',
-    type: 'Client',
-    status: 'Active',
-  },
-  {
-    id: 'acme',
-    tradeName: 'Acme Corp',
-    legalName: 'Acme Corporation International',
-    gstin: '27AACME4321A1Z0',
-    pan: 'AACME4321A',
-    email: 'info@acmecorp.com',
-    phone: '+91 99887 76655',
-    type: 'Vendor',
-    status: 'Active',
-  },
-  {
-    id: 'nova',
-    tradeName: 'Nova Solutions',
-    legalName: 'Nova Tech Solutions LLC',
-    gstin: '27AANOVA8888A2Z1',
-    pan: 'AANOVA8888A',
-    email: 'billing@novasolutions.com',
-    phone: '+91 91234 56789',
-    type: 'Client',
-    status: 'Active',
-  },
-];
+const PAGE = 1;
+const LIMIT = 100;
 
-// Mock Artefacts
-const mockArtefacts = [
-  {
-    id: 'audit_2024',
-    title: 'Annual Audit Access Agreement 2024',
-    description:
-      'Access to financial records, ledger views, and client details for annual audit purposes. Includes masked contact information for privacy compliance.',
-    validFrom: '2024-01-01',
-    validTo: '2024-12-31',
-    permissions: '7 granted',
-    signedBy: 'Amit Kumar (Director)',
-    status: 'Signed',
-  },
-  {
-    id: 'nda_2025',
-    title: 'Vendor Data Protection SLA 2025',
-    description:
-      'Standard SLA agreement defining system uptime, data encryption standards, and service access bounds for external vendors.',
-    validFrom: '2025-01-01',
-    validTo: '2025-12-31',
-    permissions: '4 granted',
-    signedBy: 'Rajesh Sharma (VP Engineering)',
-    status: 'Signed',
-  },
-];
+export default function CreateExternalMemberModal({ isOpen, setIsOpen }) {
+  const enterpriseId = getEnterpriseId();
+  const queryClient = useQueryClient();
 
-export default function CreateExternalMemberModal({
-  isOpen,
-  setIsOpen,
-  onCreate,
-}) {
+  const inviteMutation = useMutation({
+    mutationKey: [associateMemberApi.sendInviteToExternalMember.endpointKey],
+    mutationFn: sendInviteToExternalMember,
+    onSuccess: () => {
+      toast.success('Invitation sent to external member successfully!');
+      queryClient.invalidateQueries([
+        associateMemberApi.getAllAssociateMembers.endpointKey,
+        enterpriseId,
+      ]);
+      setIsOpen(false);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to send invitation');
+    },
+  });
+
+  const { isPending } = inviteMutation;
+
   const [step, setStep] = useState(1);
-  const [contactMode, setContactMode] = useState('link'); // 'link' or 'create'
-  const [selectedContactId, setSelectedContactId] = useState('meridian');
-  const [selectedContact, setSelectedContact] = useState(mockContacts[0]);
+  const [contactMode, setContactMode] = useState('Client'); // 'Client' or 'Vendor'
+  const [selectedContactId, setSelectedContactId] = useState('');
+  const [selectedContact, setSelectedContact] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [consentAccepted, setConsentAccepted] = useState(false);
+
+  const { data: clientsData = [], isLoading: isClientsLoading } = useQuery({
+    queryKey: ['getClients', enterpriseId, 'ACCEPTED'],
+    queryFn: () =>
+      getClients({
+        id: enterpriseId,
+        status: 'ACCEPTED',
+        page: PAGE,
+        limit: LIMIT,
+      }),
+    select: (res) => {
+      const users = res?.data?.data?.users || [];
+      return users.map((user) => {
+        const details = user.client || user.invitation?.userDetails || {};
+        return {
+          id: details.id || user.id,
+          tradeName: details.tradeName || details.name || '',
+          legalName: details.legalName || details.name || '',
+          gstin: details.gsts?.[0]?.gst || '',
+          pan: details.panNumber || '',
+          email: details.email || '',
+          phone: details.mobileNumber || '',
+          type: 'Client',
+          status: user.invitation?.status || 'ACCEPTED',
+        };
+      });
+    },
+    enabled: !!isOpen && contactMode === 'Client',
+  });
+
+  const { data: vendorsData = [], isLoading: isVendorsLoading } = useQuery({
+    queryKey: ['getVendors', enterpriseId, 'ACCEPTED'],
+    queryFn: () =>
+      getVendors({
+        id: enterpriseId,
+        status: 'ACCEPTED',
+        page: PAGE,
+        limit: LIMIT,
+      }),
+    select: (res) => {
+      const users = res?.data?.data?.users || [];
+      return users.map((user) => {
+        const details = user.vendor || user.invitation?.userDetails || {};
+        return {
+          id: details.id || user.id,
+          tradeName: details.tradeName || details.name || '',
+          legalName: details.legalName || details.name || '',
+          gstin: details.gstin || '',
+          pan: details.pan || '',
+          email: details.email || '',
+          phone: details.mobileNumber || details.phone || '',
+          type: 'Vendor',
+          status: user.invitation?.status || 'ACCEPTED',
+        };
+      });
+    },
+    enabled: !!isOpen && contactMode === 'Vendor',
+  });
+
+  const contactsList = contactMode === 'Client' ? clientsData : vendorsData;
 
   // Form states
   const [memberIdentity, setMemberIdentity] = useState({
@@ -100,85 +134,189 @@ export default function CreateExternalMemberModal({
     tradeName: '',
     email: '',
     phone: '',
-    role: '',
+    roles: [],
     gstin: '',
     pan: '',
   });
 
-  const [selectedArtefactId, setSelectedArtefactId] = useState('');
-  const [selectedArtefact, setSelectedArtefact] = useState(null);
+  const [optionsForRoles, setOptionsForRoles] = useState([]);
+
+  // Load roles list
+  const { data: rolesList } = useQuery({
+    queryKey: [rolesApi.getAllRoles.endpointKey],
+    queryFn: getRoles,
+    select: (data) => data?.data?.data || [],
+    enabled: !!isOpen,
+  });
+
+  useEffect(() => {
+    if (!rolesList) return;
+    const options = rolesList.map((role) => ({
+      value: role?.id,
+      label: convertSnakeToTitleCase(role?.name),
+    }));
+    setOptionsForRoles(options);
+  }, [rolesList]);
+
+  const handleSelectRole = (roleIdVal) => {
+    const roleId = Number(roleIdVal);
+    if (!memberIdentity.roles.includes(roleId)) {
+      setMemberIdentity((prev) => ({
+        ...prev,
+        roles: [...prev.roles, roleId],
+      }));
+      if (errors.roles) {
+        setErrors((prev) => ({ ...prev, roles: '' }));
+      }
+    }
+  };
+
+  const handleRemoveRole = (roleId) => {
+    setMemberIdentity((prev) => ({
+      ...prev,
+      roles: prev.roles.filter((id) => id !== roleId),
+    }));
+  };
+
+  const validateStep1 = () => {
+    const newErrors = {};
+    if (!selectedContactId) {
+      newErrors.selectedContactId = 'Please select a contact entity';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateStep2 = () => {
+    const newErrors = {};
+    if (!memberIdentity.legalName.trim()) {
+      newErrors.legalName = 'Legal name is required';
+    }
+    if (!memberIdentity.email.trim()) {
+      newErrors.email = 'Registered email is required';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(memberIdentity.email.trim())) {
+        newErrors.email = 'Invalid email format';
+      }
+    }
+    if (memberIdentity.phone.trim()) {
+      const cleanedPhone = memberIdentity.phone.trim().replace(/[\s-]/g, '');
+      const phoneRegex = /^\+?[0-9]{10,15}$/;
+      if (!phoneRegex.test(cleanedPhone)) {
+        newErrors.phone = 'Invalid phone number format (must be 10-15 digits)';
+      }
+    }
+    if (!memberIdentity.roles || memberIdentity.roles.length === 0) {
+      newErrors.roles = 'Member roles are required';
+    }
+    if (memberIdentity.gstin.trim()) {
+      const gstinRegex =
+        /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i;
+      if (!gstinRegex.test(memberIdentity.gstin.trim())) {
+        newErrors.gstin = 'Invalid GSTIN format (e.g. 27AABCM1234A1Z5)';
+      }
+    }
+    if (memberIdentity.pan.trim()) {
+      const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i;
+      if (!panRegex.test(memberIdentity.pan.trim())) {
+        newErrors.pan = 'Invalid PAN format (e.g. AABCM1234A)';
+      }
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Sync selected contact details into Member Identity when selected contact changes
   useEffect(() => {
-    if (contactMode === 'link' && selectedContact) {
+    setErrors({});
+    if (selectedContact) {
       setMemberIdentity({
         legalName: selectedContact.legalName,
         tradeName: selectedContact.tradeName,
         email: selectedContact.email,
         phone: selectedContact.phone,
-        role: memberIdentity.role, // preserve role
+        roles: memberIdentity.roles, // preserve roles
         gstin: selectedContact.gstin,
         pan: selectedContact.pan,
       });
-    } else if (contactMode === 'create') {
-      // Clear fields if creating new
-      setMemberIdentity({
-        legalName: '',
-        tradeName: '',
-        email: '',
-        phone: '',
-        role: memberIdentity.role,
-        gstin: '',
-        pan: '',
-      });
     }
-  }, [selectedContact, contactMode]);
+  }, [selectedContact]);
+
+  // Sync selected contact when contactMode (Client/Vendor) or contactsList changes
+  useEffect(() => {
+    if (contactsList.length > 0) {
+      const exists = contactsList.find((c) => c.id === selectedContactId);
+      if (!exists) {
+        setSelectedContactId(contactsList[0].id);
+        setSelectedContact(contactsList[0]);
+      }
+    } else {
+      setSelectedContactId('');
+      setSelectedContact(null);
+    }
+  }, [contactMode, contactsList]);
 
   // Handle contact dropdown change
   const handleContactChange = (val) => {
     setSelectedContactId(val);
-    const contact = mockContacts.find((c) => c.id === val);
+    const contact = contactsList.find((c) => c.id === val);
     setSelectedContact(contact);
-  };
-
-  // Handle artefact dropdown change
-  const handleArtefactChange = (val) => {
-    setSelectedArtefactId(val);
-    if (val === 'none' || !val) {
-      setSelectedArtefact(null);
-    } else {
-      const art = mockArtefacts.find((a) => a.id === val);
-      setSelectedArtefact(art);
+    if (errors.selectedContactId) {
+      setErrors((prev) => ({ ...prev, selectedContactId: '' }));
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setMemberIdentity((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
-  const handleSelectRole = (val) => {
-    setMemberIdentity((prev) => ({ ...prev, role: val }));
+  const handleConsentChange = (checked) => {
+    setConsentAccepted(checked);
+    if (checked && errors.consent) {
+      setErrors((prev) => ({ ...prev, consent: '' }));
+    }
   };
 
   const nextStep = () => {
-    if (step < 3) setStep(step + 1);
+    if (step === 1) {
+      if (validateStep1()) {
+        setStep(2);
+      }
+    } else if (step === 2) {
+      if (validateStep2()) {
+        setStep(3);
+      }
+    }
   };
 
   const prevStep = () => {
-    if (step > 1) setStep(step - 1);
+    if (step > 1) {
+      setStep(step - 1);
+      setErrors({});
+    }
   };
 
   const handleSubmit = () => {
-    if (onCreate) {
-      onCreate({
-        contactMode,
-        contact: contactMode === 'link' ? selectedContact : null,
-        identity: memberIdentity,
-        artefact: selectedArtefact,
+    if (!consentAccepted) {
+      setErrors({
+        consent: 'You must accept the consent terms and conditions to proceed.',
       });
+      return;
     }
-    setIsOpen(false);
+
+    const payload = {
+      fromEnterpriseId: enterpriseId,
+      toEnterpriseId: selectedContact?.id || null,
+      email: memberIdentity.email,
+      roleIds: memberIdentity.roles,
+    };
+
+    inviteMutation.mutate(payload);
   };
 
   return (
@@ -189,11 +327,20 @@ export default function CreateExternalMemberModal({
         if (!open) {
           // Reset state on close
           setStep(1);
-          setContactMode('link');
-          setSelectedContactId('meridian');
-          setSelectedContact(mockContacts[0]);
-          setSelectedArtefactId('');
-          setSelectedArtefact(null);
+          setContactMode('Client');
+          setSelectedContactId('');
+          setSelectedContact(null);
+          setConsentAccepted(false);
+          setErrors({});
+          setMemberIdentity({
+            legalName: '',
+            tradeName: '',
+            email: '',
+            phone: '',
+            roles: [],
+            gstin: '',
+            pan: '',
+          });
         }
       }}
     >
@@ -209,11 +356,11 @@ export default function CreateExternalMemberModal({
           {/* Step 1 Item */}
           <div className="flex items-center gap-2">
             {step > 1 ? (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#10b981] text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
                 <Check className="h-4 w-4" />
               </div>
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#149B8E] text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
                 <Link2 className="h-4 w-4" />
               </div>
             )}
@@ -229,12 +376,12 @@ export default function CreateExternalMemberModal({
           {/* Step 2 Item */}
           <div className="flex items-center gap-2">
             {step > 2 ? (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#10b981] text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
                 <Check className="h-4 w-4" />
               </div>
             ) : (
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full ${step === 2 ? 'bg-[#149B8E] text-white' : 'bg-gray-100 text-gray-400'}`}
+                className={`flex h-8 w-8 items-center justify-center rounded-full ${step === 2 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'}`}
               >
                 <User className="h-4 w-4" />
               </div>
@@ -251,14 +398,14 @@ export default function CreateExternalMemberModal({
           {/* Step 3 Item */}
           <div className="flex items-center gap-2">
             <div
-              className={`flex h-8 w-8 items-center justify-center rounded-full ${step === 3 ? 'bg-[#149B8E] text-white' : 'bg-gray-100 text-gray-400'}`}
+              className={`flex h-8 w-8 items-center justify-center rounded-full ${step === 3 ? 'bg-primary text-white' : 'bg-gray-100 text-gray-400'}`}
             >
               <FileText className="h-4 w-4" />
             </div>
             <span
               className={`text-sm font-bold ${step === 3 ? 'text-[#0D3B66]' : 'text-gray-400'}`}
             >
-              Artefact Binding
+              Consent
             </span>
           </div>
         </div>
@@ -268,72 +415,73 @@ export default function CreateExternalMemberModal({
           {/* STEP 1: LINK CONTACT */}
           {step === 1 && (
             <div className="flex flex-col gap-5">
-              {/* Option: Link to existing */}
-              <div
-                onClick={() => setContactMode('link')}
-                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-all ${
-                  contactMode === 'link'
-                    ? 'border-[#149B8E] bg-[#149B8E]/5'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
+              <RadioGroup
+                value={contactMode}
+                onValueChange={setContactMode}
+                className="grid grid-cols-2 gap-4"
               >
-                <input
-                  type="radio"
-                  checked={contactMode === 'link'}
-                  onChange={() => setContactMode('link')}
-                  className="mt-1 h-4 w-4 text-[#149B8E] focus:ring-[#149B8E]"
-                />
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-[#0D3B66]">
-                    Link to existing Contact Entity
-                  </span>
-                  <span className="mt-0.5 text-xs text-gray-500">
-                    Select from existing Clients or Vendors
-                  </span>
+                {/* Option: Client */}
+                <div
+                  onClick={() => setContactMode('Client')}
+                  className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-all ${
+                    contactMode === 'Client'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  <RadioGroupItem value="Client" id="contact-mode-client" />
+                  <Label
+                    htmlFor="contact-mode-client"
+                    className="cursor-pointer text-sm font-bold text-[#0D3B66]"
+                  >
+                    Client
+                  </Label>
                 </div>
-              </div>
 
-              {/* Option: Create new */}
-              <div
-                onClick={() => setContactMode('create')}
-                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-all ${
-                  contactMode === 'create'
-                    ? 'border-[#149B8E] bg-[#149B8E]/5'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
-              >
-                <input
-                  type="radio"
-                  checked={contactMode === 'create'}
-                  onChange={() => setContactMode('create')}
-                  className="mt-1 h-4 w-4 text-[#149B8E] focus:ring-[#149B8E]"
-                />
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-[#0D3B66]">
-                    Create new Contact Entity
-                  </span>
-                  <span className="mt-0.5 text-xs text-gray-500">
-                    Will create a new Client/Vendor record
-                  </span>
+                {/* Option: Vendor */}
+                <div
+                  onClick={() => setContactMode('Vendor')}
+                  className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-all ${
+                    contactMode === 'Vendor'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  <RadioGroupItem value="Vendor" id="contact-mode-vendor" />
+                  <Label
+                    htmlFor="contact-mode-vendor"
+                    className="cursor-pointer text-sm font-bold text-[#0D3B66]"
+                  >
+                    Vendor
+                  </Label>
                 </div>
-              </div>
+              </RadioGroup>
 
               {/* Selected Contact Dropdown & Summary Panel */}
-              {contactMode === 'link' && (
-                <div className="mt-2 flex flex-col gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <Label className="text-sm font-bold text-[#0D3B66]">
-                      Select Contact Entity
-                    </Label>
-                    <Select
-                      value={selectedContactId}
-                      onValueChange={handleContactChange}
-                    >
-                      <SelectTrigger className="h-10 rounded-md border border-gray-200 text-[#0D3B66] focus:border-[#149B8E] focus:ring-1 focus:ring-[#149B8E]">
-                        <SelectValue placeholder="Select contact entity" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {mockContacts.map((c) => (
+              <div className="mt-2 flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <Label className="text-sm font-bold text-[#0D3B66]">
+                    Select Contact Entity
+                  </Label>
+                  <Select
+                    value={selectedContactId}
+                    onValueChange={handleContactChange}
+                  >
+                    <SelectTrigger className="h-10 rounded-md border border-gray-200 text-[#0D3B66] focus:border-primary focus:ring-1 focus:ring-primary">
+                      <SelectValue placeholder="Select contact entity" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(contactMode === 'Client' && isClientsLoading) ||
+                      (contactMode === 'Vendor' && isVendorsLoading) ? (
+                        <SelectItem value="loading" disabled>
+                          Loading...
+                        </SelectItem>
+                      ) : contactsList.length === 0 ? (
+                        <SelectItem value="none" disabled>
+                          No {contactMode.toLowerCase()}s found
+                        </SelectItem>
+                      ) : (
+                        contactsList.map((c) => (
                           <SelectItem key={c.id} value={c.id}>
                             <span className="inline-flex items-center gap-1.5">
                               <span
@@ -347,103 +495,62 @@ export default function CreateExternalMemberModal({
                               </span>
                             </span>
                           </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {errors.selectedContactId && (
+                    <ErrorBox msg={errors.selectedContactId} />
+                  )}
+                </div>
 
-                  {/* Summary Card */}
-                  {selectedContact && (
-                    <div className="border-gray-150 flex flex-col gap-3 rounded-lg border bg-slate-50/40 p-4">
-                      <span className="text-xs font-bold uppercase tracking-wider text-[#A5ABBD]">
-                        Selected Contact
-                      </span>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-[11px] text-gray-400">
-                            Legal Name:
-                          </span>
-                          <span className="text-sm font-bold text-[#0D3B66]">
-                            {selectedContact.legalName}
-                          </span>
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-[11px] text-gray-400">
-                            Type:
-                          </span>
-                          <div>
-                            <span className="inline-flex items-center rounded border-none bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-700">
-                              {selectedContact.type}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-[11px] text-gray-400">
-                            GSTIN:
-                          </span>
-                          <span className="text-sm font-medium text-gray-700">
-                            {selectedContact.gstin}
+                {/* Summary Card */}
+                {selectedContact && (
+                  <div className="border-gray-150 flex flex-col gap-3 rounded-lg border bg-slate-50/40 p-4">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#A5ABBD]">
+                      Selected Contact
+                    </span>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[11px] text-gray-400">
+                          Legal Name:
+                        </span>
+                        <span className="text-sm font-bold text-[#0D3B66]">
+                          {selectedContact.legalName}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[11px] text-gray-400">Type:</span>
+                        <div>
+                          <span
+                            className={`inline-flex items-center rounded border-none bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-700`}
+                          >
+                            {selectedContact.type}
                           </span>
                         </div>
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-[11px] text-gray-400">
-                            Status:
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[11px] text-gray-400">
+                          GSTIN:
+                        </span>
+                        <span className="text-sm font-medium text-gray-700">
+                          {selectedContact.gstin}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[11px] text-gray-400">
+                          Status:
+                        </span>
+                        <div>
+                          <span className="inline-flex items-center rounded border-none bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                            {selectedContact.status}
                           </span>
-                          <div>
-                            <span className="inline-flex items-center rounded border-none bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
-                              {selectedContact.status}
-                            </span>
-                          </div>
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
-              )}
-
-              {/* Mock fields if 'create' new mode is selected */}
-              {contactMode === 'create' && (
-                <div className="mt-2 grid grid-cols-2 gap-4 rounded-lg border border-dashed border-gray-200 bg-gray-50/50 p-4">
-                  <div className="col-span-2 flex flex-col gap-1.5">
-                    <Label className="text-sm font-bold text-[#0D3B66]">
-                      Legal Name *
-                    </Label>
-                    <Input
-                      name="legalName"
-                      placeholder="Enter new contact legal name"
-                      value={memberIdentity.legalName}
-                      onChange={handleInputChange}
-                      className="h-10 rounded-md border border-gray-200 bg-white"
-                    />
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label className="text-sm font-bold text-[#0D3B66]">
-                      Trade Name
-                    </Label>
-                    <Input
-                      name="tradeName"
-                      placeholder="Enter trade name"
-                      value={memberIdentity.tradeName}
-                      onChange={handleInputChange}
-                      className="h-10 rounded-md border border-gray-200 bg-white"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label className="text-sm font-bold text-[#0D3B66]">
-                      Type
-                    </Label>
-                    <Select defaultValue="Client">
-                      <SelectTrigger className="h-10 rounded-md border border-gray-200 bg-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Client">Client</SelectItem>
-                        <SelectItem value="Vendor">Vendor</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
 
@@ -454,15 +561,16 @@ export default function CreateExternalMemberModal({
                 {/* Legal Name */}
                 <div className="flex flex-col gap-1.5">
                   <Label className="text-sm font-bold text-[#0D3B66]">
-                    Legal Name *
+                    Legal Name <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     name="legalName"
                     value={memberIdentity.legalName}
                     onChange={handleInputChange}
                     required
-                    className="h-10 rounded-md border border-gray-200 focus-visible:border-[#149B8E] focus-visible:ring-1 focus-visible:ring-[#149B8E]"
+                    className="h-10 rounded-md border border-gray-200 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
                   />
+                  {errors.legalName && <ErrorBox msg={errors.legalName} />}
                 </div>
 
                 {/* Trade Name */}
@@ -474,7 +582,7 @@ export default function CreateExternalMemberModal({
                     name="tradeName"
                     value={memberIdentity.tradeName}
                     onChange={handleInputChange}
-                    className="h-10 rounded-md border border-gray-200 focus-visible:border-[#149B8E] focus-visible:ring-1 focus-visible:ring-[#149B8E]"
+                    className="h-10 rounded-md border border-gray-200 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
                   />
                 </div>
               </div>
@@ -483,7 +591,7 @@ export default function CreateExternalMemberModal({
                 {/* Registered Email */}
                 <div className="flex flex-col gap-1.5">
                   <Label className="text-sm font-bold text-[#0D3B66]">
-                    Registered Email *
+                    Registered Email <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     type="email"
@@ -491,8 +599,9 @@ export default function CreateExternalMemberModal({
                     value={memberIdentity.email}
                     onChange={handleInputChange}
                     required
-                    className="h-10 rounded-md border border-gray-200 focus-visible:border-[#149B8E] focus-visible:ring-1 focus-visible:ring-[#149B8E]"
+                    className="h-10 rounded-md border border-gray-200 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
                   />
+                  {errors.email && <ErrorBox msg={errors.email} />}
                 </div>
 
                 {/* Registered Phone */}
@@ -504,39 +613,67 @@ export default function CreateExternalMemberModal({
                     name="phone"
                     value={memberIdentity.phone}
                     onChange={handleInputChange}
-                    className="h-10 rounded-md border border-gray-200 focus-visible:border-[#149B8E] focus-visible:ring-1 focus-visible:ring-[#149B8E]"
+                    className="h-10 rounded-md border border-gray-200 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
                   />
+                  {errors.phone && <ErrorBox msg={errors.phone} />}
                 </div>
               </div>
 
               {/* Member Role */}
               <div className="flex flex-col gap-1.5">
                 <Label className="text-sm font-bold text-[#0D3B66]">
-                  Member Role *
+                  Member Roles <span className="text-red-500">*</span>
                 </Label>
-                <Select
-                  value={memberIdentity.role}
-                  onValueChange={handleSelectRole}
-                  required
-                >
-                  <SelectTrigger className="h-10 rounded-md border border-gray-200 text-[#0D3B66] focus:border-[#149B8E] focus:ring-1 focus:ring-[#149B8E]">
-                    <SelectValue placeholder="Select member role" />
+                <Select value="" onValueChange={handleSelectRole}>
+                  <SelectTrigger className="h-10 rounded-md border border-gray-200 text-[#0D3B66] focus:border-primary focus:ring-1 focus:ring-primary">
+                    <SelectValue placeholder="Select member roles" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="external_audit">
-                      External Auditor
-                    </SelectItem>
-                    <SelectItem value="vendor_admin">
-                      Vendor Administrator
-                    </SelectItem>
-                    <SelectItem value="client_coordinator">
-                      Client Coordinator
-                    </SelectItem>
-                    <SelectItem value="data_delegate">
-                      Data Operations Delegate
-                    </SelectItem>
+                  <SelectContent className="max-h-28">
+                    {optionsForRoles
+                      .filter(
+                        (opt) => !memberIdentity.roles.includes(opt.value),
+                      )
+                      .map((opt) => (
+                        <SelectItem key={opt.value} value={String(opt.value)}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    {optionsForRoles.filter(
+                      (opt) => !memberIdentity.roles.includes(opt.value),
+                    ).length === 0 && (
+                      <SelectItem value="none" disabled>
+                        All roles selected
+                      </SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
+
+                {/* Display Selected Roles Tags */}
+                {memberIdentity.roles.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {memberIdentity.roles.map((roleId) => {
+                      const roleOpt = optionsForRoles.find(
+                        (o) => o.value === roleId,
+                      );
+                      return (
+                        <span
+                          key={roleId}
+                          className="inline-flex items-center gap-1 rounded bg-[#EDEEF2] px-2.5 py-1 text-xs font-semibold text-gray-800"
+                        >
+                          {roleOpt?.label || 'Unknown'}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveRole(roleId)}
+                            className="ml-1 text-gray-400 hover:text-gray-600"
+                          >
+                            &times;
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+                {errors.roles && <ErrorBox msg={errors.roles} />}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -549,8 +686,9 @@ export default function CreateExternalMemberModal({
                     name="gstin"
                     value={memberIdentity.gstin}
                     onChange={handleInputChange}
-                    className="h-10 rounded-md border border-gray-200 focus-visible:border-[#149B8E] focus-visible:ring-1 focus-visible:ring-[#149B8E]"
+                    className="h-10 rounded-md border border-gray-200 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
                   />
+                  {errors.gstin && <ErrorBox msg={errors.gstin} />}
                 </div>
 
                 {/* PAN */}
@@ -562,107 +700,56 @@ export default function CreateExternalMemberModal({
                     name="pan"
                     value={memberIdentity.pan}
                     onChange={handleInputChange}
-                    className="h-10 rounded-md border border-gray-200 focus-visible:border-[#149B8E] focus-visible:ring-1 focus-visible:ring-[#149B8E]"
+                    className="h-10 rounded-md border border-gray-200 focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
                   />
+                  {errors.pan && <ErrorBox msg={errors.pan} />}
                 </div>
               </div>
             </div>
           )}
 
-          {/* STEP 3: ARTEFACT BINDING */}
+          {/* STEP 3: CONSENT */}
           {step === 3 && (
             <div className="flex flex-col gap-5">
               {/* Informational Message */}
               <div className="rounded-lg border border-slate-100 bg-slate-50 p-4 text-xs leading-relaxed text-gray-500">
-                {
-                  "Select a signed Consent Artefact to bind to this member. Artefacts define the access permissions granted to this external member's delegates."
-                }
-                <br />
-                <span className="mt-1 block font-semibold">
-                  Note: Artefacts are created and signed in the Templates module
-                  (out of scope here).
+                <span className="font-semibold text-[#0D3B66]">
+                  Member Association Consent
                 </span>
+                <p className="mt-2 text-gray-500">
+                  By completing this step, you authorize the linking of the
+                  selected external member to the chosen client or vendor
+                  entity. This integration will grant this member the necessary
+                  access rights to coordinate and operate within your workspace.
+                  Please verify that all information is accurate and that you
+                  have the internal authorization to execute this linking.
+                </p>
               </div>
 
-              {/* Selector */}
-              <div className="flex flex-col gap-1.5">
-                <Label className="text-sm font-bold text-[#0D3B66]">
-                  Select Signed Artefact (Optional)
-                </Label>
-                <Select
-                  value={selectedArtefactId}
-                  onValueChange={handleArtefactChange}
-                >
-                  <SelectTrigger className="h-10 rounded-md border border-gray-200 text-[#0D3B66] focus:border-[#149B8E] focus:ring-1 focus:ring-[#149B8E]">
-                    <SelectValue placeholder="Choose an artefact..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Choose an artefact...</SelectItem>
-                    {mockArtefacts.map((art) => (
-                      <SelectItem key={art.id} value={art.id}>
-                        <span className="inline-flex items-center gap-2">
-                          <span className="py-0.2 rounded bg-[#ecfdf5] px-1.5 text-[10px] font-bold text-[#059669]">
-                            {art.status}
-                          </span>
-                          {art.title}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Details card if artefact is selected */}
-              {selectedArtefact && (
-                <div className="border-gray-150 flex flex-col gap-4 rounded-lg border bg-white p-5 shadow-sm">
-                  <div className="flex items-start justify-between">
-                    <span className="text-base font-bold text-[#0D3B66]">
-                      {selectedArtefact.title}
-                    </span>
-                    <span className="rounded border-none bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
-                      {selectedArtefact.status}
-                    </span>
-                  </div>
-                  <p className="-mt-2 text-xs leading-relaxed text-gray-500">
-                    {selectedArtefact.description}
-                  </p>
-
-                  <div className="mt-1 grid grid-cols-2 gap-4 border-t border-gray-100 pt-4">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[11px] text-gray-400">
-                        Valid From:
-                      </span>
-                      <span className="text-xs font-bold text-gray-700">
-                        {selectedArtefact.validFrom}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[11px] text-gray-400">
-                        Valid To:
-                      </span>
-                      <span className="text-xs font-bold text-gray-700">
-                        {selectedArtefact.validTo}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[11px] text-gray-400">
-                        Permissions:
-                      </span>
-                      <span className="text-xs font-bold text-gray-700">
-                        {selectedArtefact.permissions}
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[11px] text-gray-400">
-                        Signed By:
-                      </span>
-                      <span className="text-xs font-bold text-gray-700">
-                        {selectedArtefact.signedBy}
-                      </span>
-                    </div>
-                  </div>
+              {/* Consent Checkbox */}
+              <div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-gray-300">
+                <Checkbox
+                  id="consent-checkbox"
+                  checked={consentAccepted}
+                  onCheckedChange={handleConsentChange}
+                  className="mt-1"
+                />
+                <div className="flex flex-col gap-1">
+                  <Label
+                    htmlFor="consent-checkbox"
+                    className="cursor-pointer text-sm font-bold text-[#0D3B66]"
+                  >
+                    I accept the consent terms and conditions
+                  </Label>
+                  <span className="text-xs text-gray-500">
+                    I confirm that I have verified the member&apos;s identity
+                    and authorize this link.
+                  </span>
+                  {errors.consent && (
+                    <ErrorBox msg={errors.consent} className="mt-1" />
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           )}
         </div>
@@ -675,7 +762,7 @@ export default function CreateExternalMemberModal({
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
-              className="h-10 rounded-md border border-gray-200 px-5 font-semibold text-gray-600 hover:bg-gray-50"
+              size="sm"
             >
               Cancel
             </Button>
@@ -684,7 +771,7 @@ export default function CreateExternalMemberModal({
               type="button"
               variant="outline"
               onClick={prevStep}
-              className="flex h-10 items-center gap-1.5 rounded-md border border-gray-200 px-5 font-semibold text-gray-600 hover:bg-gray-50"
+              size="sm"
             >
               <ChevronLeft className="h-4 w-4" />
               Back
@@ -693,28 +780,13 @@ export default function CreateExternalMemberModal({
 
           {/* Right Buttons: Continue (Step 1 & 2) or Create Member (Step 3) */}
           {step < 3 ? (
-            <Button
-              type="button"
-              onClick={nextStep}
-              disabled={
-                (step === 1 && contactMode === 'link' && !selectedContactId) ||
-                (step === 2 &&
-                  (!memberIdentity.legalName ||
-                    !memberIdentity.email ||
-                    !memberIdentity.role))
-              }
-              className="flex h-10 items-center gap-1.5 rounded-md border-none bg-[#149B8E] px-5 font-semibold text-white hover:bg-[#118176] disabled:opacity-50"
-            >
+            <Button type="button" onClick={nextStep} size="sm">
               Continue
               <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              className="h-10 rounded-md border-none bg-[#149B8E] px-5 font-semibold text-white hover:bg-[#118176]"
-            >
-              Create Member
+            <Button size="sm" onClick={handleSubmit} disabled={isPending}>
+              {isPending ? 'Sending...' : 'Create Member'}
             </Button>
           )}
         </div>

@@ -32,10 +32,12 @@ export function getClient(id) {
   return APIinstance.get(`${clientEnterprise.getClient.endpoint}${id}`);
 }
 
-export function getClients({ id, context, page, limit }) {
-  return APIinstance.get(
-    `${clientEnterprise.getClients.endpoint}${id}?context=${context}&page=${page}&limit=${limit}`,
-  );
+export function getClients({ id, context, page, limit, status }) {
+  let url = `${clientEnterprise.getClients.endpoint}${id}?context=${context}&page=${page}&limit=${limit}`;
+  if (status) {
+    url += `&status=${status}`;
+  }
+  return APIinstance.get(url);
 }
 
 export function bulkUploadClients(data) {

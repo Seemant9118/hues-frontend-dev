@@ -32,10 +32,12 @@ export function getVendor(id) {
   return APIinstance.get(`${vendorEnterprise.getVendor.endpoint}${id}`);
 }
 
-export function getVendors({ id, context, page, limit }) {
-  return APIinstance.get(
-    `${vendorEnterprise.getVendors.endpoint}${id}?context=${context}&page=${page}&limit=${limit}`,
-  );
+export function getVendors({ id, context, page, limit, status }) {
+  let url = `${vendorEnterprise.getVendors.endpoint}${id}?context=${context}&page=${page}&limit=${limit}`;
+  if (status) {
+    url += `&status=${status}`;
+  }
+  return APIinstance.get(url);
 }
 
 export function bulkUploadVendors(data) {

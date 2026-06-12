@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import ErrorBox from '@/components/ui/ErrorBox';
 import { Calendar } from 'lucide-react';
 import {
   Select,
@@ -39,6 +40,7 @@ export default function AddInternalMemberModal({
   const enterpriseId = getEnterpriseId();
   const queryClient = useQueryClient();
   const [optionsForRoles, setOptionsForRoles] = useState([]);
+  const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -52,6 +54,40 @@ export default function AddInternalMemberModal({
     agreement: 'none',
     status: true,
   });
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = 'Full name is required';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email.trim())) {
+        newErrors.email = 'Invalid email format';
+      }
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else {
+      const cleanedPhone = formData.phone.trim().replace(/[\s-]/g, '');
+      const phoneRegex = /^\+?[0-9]{10,15}$/;
+      if (!phoneRegex.test(cleanedPhone)) {
+        newErrors.phone = 'Invalid phone number format (must be 10-15 digits)';
+      }
+    }
+
+    if (!formData.roles || formData.roles.length === 0) {
+      newErrors.roles = 'Please select at least one role';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Load actual roles list from query
   const { data: rolesList } = useQuery({
@@ -72,6 +108,7 @@ export default function AddInternalMemberModal({
 
   // Sync data when entering edit mode or membersInfo changes
   useEffect(() => {
+    setErrors({});
     if (isEditMode && membersInfo) {
       setFormData({
         fullName: membersInfo.invitation?.userDetails?.name || '',
@@ -107,6 +144,9 @@ export default function AddInternalMemberModal({
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleSelectChange = (name, value) => {
@@ -154,8 +194,7 @@ export default function AddInternalMemberModal({
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formData.roles || formData.roles.length === 0) {
-      toast.warning('Please select at least one role.');
+    if (!validate()) {
       return;
     }
 
@@ -197,7 +236,11 @@ export default function AddInternalMemberModal({
         </div>
 
         {/* Scrollable Form Content */}
-        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          className="flex min-h-0 flex-1 flex-col"
+        >
           <div className="navScrollBarStyles flex-1 space-y-6 overflow-y-auto p-6 px-6 pt-4">
             {/* PROFILE SECTION */}
             <div className="flex flex-col gap-3">
@@ -218,6 +261,7 @@ export default function AddInternalMemberModal({
                     onChange={handleChange}
                     required
                   />
+                  {errors.fullName && <ErrorBox msg={errors.fullName} />}
                 </div>
 
                 {/* Email */}
@@ -233,6 +277,7 @@ export default function AddInternalMemberModal({
                     onChange={handleChange}
                     required
                   />
+                  {errors.email && <ErrorBox msg={errors.email} />}
                 </div>
               </div>
 
@@ -249,6 +294,7 @@ export default function AddInternalMemberModal({
                     onChange={handleChange}
                     required
                   />
+                  {errors.phone && <ErrorBox msg={errors.phone} />}
                 </div>
 
                 {/* Role */}
@@ -274,8 +320,12 @@ export default function AddInternalMemberModal({
                         ...prev,
                         roles: selectedRoles,
                       }));
+                      if (errors.roles) {
+                        setErrors((prev) => ({ ...prev, roles: '' }));
+                      }
                     }}
                   />
+                  {errors.roles && <ErrorBox msg={errors.roles} />}
                 </div>
               </div>
             </div>

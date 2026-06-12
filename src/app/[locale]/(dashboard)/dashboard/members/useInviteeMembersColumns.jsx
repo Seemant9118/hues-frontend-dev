@@ -3,13 +3,18 @@
 import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
 import { convertSnakeToTitleCase } from '@/appUtils/helperFunctions';
 import { DataTableColumnHeader } from '@/components/table/DataTableColumnHeader';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { updateAssociateMember } from '@/services/Associate_Members_Services/AssociateMembersServices';
+import {
+  acceptInvite,
+  rejectInvite,
+  updateAssociateMember,
+} from '@/services/Associate_Members_Services/AssociateMembersServices';
 import { generateLink } from '@/services/Invitation_Service/Invitation_Service';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -29,6 +34,7 @@ export const useInviteeMembersColumns = (
   enterpriseId,
 ) => {
   const queryClient = useQueryClient();
+
   const generateLinkMutation = useMutation({
     mutationFn: generateLink,
     onSuccess: (data) => {
@@ -66,6 +72,61 @@ export const useInviteeMembersColumns = (
     },
   });
 
+  const acceptInviteMutation = useMutation({
+    mutationKey: [associateMemberApi.acceptInvite.endpointKey],
+    mutationFn: acceptInvite,
+    onSuccess: () => {
+      toast.success(
+        translation('success.acceptSuccess') ||
+          'Invitation accepted successfully!',
+      );
+      queryClient.invalidateQueries([
+        associateMemberApi.getAllAssociateMembers.endpointKey,
+        enterpriseId,
+      ]);
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.message ||
+          translation('errors.commonError') ||
+          'Failed to accept invitation',
+      );
+    },
+  });
+
+  const rejectInviteMutation = useMutation({
+    mutationKey: [associateMemberApi.rejectInvite.endpointKey],
+    mutationFn: rejectInvite,
+    onSuccess: () => {
+      toast.success(
+        translation('success.rejectSuccess') ||
+          'Invitation rejected successfully!',
+      );
+      queryClient.invalidateQueries([
+        associateMemberApi.getAllAssociateMembers.endpointKey,
+        enterpriseId,
+      ]);
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.message ||
+          translation('errors.commonError') ||
+          'Failed to reject invitation',
+      );
+    },
+  });
+
+  const isAcceptPending = acceptInviteMutation.isPending;
+  const isRejectPending = rejectInviteMutation.isPending;
+
+  const handleAccept = (invitationId) => {
+    acceptInviteMutation.mutate({ invitationId, id: invitationId });
+  };
+
+  const handleReject = (invitationId) => {
+    rejectInviteMutation.mutate({ invitationId, id: invitationId });
+  };
+
   const handleInactive = (id, member) => {
     updateMemberMutation.mutate({
       id,
@@ -83,10 +144,51 @@ export const useInviteeMembersColumns = (
         />
       ),
       cell: ({ row }) => {
-        const { name } = row.original.invitation.userDetails;
-        return <div>{name}</div>;
+        const { membershipType } = row.original;
+        const userDetails = row.original.invitation?.userDetails || {};
+        const isExternalMember = membershipType === 'EXTERNAL_MEMBER';
+
+        let memberName = '';
+        if (isExternalMember) {
+          if (row.original.sourceEnterpriseId?.id === enterpriseId) {
+            memberName = row.original.enterpriseId?.name || '';
+          } else {
+            memberName = row.original.sourceEnterpriseId?.name || '';
+          }
+          if (!memberName) {
+            memberName =
+              row.original.name || row.original.enterpriseId?.name || '';
+          }
+        } else {
+          memberName = row.original.name || userDetails.name || '';
+        }
+
+        return <div>{memberName || '-'}</div>;
       },
     },
+
+    {
+      accessorKey: 'memberShipType',
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          title={translation('tableColumns.membershipType')}
+        />
+      ),
+      cell: ({ row }) => {
+        const { membershipType } = row.original;
+        const membershipTypeMap = {
+          EXTERNAL_MEMBER: translation('tableColumns.statuses.external'),
+        };
+        return (
+          <Badge variant="secondary">
+            {membershipTypeMap[membershipType] ||
+              translation('tableColumns.statuses.internal')}
+          </Badge>
+        );
+      },
+    },
+
     {
       accessorKey: 'createdAt',
       header: ({ column }) => (
@@ -110,8 +212,27 @@ export const useInviteeMembersColumns = (
         />
       ),
       cell: ({ row }) => {
-        const { mobileNumber } = row.original.invitation.userDetails;
-        return <div>+91 {mobileNumber || '-'}</div>;
+        const { membershipType } = row.original;
+        const userDetails = row.original.invitation?.userDetails || {};
+        const isExternalMember = membershipType === 'EXTERNAL_MEMBER';
+
+        let mobileNumber =
+          userDetails.mobileNumber || row.original.mobileNumber;
+        if (!mobileNumber && isExternalMember) {
+          if (row.original.sourceEnterpriseId?.id === enterpriseId) {
+            mobileNumber = row.original.enterpriseId?.phone;
+          } else {
+            mobileNumber = row.original.sourceEnterpriseId?.phone;
+          }
+        }
+
+        const formattedMobile = mobileNumber
+          ? mobileNumber.startsWith('+91')
+            ? mobileNumber
+            : `+91 ${mobileNumber}`
+          : '-';
+
+        return <div>{formattedMobile}</div>;
       },
     },
     {
@@ -123,7 +244,19 @@ export const useInviteeMembersColumns = (
         />
       ),
       cell: ({ row }) => {
-        const { email } = row.original.invitation.userDetails;
+        const { membershipType } = row.original;
+        const userDetails = row.original.invitation?.userDetails || {};
+        const isExternalMember = membershipType === 'EXTERNAL_MEMBER';
+
+        let email = userDetails.email || row.original.email;
+        if (!email && isExternalMember) {
+          if (row.original.sourceEnterpriseId?.id === enterpriseId) {
+            email = row.original.enterpriseId?.email;
+          } else {
+            email = row.original.sourceEnterpriseId?.email;
+          }
+        }
+
         return <div>{email || '-'}</div>;
       },
     },
@@ -142,7 +275,7 @@ export const useInviteeMembersColumns = (
             {roles.map((role) => (
               <div
                 key={role.roleId}
-                className="w-fit rounded-[5px] border border-[#ebebec] bg-[#EDEEF2] p-1 text-sm"
+                className="w-fit rounded-[8px] border border-[#ebebec] bg-[#EDEEF2] p-1 text-xs"
               >
                 {convertSnakeToTitleCase(role.name)}
               </div>
@@ -153,6 +286,7 @@ export const useInviteeMembersColumns = (
         );
       },
     },
+
     {
       accessorKey: 'invitation',
       header: ({ column }) => (
@@ -162,17 +296,42 @@ export const useInviteeMembersColumns = (
         />
       ),
       cell: ({ row }) => {
-        const { status } = row.original.invitation;
+        const { status, toEnterpriseId } = row.original.invitation || {};
         const { isActive } = row.original;
         let content;
 
         switch (status) {
           case 'PENDING':
-            content = (
-              <div className="flex w-20 items-center justify-center rounded-[6px] border border-blue-500 bg-blue-100 p-1 text-primary">
-                {translation('tableColumns.statuses.pending')}
-              </div>
-            );
+            if (toEnterpriseId === enterpriseId) {
+              content = (
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 border-green-500 px-2.5 text-xs font-semibold text-green-600 hover:bg-green-50 hover:text-green-700"
+                    onClick={() => handleAccept(row.original.invitation?.id)}
+                    disabled={isAcceptPending || isRejectPending}
+                  >
+                    Accept
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 border-red-500 px-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:text-red-700"
+                    onClick={() => handleReject(row.original.invitation?.id)}
+                    disabled={isAcceptPending || isRejectPending}
+                  >
+                    Reject
+                  </Button>
+                </div>
+              );
+            } else {
+              content = (
+                <div className="flex w-20 items-center justify-center rounded-[6px] border border-blue-500 bg-blue-100 p-1 text-primary">
+                  {translation('tableColumns.statuses.pending')}
+                </div>
+              );
+            }
             break;
 
           case 'REJECTED':
@@ -206,10 +365,16 @@ export const useInviteeMembersColumns = (
         return content;
       },
     },
+
     {
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
+        const membershipType = row.original?.membershipType;
+        if (membershipType !== 'INTERNAL') {
+          return null;
+        }
+
         const id = row.original?.id;
         const isActive = row.original?.isActive;
         const invitationStatus = row.original?.invitation?.status;

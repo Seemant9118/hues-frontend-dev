@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import clsx from 'clsx';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { isValidElement, useState } from 'react';
+import { Children, isValidElement, useState } from 'react';
 import ConditionalRenderingStatus from '../orders/ConditionalRenderingStatus';
 
 export default function Overview({
@@ -24,6 +24,16 @@ export default function Overview({
 
     // If React element, render directly
     if (isValidElement(value)) return value;
+
+    // If Array, render or join elements
+    if (Array.isArray(value)) {
+      if (value.some(isValidElement)) {
+        return (
+          <div className="flex flex-wrap gap-1">{Children.toArray(value)}</div>
+        );
+      }
+      return value.join(', ');
+    }
 
     // If normal object, stringify
     if (typeof value === 'object' && value !== null) {
