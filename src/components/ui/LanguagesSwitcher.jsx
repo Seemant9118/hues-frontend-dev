@@ -2,6 +2,7 @@
 
 import { getStylesForSelectComponent } from '@/appUtils/helperFunctions';
 import { useUser } from '@/context/UserContext';
+import { Globe } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 import Select from 'react-select';
@@ -37,6 +38,7 @@ const LanguagesSwitcher = ({ translations }) => {
     <div className="flex h-full flex-col p-2">
       <div className="flex flex-col gap-2">
         <Label className="flex gap-1">
+          <Globe size={16} className="text-[#288AF9]" />
           {translations('tabs.content.tab2.label.select')}
         </Label>
         <div className="flex w-full flex-col gap-1">

@@ -3,6 +3,7 @@
 import { AdminAPIs } from '@/api/adminApi/AdminApi';
 import { userAuth } from '@/api/user_auth/Users';
 import {
+  convertSnakeToTitleCase,
   getInitialsNames,
   getRandomBgColor,
   roleColors,
@@ -305,7 +306,7 @@ const ProfileInfoPopUp = ({
                           const color = roleColors[index % roleColors.length];
                           return (
                             <Badge key={role} className={color}>
-                              {role}
+                              {convertSnakeToTitleCase(role)}
                             </Badge>
                           );
                         })}

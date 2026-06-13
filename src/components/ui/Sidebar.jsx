@@ -2,7 +2,11 @@
 
 import React, { useMemo } from 'react';
 
-import { capitalize, roleColors } from '@/appUtils/helperFunctions';
+import {
+  capitalize,
+  convertSnakeToTitleCase,
+  roleColors,
+} from '@/appUtils/helperFunctions';
 import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import { useAuth } from '@/context/AuthContext';
 import { useFeatureFlags } from '@/context/FeatureFlagContext';
@@ -526,7 +530,7 @@ const Sidebar = () => {
                     const color = roleColors[index % roleColors.length];
                     return (
                       <Badge key={role} className={color}>
-                        {role}
+                        {convertSnakeToTitleCase(role)}
                       </Badge>
                     );
                   })}

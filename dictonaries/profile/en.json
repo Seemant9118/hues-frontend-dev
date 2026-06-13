@@ -11,7 +11,11 @@
         "tabs": {
             "label": {
                 "tab1": "Overview",
-                "tab2": "Languages"
+                "tab2": "Languages",
+                "tab3": "Personal Information",
+                "tab4": "Contact Information",
+                "tab5": "Associations",
+                "tab6": "Additional Information"
             },
             "content": {
                 "tab1": {
