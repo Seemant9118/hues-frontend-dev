@@ -5,25 +5,24 @@
             "register": "Join Beta"
         },
         "badge": {
-            "verified": "🚀 Join our Exclusive Beta Trial — Experience the Next-Gen ERP Today"
+            "verified": "Private Beta · Built deliberately. Released carefully."
         },
         "hero": {
             "title": {
                 "redefining": "Redefining",
                 "erp": "ERP",
                 "for": "for a",
-                "digitalBharat": "Digital Bharat"
+                "digitalBharat": "Reimagined for a digital-first India."
             },
-            "description": "Hues is an AI-powered ERP that streamlines operations, ensures compliance, and enables smarter business decisions.Now in Exclusive Beta — experience the future of enterprise management for free.","cta": {
-                "tryForFree": "Apply for Beta Access"
+            "description": "A private operating system for modern businesses—governed access, verifiable records, and intelligent workflows.","cta": {
+                "tryForFree": "Try for Free"
             },
             "imageAlt": "ERP Dashboard Preview"
         },
         "whyChoose": {
             "title": {
-                "why": "Why",
-                "choose": "Choose",
-                "hues": "Hues?"
+                "clarity": "Clarity",
+                "atScale": "at scale"
             },
             "subtitle": "Experience the power of AI-driven ERP that adapts to your business needs",
             "features": {
@@ -33,11 +32,11 @@
                 },
                 "alwaysAuditReady": {
                     "title": "Always Audit-Ready",
-                    "description": "MCA/GSTN trails, digital signatures, and tamper-proof logs — out of the box."
+                    "description": "GSTN and MCA trails, digital signatures, and tamper-evident records."
                 },
                 "aiAtEveryStep": {
-                    "title": "AI at Every Step",
-                    "description": "Auto-convert invoices, populate SKUs, detect fraud, and automate reconciliation."
+                    "title": "AI with boundaries",
+                    "description": "Intelligence that assists—rules that decide."
                 }
             }
         },
@@ -108,11 +107,11 @@
             "cards": {
                 "corporatesMsme": {
                     "title": "Corporates & MSME",
-                    "description": "One-click onboarding, freemium access, and AI-driven insights."
+                    "description": "Fast onboarding, freemium entry, and measured AI insights."
                 },
                 "auditorsInvestors": {
                     "title": "Auditors & Investors",
-                    "description": "No more PDFs — get clean, structured, traceable financial data."
+                    "description": "Structured, traceable financial data—without the PDF chase."
                 }
             }
         },

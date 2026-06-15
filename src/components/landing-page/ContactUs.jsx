@@ -154,7 +154,7 @@ const GetInTouch = () => {
 
         {/* Right Side - Form */}
         <div>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             {/* Name */}
             <div>
               <label className="mb-1.5 block text-sm font-semibold text-gray-800">

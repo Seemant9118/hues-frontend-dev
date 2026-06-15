@@ -112,12 +112,22 @@ const UdyamVerify = () => {
                 onChange={handleChange}
               />
             </div>
+
+            {/* banner */}
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                isCheckedNotUdyam ||
+                enterpriseData.udyamNumber.trim().length === 19
+                  ? 'mt-2 max-h-40 opacity-100'
+                  : 'max-h-0 opacity-0'
+              }`}
+            >
+              <InfoBanner
+                text={translations('information')}
+                showSupportLink={false}
+              />
+            </div>
           </div>
-          {/* banner */}
-          <InfoBanner
-            text={translations('information')}
-            showSupportLink={false}
-          />
 
           <div className="flex items-center gap-2 text-sm">
             <Checkbox
@@ -134,7 +144,10 @@ const UdyamVerify = () => {
             type="submit"
             disabled={
               verifyUdyamMutation.isPending ||
-              (!isCheckedNotUdyam && !enterpriseData.udyamNumber.trim())
+              !(
+                isCheckedNotUdyam ||
+                enterpriseData.udyamNumber.trim().length === 19
+              )
             }
           >
             {verifyUdyamMutation.isPending ? (

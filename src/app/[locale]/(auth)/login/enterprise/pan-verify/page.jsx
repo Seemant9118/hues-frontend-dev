@@ -193,18 +193,30 @@ const EnterprisePANVerifyPage = () => {
                   {translationsForError(errorMsg)}
                 </span>
               )}
+
+              {/* banner */}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  enterpriseOnboardData.panNumber?.length === 10
+                    ? 'mt-3 max-h-40 opacity-100'
+                    : 'max-h-0 opacity-0'
+                }`}
+              >
+                <InfoBanner
+                  text={translations('information')}
+                  showSupportLink={false}
+                />
+              </div>
             </div>
 
             <div className="flex w-full flex-col gap-2">
-              {/* banner */}
-              <InfoBanner
-                text={translations('information')}
-                showSupportLink={false}
-              />
               <Button
                 size="sm"
                 type="submit"
-                disabled={getDetailsByPanVerifiedMutation?.isPending}
+                disabled={
+                  getDetailsByPanVerifiedMutation?.isPending ||
+                  enterpriseOnboardData.panNumber?.length !== 10
+                }
               >
                 {getDetailsByPanVerifiedMutation?.isPending ? (
                   <Loading />

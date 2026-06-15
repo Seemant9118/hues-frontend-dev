@@ -232,13 +232,22 @@ const PanVerificationPage = () => {
                   )}
                 </div>
               )}
+
+              {/* banner */}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  userData?.panNumber?.length === 10
+                    ? 'mt-3 max-h-40 opacity-100'
+                    : 'max-h-0 opacity-0'
+                }`}
+              >
+                <InfoBanner
+                  text={translations('information')}
+                  showSupportLink={false}
+                />
+              </div>
             </div>
 
-            {/* banner */}
-            <InfoBanner
-              text={translations('information')}
-              showSupportLink={false}
-            />
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-sm">
                 <Checkbox
@@ -340,7 +349,8 @@ const PanVerificationPage = () => {
                 errorPanDetails ||
                 isPanDetailsLoading ||
                 isPanDetailsFetching ||
-                attemptsRemaining === 0
+                attemptsRemaining === 0 ||
+                userData?.panNumber?.length !== 10
               }
             >
               {isPanDetailsLoading || isPanDetailsFetching ? (

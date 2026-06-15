@@ -553,16 +553,36 @@ const EnterpriseVerificationDetailsPage = () => {
         </div>
 
         <div className="sticky bottom-0 flex w-full flex-col gap-2 border-t pt-2">
-          <InfoBanner
-            showSupportLink={false}
-            text={<>{translations('information')}</>}
-          />
+          {/* banner */}
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              enterpriseOnboardData.name?.trim() &&
+              enterpriseOnboardData.pincode?.length === 6 &&
+              enterpriseOnboardData.address?.trim() &&
+              enterpriseOnboardData.doi
+                ? 'mb-2 max-h-40 opacity-100'
+                : 'max-h-0 opacity-0'
+            }`}
+          >
+            <InfoBanner
+              showSupportLink={false}
+              text={<>{translations('information')}</>}
+            />
+          </div>
 
           <Button
             size="sm"
             type="submit"
             className="w-full"
-            disabled={enterpriseOnboardUpdateMutation.isPending}
+            disabled={
+              enterpriseOnboardUpdateMutation.isPending ||
+              !(
+                enterpriseOnboardData.name?.trim() &&
+                enterpriseOnboardData.pincode?.length === 6 &&
+                enterpriseOnboardData.address?.trim() &&
+                enterpriseOnboardData.doi
+              )
+            }
           >
             {enterpriseOnboardUpdateMutation.isPending ? (
               <Loading />

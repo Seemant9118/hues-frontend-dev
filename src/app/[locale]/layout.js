@@ -21,8 +21,9 @@ const nanumPen = nanumPenScript({
 
 // Metadata configuration
 export const metadata = {
-  title: 'Hues! ~ Beta trial',
-  description: 'HUES DASHBOARD',
+  title: 'Hues! ~ Private Beta · Built deliberately. Released carefully.',
+  description:
+    'ERP: A private operating system for modern businesses—governed access, verifiable records, and intelligent workflows.',
 };
 
 function getCurrentLocale(locale) {

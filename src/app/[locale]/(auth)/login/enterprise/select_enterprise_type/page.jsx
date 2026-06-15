@@ -95,11 +95,24 @@ const SelectEnterprisePage = () => {
 
         <div className="flex w-full flex-col gap-2">
           {/* banner */}
-          <InfoBanner
-            text={translations('information')}
-            showSupportLink={false}
-          />
-          <Button size="sm" type="submit" className="w-full bg-[#288AF9]">
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              enterpriseOnboardData.type
+                ? 'mb-2 max-h-40 opacity-100'
+                : 'max-h-0 opacity-0'
+            }`}
+          >
+            <InfoBanner
+              text={translations('information')}
+              showSupportLink={false}
+            />
+          </div>
+          <Button
+            size="sm"
+            type="submit"
+            className="w-full bg-[#288AF9]"
+            disabled={!enterpriseOnboardData.type}
+          >
             {translations('buttons.proceed')}
           </Button>
 

@@ -125,7 +125,7 @@ const VerifyMobileOTP = ({
           size="sm"
           type="submit"
           className="w-full bg-[#288AF9] p-2"
-          disabled={verifyOTPMutation.isPending}
+          disabled={verifyOTPMutation.isPending || otp?.length !== 4}
         >
           {verifyOTPMutation.isPending ? (
             <Loading />

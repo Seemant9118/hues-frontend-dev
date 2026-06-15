@@ -1,46 +1,115 @@
 'use client';
 
 import { getStylesForSelectComponent } from '@/appUtils/helperFunctions';
-import ImageCarousel from '@/components/ui/ImageCarousel';
 import { AuthProgressProvider } from '@/context/AuthProgressContext';
 import { UserDataProvider } from '@/context/UserDataContext';
 import useClarityTracking from '@/hooks/useClarityTracking';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Select from 'react-select';
+import HeroSection from '../(landing-page)/page';
 
-const slidesData = [
-  {
-    id: 1,
-    src: '/vendor-management-image.png',
-    alt: 'Vendor Management',
-    title: 'Vendor Management',
-    description: 'From onboarding to e-invoicing — track every touchpoint.',
-  },
-  {
-    id: 2,
-    src: '/sales-purchase-image.png',
-    alt: 'Sales & Purchase Automation',
-    title: 'Sales & Purchase Automation',
-    description: 'Real-time negotiation tools, SKU sync, offer/bid sharing.',
-  },
-  {
-    id: 3,
-    src: '/tax-image.png',
-    alt: 'Tax & Legal Compliance',
-    title: 'Tax & Legal Compliance',
-    description: 'DPDP, PMLA, GST, MCA — done..',
-  },
-  {
-    id: 4,
-    src: '/built-in-bi-image.png',
-    alt: 'Built-in BI Tools',
-    title: 'Built-in BI Tools',
-    description: 'Live dashboards for Sales, Cash Flow, and Trial Balance',
-  },
-];
+function AutoScrollingLandingPage() {
+  const containerRef = useRef(null);
+  const isHoveredRef = useRef(false);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return () => {};
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      entries.forEach((entry) => {
+        const { width } = entry.contentRect;
+        const baseWidth = 1280; // Render at standard desktop resolution
+        const newScale = width / baseWidth;
+        setScale(newScale || 1);
+      });
+    });
+
+    resizeObserver.observe(container);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return () => {};
+
+    let animationFrameId;
+    let scrollPos = 0;
+    const speed = 0.2; // Slower smooth scroll speed (pixels per frame)
+
+    const scroll = () => {
+      if (!container) return;
+      if (!isHoveredRef.current) {
+        // Adjust scroll speed according to the scale factor
+        const step = scale > 0 ? speed / scale : speed;
+        scrollPos += step;
+        const singlePageHeight = container.scrollHeight / 2;
+
+        if (scrollPos >= singlePageHeight) {
+          scrollPos = 0;
+        }
+        container.scrollTop = scrollPos;
+      }
+      animationFrameId = requestAnimationFrame(scroll);
+    };
+
+    animationFrameId = requestAnimationFrame(scroll);
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [scale]);
+
+  return (
+    <div
+      ref={containerRef}
+      onMouseEnter={() => {
+        isHoveredRef.current = true;
+      }}
+      onMouseLeave={() => {
+        isHoveredRef.current = false;
+      }}
+      className="no-scrollbar absolute inset-0 z-0 select-none overflow-y-auto overflow-x-hidden"
+      style={{
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
+        WebkitOverflowScrolling: 'touch',
+      }}
+    >
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `,
+        }}
+      />
+      <div
+        className="pointer-events-none flex origin-top-left flex-col"
+        style={{
+          width: '1280px',
+          transform: `scale(${scale})`,
+        }}
+      >
+        <div className="w-full shrink-0">
+          <HeroSection isEmbed={true} />
+        </div>
+        <div className="w-full shrink-0">
+          <HeroSection isEmbed={true} />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function LoginLayout({ children }) {
   const pathname = usePathname(); // Get current route path
@@ -113,7 +182,7 @@ export default function LoginLayout({ children }) {
             </div>
           </div>
 
-          <div className="relative w-1/2 bg-custom-linear p-5">
+          <div className="relative hidden w-1/2 overflow-hidden border-l border-gray-200 bg-custom-linear md:block">
             {/* Language switcher */}
             <div className="absolute right-2 top-1 z-10 p-2">
               <Select
@@ -127,13 +196,7 @@ export default function LoginLayout({ children }) {
               />
             </div>
 
-            <ImageCarousel
-              slidesData={slidesData}
-              autoPlay
-              interval={2500}
-              showArrows={false}
-              showDots={false}
-            />
+            <AutoScrollingLandingPage />
           </div>
         </div>
       </AuthProgressProvider>

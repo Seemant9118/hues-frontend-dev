@@ -156,7 +156,11 @@ const MobileLogin = ({
         </div>
 
         <Button
-          disabled={generateOTPMutation.isPending || loginInvitation.isPending}
+          disabled={
+            generateOTPMutation.isPending ||
+            loginInvitation.isPending ||
+            formDataWithMob.mobileNumber?.length !== 10
+          }
           type="submit"
           size="sm"
           className="w-full rounded bg-[#288AF9] font-bold text-white hover:cursor-pointer"

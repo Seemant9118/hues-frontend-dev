@@ -155,18 +155,34 @@ const CINVerificationPage = () => {
                 }
               />
             </div>
-          </div>
 
-          {/* banner */}
-          <InfoBanner
-            text={translations('information')}
-            showSupportLink={false}
-          />
+            {/* banner */}
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                enterpriseData.cinOrLlpin?.length === 21 ||
+                enterpriseData.cinOrLlpin?.length === 7
+                  ? 'mt-2 max-h-40 opacity-100'
+                  : 'max-h-0 opacity-0'
+              }`}
+            >
+              <InfoBanner
+                text={translations('information')}
+                showSupportLink={false}
+              />
+            </div>
+          </div>
 
           <Button
             size="sm"
             type="submit"
-            disabled={verifyCINMutation.isPending}
+            disabled={
+              verifyCINMutation.isPending ||
+              verifyPANCINMutation.isPending ||
+              !(
+                enterpriseData.cinOrLlpin?.length === 21 ||
+                enterpriseData.cinOrLlpin?.length === 7
+              )
+            }
           >
             {verifyCINMutation.isPending ? (
               <Loading />

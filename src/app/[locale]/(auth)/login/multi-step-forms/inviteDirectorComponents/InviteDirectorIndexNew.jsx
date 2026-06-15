@@ -133,7 +133,13 @@ const InviteDirectorIndexNew = ({
         <Button
           size="sm"
           onClick={handleSendInviteToDirector}
-          disabled={sendInvitationMutation.isPending}
+          disabled={
+            sendInvitationMutation.isPending ||
+            inviteeData.mobileNumber?.length !== 10 ||
+            !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
+              inviteeData.email,
+            )
+          }
           className="bg-[#288AF9]"
         >
           {sendInvitationMutation.isPending ? (

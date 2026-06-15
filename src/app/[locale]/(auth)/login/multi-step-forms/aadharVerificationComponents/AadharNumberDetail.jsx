@@ -107,15 +107,28 @@ const AadharNumberDetail = ({
           {errorMsg?.aadharNumber && (
             <ErrorBox msg={translationsForError(errorMsg?.aadharNumber)} />
           )}
+
+          {/* banner */}
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              aadharNumber?.length === 12
+                ? 'mt-3 max-h-40 opacity-100'
+                : 'max-h-0 opacity-0'
+            }`}
+          >
+            <InfoBanner
+              text={translations('steps.aadharNum.information')}
+              showSupportLink={false}
+            />
+          </div>
         </div>
 
-        {/* banner */}
-        <InfoBanner
-          text={translations('steps.aadharNum.information')}
-          showSupportLink={false}
-        />
-
-        <Button type="submit" className="w-full" size="sm" disabled={loading}>
+        <Button
+          type="submit"
+          className="w-full"
+          size="sm"
+          disabled={loading || aadharNumber?.length !== 12}
+        >
           {loading ? <Loading /> : translations('steps.aadharNum.button')}
         </Button>
       </div>

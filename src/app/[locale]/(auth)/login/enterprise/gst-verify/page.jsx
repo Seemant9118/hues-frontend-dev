@@ -191,13 +191,22 @@ const GstVerificationPage = () => {
                 value={isManualEntry ? enterpriseOnboardData.gstNumber : ''}
               />
             </div>
-          </div>
 
-          {/* banner */}
-          <InfoBanner
-            text={translations('information')}
-            showSupportLink={false}
-          />
+            {/* banner */}
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                isCheckedNotGst ||
+                enterpriseOnboardData.gstNumber.trim().length === 15
+                  ? 'mt-2 max-h-40 opacity-100'
+                  : 'max-h-0 opacity-0'
+              }`}
+            >
+              <InfoBanner
+                text={translations('information')}
+                showSupportLink={false}
+              />
+            </div>
+          </div>
 
           <div className="flex items-center gap-2 text-sm">
             <Checkbox
@@ -216,8 +225,10 @@ const GstVerificationPage = () => {
             type="submit"
             disabled={
               gstVerifyMutation.isPending ||
-              (!isCheckedNotGst &&
-                enterpriseOnboardData.gstNumber.trim() === '')
+              !(
+                isCheckedNotGst ||
+                enterpriseOnboardData.gstNumber.trim().length === 15
+              )
             }
           >
             {gstVerifyMutation.isPending ? (
