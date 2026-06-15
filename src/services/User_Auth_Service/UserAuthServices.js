@@ -20,6 +20,10 @@ export function userUpdate(data) {
   return APIinstance.put(userAuth.updateUser.endpoint, data);
 }
 
+export function patchUserUpdate(data) {
+  return APIinstance.patch(userAuth.updateUser.endpoint, data);
+}
+
 // 4. Create KYC Request
 export function createKYCRequest(id) {
   return APIinstance.post(userAuth.createKYC.endpoint, {

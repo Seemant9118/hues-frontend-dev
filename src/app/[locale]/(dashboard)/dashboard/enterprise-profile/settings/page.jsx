@@ -14,6 +14,7 @@ import EwbConfigDetails from '@/components/settings/EWBConfigDetails';
 import GstRegistrations from '@/components/settings/GSTRegistrationsSettings';
 import InvoiceSettings from '@/components/settings/InvoiceSettings';
 import PaymentSettings from '@/components/settings/PaymentSettings';
+import LanguagesSwitcher from '@/components/ui/LanguagesSwitcher';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -216,6 +217,9 @@ const Settings = () => {
             <TabsTrigger value="pinSettings">
               {translations('tabs.label.tab8')}
             </TabsTrigger>
+            <TabsTrigger value="languages">
+              {translations('tabs.label.tab9')}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="enterprise" className="flex flex-col gap-10">
@@ -352,6 +356,12 @@ const Settings = () => {
                 <DataTable columns={PINAuditLogsColumns} data={pinAuditLogs} />
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="languages">
+            <div className="flex flex-col gap-6 rounded-sm border border-gray-100 bg-[#F8F9FA] p-6">
+              <LanguagesSwitcher />
+            </div>
           </TabsContent>
         </Tabs>
       </Wrapper>

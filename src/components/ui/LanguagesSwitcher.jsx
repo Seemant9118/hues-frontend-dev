@@ -6,9 +6,11 @@ import { Globe } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 import Select from 'react-select';
+import { useTranslations } from 'next-intl';
 import { Label } from './label';
 
-const LanguagesSwitcher = ({ translations }) => {
+const LanguagesSwitcher = () => {
+  const translations = useTranslations('profile');
   const { setLoading } = useUser();
   const pathname = usePathname(); // Get current route path
 
