@@ -349,83 +349,106 @@ export default function HeroSection({ isEmbed = false }) {
       )}
 
       {/* hero */}
-      <section>
-        {/* Hero Content */}
-        <section
-          className={`relative mx-auto flex max-w-4xl flex-col items-center px-4 text-center sm:px-6 ${isEmbed ? 'mt-4' : 'mt-12'}`}
-        >
+      <section
+        className={`relative flex items-center overflow-hidden ${
+          isEmbed ? 'py-4' : 'py-12 lg:min-h-[calc(100vh-88px)] lg:py-0'
+        }`}
+      >
+        {/* Floating Icons */}
+        <div className="pointer-events-none absolute inset-0 z-20">
           <Image
             src="/Identity.png"
             width={60}
             height={60}
             alt="Chart Icon"
-            className="animate-float-slow absolute left-1 top-4 hidden sm:block"
+            className="animate-float-slow absolute right-[15%] top-[10%] hidden opacity-75 lg:block"
           />
           <Image
             src="/Data.png"
             width={60}
             height={60}
             alt="People Icon"
-            className="animate-float-medium absolute bottom-12 left-4 hidden sm:block"
+            className="animate-float-medium absolute bottom-[15%] right-[10%] hidden opacity-75 lg:block"
           />
           <Image
             src="/Business.png"
             width={60}
             height={60}
             alt="Bag Icon"
-            className="animate-float-fast absolute right-2 top-20 hidden sm:block"
+            className="animate-float-fast absolute left-[50%] top-[15%] hidden opacity-75 lg:block"
           />
+        </div>
 
-          {/* Badge */}
-          <ScrollReveal delay={100} animation="slide-up">
-            <p className="mb-4 rounded-full bg-[#F8BA0530] px-4 py-1 text-xs font-semibold text-[#B68800] sm:text-sm">
-              {t('badge.verified')}
-            </p>
-          </ScrollReveal>
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center">
+            {/* Left Column (Content) */}
+            <div className="flex flex-col items-center text-center lg:col-span-5 lg:items-start lg:text-left">
+              {/* Badge/Pill */}
+              <ScrollReveal delay={100} animation="slide-up">
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-primary/50 px-4 py-1.5 text-xs font-semibold text-primary shadow-sm sm:text-sm">
+                  <span className="flex h-2 w-2 animate-pulse items-center justify-center rounded-full bg-primary"></span>
+                  {t('badge.verified')}
+                </div>
+              </ScrollReveal>
 
-          {/* Hero Heading */}
-          <ScrollReveal delay={250} animation="slide-up">
-            <h1 className="font-bold leading-tight text-[#1A1A1A] sm:text-5xl md:text-7xl">
-              <span className="mb-2 inline-block rotate-[-2deg] font-handwriting text-[#EA5868] sm:text-6xl md:text-8xl">
-                {t('hero.title.erp')}
-              </span>{' '}
-              <span>{t('hero.title.digitalBharat')}</span>
-            </h1>
-          </ScrollReveal>
+              {/* Hero Heading */}
+              <ScrollReveal delay={250} animation="slide-up">
+                <h1 className="text-2xl font-extrabold leading-[1.15] tracking-tight text-[#1A1A1A] sm:text-3xl md:text-5xl">
+                  <span className="block lg:mt-2">
+                    {t('hero.title.digitalBharat')}
+                  </span>
+                </h1>
+              </ScrollReveal>
 
-          {/* Subtext */}
-          <ScrollReveal delay={400} animation="slide-up">
-            <p className="mt-4 max-w-2xl font-semibold text-gray-600 md:text-base">
-              {t('hero.description')}
-            </p>
-          </ScrollReveal>
+              {/* Subtext */}
+              <ScrollReveal delay={400} animation="slide-up">
+                <p className="sm:text-md mt-6 max-w-xl text-base font-semibold leading-relaxed text-gray-500">
+                  {t('hero.description')}
+                </p>
+              </ScrollReveal>
 
-          {/* CTA */}
-          <ScrollReveal delay={550} animation="slide-up">
-            <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:gap-6">
-              <Button
-                className="w-40 rounded-sm transition-transform duration-300 hover:scale-105 hover:shadow-md"
-                onClick={() => router.push('/login')}
-              >
-                {t('hero.cta.tryForFree')}
-              </Button>
+              {/* CTA buttons */}
+              <ScrollReveal delay={550} animation="slide-up">
+                <div className="mt-4 flex w-full flex-col items-center gap-4 sm:w-auto sm:flex-row sm:gap-4">
+                  <Button size="sm" onClick={() => router.push('/login')}>
+                    {t('hero.cta.tryForFree')}
+                  </Button>
+                </div>
+              </ScrollReveal>
+
+              {/* Social Proof */}
+              <ScrollReveal delay={650} animation="slide-up">
+                <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-gray-500 sm:text-sm">
+                  <span className="text-lg text-[#10B981]">★</span>
+                  <span>{t('hero.freeText')}</span>
+                </div>
+              </ScrollReveal>
             </div>
-          </ScrollReveal>
-        </section>
 
-        {/* Dashboard Preview Image */}
-        <ScrollReveal delay={300} animation="scale-up" duration={800}>
-          <figure className="mt-10 flex justify-center px-2">
-            <Image
-              src="/hero-image.png"
-              width={800}
-              height={500}
-              alt={t('hero.imageAlt')}
-              unoptimized
-              className="w-full max-w-4xl rounded-t-xl border border-gray-100 bg-white p-2"
-            />
-          </figure>
-        </ScrollReveal>
+            {/* Right Column (Image Mockup) */}
+            <ScrollReveal
+              delay={300}
+              animation="scale-up"
+              duration={800}
+              className="w-full lg:col-span-7"
+            >
+              <div className="relative flex justify-center lg:justify-end">
+                {/* Background glow behind image */}
+                <div className="absolute inset-0 z-0 rounded-full bg-gradient-to-tr from-blue-100 to-indigo-100 opacity-30 blur-3xl" />
+                <figure className="relative z-10 w-full max-w-3xl rounded-2xl border border-gray-100 bg-white/80 p-2.5 shadow-lg backdrop-blur-sm transition-all duration-500 hover:scale-[1.02]">
+                  <Image
+                    src="/hero-image.png"
+                    width={800}
+                    height={600}
+                    alt={t('hero.imageAlt')}
+                    unoptimized
+                    className="w-full rounded-xl"
+                  />
+                </figure>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
       </section>
 
       {/* why? */}

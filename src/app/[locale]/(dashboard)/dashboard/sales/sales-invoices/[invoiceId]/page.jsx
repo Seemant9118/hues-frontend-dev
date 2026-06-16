@@ -46,6 +46,7 @@ import { toast } from 'sonner';
 import PINVerifyModal from '@/components/invoices/PINVerifyModal';
 import DynamicModal from '@/components/Modals/DynamicModal';
 import { Textarea } from '@/components/ui/textarea';
+import ActionsCard from '@/components/shared/ActionsCard';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { debitNoteColumns } from './debitNoteColumns';
 import { useSalesInvoiceColumns } from './useSalesInvoiceColumns';
@@ -258,6 +259,54 @@ const ViewInvoice = () => {
   const invoiceItemsColumns = useSalesInvoiceColumns();
   const debitNColumns = debitNoteColumns();
 
+  const recommendedActions = [];
+  const ancillaryActions = [];
+  let cancelAction = null;
+
+  if (
+    invoiceDetails?.invoiceDetails &&
+    !isRecordingPayment &&
+    !isCreatingDispatchNote
+  ) {
+    if (
+      hasPermission('permission:sales-create-payment') &&
+      (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status ===
+        'NOT_PAID' ||
+        invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status ===
+          'PARTIAL_PAID')
+    ) {
+      recommendedActions.push({
+        label: translations('ctas.record_payment'),
+        onClick: () => setIsRecordingPayment(true),
+      });
+    }
+
+    if (
+      hasPermission('permission:sales-create-payment') &&
+      !invoiceDetails?.invoiceDetails?.isFullyDispatched &&
+      invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status !==
+        'WITHDRAWN'
+    ) {
+      ancillaryActions.push({
+        key: 'dispatch',
+        label: translations('ctas.create_dispatch_note'),
+        onClick: () => setIsCreatingDispatchNote(true),
+      });
+    }
+
+    if (hasPermission('permission:sales-view') && isWithdrawingInvoiceActive) {
+      cancelAction = {
+        label: 'Withdraw',
+        onClick: () => setIsWithdrawModalOpen(true),
+      };
+    }
+  }
+
+  const hasAnyActions =
+    recommendedActions.length > 0 ||
+    ancillaryActions.length > 0 ||
+    !!cancelAction;
+
   const onRowClick = (row) => {
     return router.push(`/dashboard/sales/sales-payments/${row.paymentId}`);
   };
@@ -285,63 +334,6 @@ const ViewInvoice = () => {
               />
             </div>
             <div className="flex gap-2">
-              {/* recording payment cta */}
-              {!isRecordingPayment &&
-                !isCreatingDispatchNote &&
-                (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
-                  ?.status === 'NOT_PAID' ||
-                  invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
-                    ?.status === 'PARTIAL_PAID') && (
-                  <ProtectedWrapper
-                    permissionCode={'permission:sales-create-payment'}
-                  >
-                    <Button
-                      variant="blue_outline"
-                      size="sm"
-                      onClick={() => setIsRecordingPayment(true)}
-                      className="font-bold"
-                    >
-                      {translations('ctas.record_payment')}
-                    </Button>
-                  </ProtectedWrapper>
-                )}
-
-              {/* Create dispatch note cta */}
-              <ProtectedWrapper
-                permissionCode={'permission:sales-create-payment'}
-              >
-                {!isRecordingPayment &&
-                  !isCreatingDispatchNote &&
-                  !invoiceDetails?.invoiceDetails?.isFullyDispatched &&
-                  invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
-                    ?.status !== 'WITHDRAWN' && (
-                    <Button
-                      variant="blue_outline"
-                      size="sm"
-                      onClick={() => setIsCreatingDispatchNote(true)}
-                      className="font-bold"
-                    >
-                      {translations('ctas.create_dispatch_note')}
-                    </Button>
-                  )}
-              </ProtectedWrapper>
-
-              {/* Withdraw CTA */}
-              {!isRecordingPayment &&
-                !isCreatingDispatchNote &&
-                isWithdrawingInvoiceActive && (
-                  <ProtectedWrapper permissionCode={'permission:sales-view'}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsWithdrawModalOpen(true)}
-                      className="border-red-500 font-bold text-red-500 hover:bg-red-50"
-                    >
-                      Withdraw
-                    </Button>
-                  </ProtectedWrapper>
-                )}
-
               {/* View CTA modal */}
               <ProtectedWrapper permissionCode={'permission:sales-document'}>
                 {!isRecordingPayment && (
@@ -408,36 +400,96 @@ const ViewInvoice = () => {
                 {/* orders overview */}
                 {!isLoading && invoiceDetails?.invoiceDetails && (
                   <div className="flex flex-col gap-4">
-                    <InvoiceOverview
-                      isCollapsableOverview={false}
-                      invoiceDetails={invoiceDetails.invoiceDetails}
-                      invoiceId={
-                        invoiceDetails?.invoiceDetails?.invoiceReferenceNumber
-                      }
-                      orderId={invoiceDetails?.invoiceDetails?.orderId}
-                      orderRefId={
-                        invoiceDetails?.invoiceDetails?.orderReferenceNumber
-                      }
-                      paymentStatus={paymentStatus}
-                      {...(debitNoteStatus && { debitNoteStatus })}
-                      Name={invoiceDetails?.invoiceDetails?.customerName}
-                      type={invoiceDetails?.invoiceDetails?.invoiceType}
-                      date={invoiceDetails?.invoiceDetails?.invoiceDate}
-                      defectsStatus={defectsStatus()}
-                      grossAmount={invoiceDetails?.invoiceDetails?.grossAmount}
-                      gstAmount={invoiceDetails?.invoiceDetails?.gstAmount}
-                      roundOff={invoiceDetails?.invoiceDetails?.roundOff}
-                      amount={invoiceDetails?.invoiceDetails?.totalAmount}
-                      roundOffAmount={
-                        invoiceDetails?.invoiceDetails?.roundOffAmount
-                      }
-                      amountPaid={invoiceDetails?.invoiceDetails?.amountPaid}
-                    />
+                    {hasAnyActions ? (
+                      <div className="grid grid-cols-1 items-start gap-2 lg:grid-cols-3">
+                        <div className="flex flex-col gap-4 lg:col-span-2">
+                          <InvoiceOverview
+                            isCollapsableOverview={false}
+                            invoiceDetails={invoiceDetails.invoiceDetails}
+                            invoiceId={
+                              invoiceDetails?.invoiceDetails
+                                ?.invoiceReferenceNumber
+                            }
+                            orderId={invoiceDetails?.invoiceDetails?.orderId}
+                            orderRefId={
+                              invoiceDetails?.invoiceDetails
+                                ?.orderReferenceNumber
+                            }
+                            paymentStatus={paymentStatus}
+                            {...(debitNoteStatus && { debitNoteStatus })}
+                            Name={invoiceDetails?.invoiceDetails?.customerName}
+                            type={invoiceDetails?.invoiceDetails?.invoiceType}
+                            date={invoiceDetails?.invoiceDetails?.invoiceDate}
+                            defectsStatus={defectsStatus()}
+                            grossAmount={
+                              invoiceDetails?.invoiceDetails?.grossAmount
+                            }
+                            gstAmount={
+                              invoiceDetails?.invoiceDetails?.gstAmount
+                            }
+                            roundOff={invoiceDetails?.invoiceDetails?.roundOff}
+                            amount={invoiceDetails?.invoiceDetails?.totalAmount}
+                            roundOffAmount={
+                              invoiceDetails?.invoiceDetails?.roundOffAmount
+                            }
+                            amountPaid={
+                              invoiceDetails?.invoiceDetails?.amountPaid
+                            }
+                          />
 
-                    <CommentBox
-                      contextId={params.invoiceId}
-                      context={'INVOICE'}
-                    />
+                          <CommentBox
+                            contextId={params.invoiceId}
+                            context={'INVOICE'}
+                          />
+                        </div>
+
+                        <div className="lg:col-span-1">
+                          <ActionsCard
+                            recommendedActions={recommendedActions}
+                            ancillaryActions={ancillaryActions}
+                            cancelAction={cancelAction}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-4">
+                        <InvoiceOverview
+                          isCollapsableOverview={false}
+                          invoiceDetails={invoiceDetails.invoiceDetails}
+                          invoiceId={
+                            invoiceDetails?.invoiceDetails
+                              ?.invoiceReferenceNumber
+                          }
+                          orderId={invoiceDetails?.invoiceDetails?.orderId}
+                          orderRefId={
+                            invoiceDetails?.invoiceDetails?.orderReferenceNumber
+                          }
+                          paymentStatus={paymentStatus}
+                          {...(debitNoteStatus && { debitNoteStatus })}
+                          Name={invoiceDetails?.invoiceDetails?.customerName}
+                          type={invoiceDetails?.invoiceDetails?.invoiceType}
+                          date={invoiceDetails?.invoiceDetails?.invoiceDate}
+                          defectsStatus={defectsStatus()}
+                          grossAmount={
+                            invoiceDetails?.invoiceDetails?.grossAmount
+                          }
+                          gstAmount={invoiceDetails?.invoiceDetails?.gstAmount}
+                          roundOff={invoiceDetails?.invoiceDetails?.roundOff}
+                          amount={invoiceDetails?.invoiceDetails?.totalAmount}
+                          roundOffAmount={
+                            invoiceDetails?.invoiceDetails?.roundOffAmount
+                          }
+                          amountPaid={
+                            invoiceDetails?.invoiceDetails?.amountPaid
+                          }
+                        />
+
+                        <CommentBox
+                          contextId={params.invoiceId}
+                          context={'INVOICE'}
+                        />
+                      </div>
+                    )}
 
                     <DataTable
                       data={invoiceItems}

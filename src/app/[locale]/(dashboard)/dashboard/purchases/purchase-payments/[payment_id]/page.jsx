@@ -37,6 +37,7 @@ import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import ActionsCard from '@/components/shared/ActionsCard';
 
 const PaymentDetails = () => {
   useMetaData('Hues! - Payments Details', 'HUES PAYMENT DETAILS');
@@ -142,6 +143,14 @@ const PaymentDetails = () => {
     createCommentMutation.mutate(formData);
   };
 
+  const recommendedActions = [];
+  const ancillaryActions = [];
+  const cancelAction = null;
+  const hasAnyActions =
+    recommendedActions.length > 0 ||
+    ancillaryActions.length > 0 ||
+    !!cancelAction;
+
   return (
     <ProtectedWrapper permissionCode={'permission:purchase-view'}>
       {error?.response?.status === 403 ? (
@@ -192,151 +201,331 @@ const PaymentDetails = () => {
                 )}
             </div>
           </section>
-          {/* OVERVIEW */}
-          <PaymentOverview paymentsDetails={paymentsDetails} />
-          {/* COMMENTS */}
-          <div className="flex h-full flex-col gap-4 p-2">
-            <section className="flex w-full items-center gap-2">
-              <MessageCircle size={16} />
-              <h1 className="text-sm font-bold">
-                {translationsComments('comments.title')}
-              </h1>
-            </section>
 
-            <div className="relative">
-              {/* 1 */}
-              <div className="absolute left-5 top-[15px] flex h-10 w-10 items-center justify-center rounded-full bg-[#A5ABBD]">
-                <Building2 size={20} />
-              </div>
+          {hasAnyActions ? (
+            <div className="grid grid-cols-1 items-start gap-2 lg:grid-cols-3">
+              <div className="flex flex-col gap-4 lg:col-span-2">
+                {/* OVERVIEW */}
+                <PaymentOverview paymentsDetails={paymentsDetails} />
+                {/* COMMENTS */}
+                <div className="flex h-full flex-col gap-4 p-2">
+                  <section className="flex w-full items-center gap-2">
+                    <MessageCircle size={16} />
+                    <h1 className="text-sm font-bold">
+                      {translationsComments('comments.title')}
+                    </h1>
+                  </section>
 
-              {/* 2 */}
-              <Textarea
-                name="comment"
-                value={comment.text}
-                onChange={(e) => {
-                  setComment((prev) => ({ ...prev, text: e.target.value }));
-                }}
-                className="px-20 pt-[20px]"
-                placeholder={translationsComments('comments.input.placeholder')}
-              />
+                  <div className="relative">
+                    {/* 1 */}
+                    <div className="absolute left-5 top-[15px] flex h-10 w-10 items-center justify-center rounded-full bg-[#A5ABBD]">
+                      <Building2 size={20} />
+                    </div>
 
-              {/* 3 */}
-              <div className="absolute right-6 top-[18px] flex items-center gap-4 text-[#A5ABBD]">
-                <Tooltips
-                  trigger={
-                    <label htmlFor="fileUpload">
-                      <Paperclip
-                        size={20}
-                        className="cursor-pointer hover:text-black"
-                      />
-                    </label>
-                  }
-                  content={translationsComments(
-                    'comments.ctas.attach_file.placeholder',
-                  )}
-                />
-
-                <input
-                  type="file"
-                  id="fileUpload"
-                  style={{ display: 'none' }}
-                  onChange={(e) => {
-                    if (e.target.files[0]) {
-                      uploadMedia(e.target.files[0]);
-                    }
-                  }}
-                />
-
-                <Tooltips
-                  trigger={
-                    createCommentMutation?.isPending ? (
-                      <Loading />
-                    ) : (
-                      <Button size="sm" onClick={handleSubmitComment}>
-                        Send
-                      </Button>
-                    )
-                  }
-                  content={translationsComments(
-                    'comments.ctas.send.placeholder',
-                  )}
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col">
-              {/* attached files */}
-              {files?.length > 0 && (
-                <span className="text-xs font-bold">
-                  {translationsComments('comments.attached_files_heading')}
-                </span>
-              )}
-              <div className="flex flex-wrap gap-4">
-                {files?.map((file) => (
-                  <div
-                    key={file.name}
-                    className="relative flex w-64 flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm"
-                  >
-                    {/* Remove Button */}
-                    <X
-                      size={16}
-                      onClick={() => handleFileRemove(file)}
-                      className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
+                    {/* 2 */}
+                    <Textarea
+                      name="comment"
+                      value={comment.text}
+                      onChange={(e) => {
+                        setComment((prev) => ({
+                          ...prev,
+                          text: e.target.value,
+                        }));
+                      }}
+                      className="px-20 pt-[20px]"
+                      placeholder={translationsComments(
+                        'comments.input.placeholder',
+                      )}
                     />
 
-                    {/* File icon */}
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
-                      {file.name.split('.').pop() === 'pdf' ? (
-                        <FileText size={16} className="text-red-600" />
-                      ) : (
-                        <Image size={16} className="text-primary" />
-                      )}
-                    </div>
+                    {/* 3 */}
+                    <div className="absolute right-6 top-[18px] flex items-center gap-4 text-[#A5ABBD]">
+                      <Tooltips
+                        trigger={
+                          <label htmlFor="fileUpload">
+                            <Paperclip
+                              size={20}
+                              className="cursor-pointer hover:text-black"
+                            />
+                          </label>
+                        }
+                        content={translationsComments(
+                          'comments.ctas.attach_file.placeholder',
+                        )}
+                      />
 
-                    {/* File name */}
-                    <p className="truncate text-sm font-medium text-neutral-800">
-                      {file.name}
-                    </p>
+                      <input
+                        type="file"
+                        id="fileUpload"
+                        style={{ display: 'none' }}
+                        onChange={(e) => {
+                          if (e.target.files[0]) {
+                            uploadMedia(e.target.files[0]);
+                          }
+                        }}
+                      />
 
-                    {/* Success message */}
-                    <div className="flex items-center gap-2">
-                      <div className="rounded-full bg-green-500/10 p-1.5 text-green-600">
-                        <Check size={12} />
-                      </div>
-                      <p className="text-xs font-medium text-green-600">
-                        {'File attached'}
-                      </p>
+                      <Tooltips
+                        trigger={
+                          createCommentMutation?.isPending ? (
+                            <Loading />
+                          ) : (
+                            <Button size="sm" onClick={handleSubmitComment}>
+                              Send
+                            </Button>
+                          )
+                        }
+                        content={translationsComments(
+                          'comments.ctas.send.placeholder',
+                        )}
+                      />
                     </div>
                   </div>
-                ))}
+
+                  <div className="flex flex-col">
+                    {/* attached files */}
+                    {files?.length > 0 && (
+                      <span className="text-xs font-bold">
+                        {translationsComments(
+                          'comments.attached_files_heading',
+                        )}
+                      </span>
+                    )}
+                    <div className="flex flex-wrap gap-4">
+                      {files?.map((file) => (
+                        <div
+                          key={file.name}
+                          className="relative flex w-64 flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm"
+                        >
+                          {/* Remove Button */}
+                          <X
+                            size={16}
+                            onClick={() => handleFileRemove(file)}
+                            className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
+                          />
+
+                          {/* File icon */}
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+                            {file.name.split('.').pop() === 'pdf' ? (
+                              <FileText size={16} className="text-red-600" />
+                            ) : (
+                              <Image size={16} className="text-primary" />
+                            )}
+                          </div>
+
+                          {/* File name */}
+                          <p className="truncate text-sm font-medium text-neutral-800">
+                            {file.name}
+                          </p>
+
+                          {/* Success message */}
+                          <div className="flex items-center gap-2">
+                            <div className="rounded-full bg-green-500/10 p-1.5 text-green-600">
+                              <Check size={12} />
+                            </div>
+                            <p className="text-xs font-medium text-green-600">
+                              {'File attached'}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* comments lists */}
+                  <section className="flex flex-col gap-2">
+                    {isCommentLoading && <Loading />}
+                    {!isCommentLoading &&
+                      comments?.length > 0 &&
+                      comments?.map((comment) => (
+                        <Comment
+                          key={comment?.id}
+                          invalidateId={params.payment_id}
+                          comment={comment}
+                        />
+                      ))}
+
+                    {!isCommentLoading && comments?.length === 0 && (
+                      <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-gray-50 p-4 text-sm text-[#939090]">
+                        <h1>
+                          {translationsComments(
+                            'comments.emtpyStateComponent.title',
+                          )}
+                        </h1>
+                        <p>
+                          {translationsComments(
+                            'comments.emtpyStateComponent.para',
+                          )}
+                        </p>
+                      </div>
+                    )}
+                  </section>
+                </div>
+              </div>
+
+              <div className="lg:col-span-1">
+                <ActionsCard
+                  recommendedActions={recommendedActions}
+                  ancillaryActions={ancillaryActions}
+                  cancelAction={cancelAction}
+                />
               </div>
             </div>
-
-            {/* comments lists */}
-            <section className="flex flex-col gap-2">
-              {isCommentLoading && <Loading />}
-              {!isCommentLoading &&
-                comments?.length > 0 &&
-                comments?.map((comment) => (
-                  <Comment
-                    key={comment?.id}
-                    invalidateId={params.payment_id}
-                    comment={comment}
-                  />
-                ))}
-
-              {!isCommentLoading && comments?.length === 0 && (
-                <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-gray-50 p-4 text-sm text-[#939090]">
-                  <h1>
-                    {translationsComments('comments.emtpyStateComponent.title')}
+          ) : (
+            <div className="flex flex-col gap-4">
+              {/* OVERVIEW */}
+              <PaymentOverview paymentsDetails={paymentsDetails} />
+              {/* COMMENTS */}
+              <div className="flex h-full flex-col gap-4 p-2">
+                <section className="flex w-full items-center gap-2">
+                  <MessageCircle size={16} />
+                  <h1 className="text-sm font-bold">
+                    {translationsComments('comments.title')}
                   </h1>
-                  <p>
-                    {translationsComments('comments.emtpyStateComponent.para')}
-                  </p>
+                </section>
+
+                <div className="relative">
+                  {/* 1 */}
+                  <div className="absolute left-5 top-[15px] flex h-10 w-10 items-center justify-center rounded-full bg-[#A5ABBD]">
+                    <Building2 size={20} />
+                  </div>
+
+                  {/* 2 */}
+                  <Textarea
+                    name="comment"
+                    value={comment.text}
+                    onChange={(e) => {
+                      setComment((prev) => ({ ...prev, text: e.target.value }));
+                    }}
+                    className="px-20 pt-[20px]"
+                    placeholder={translationsComments(
+                      'comments.input.placeholder',
+                    )}
+                  />
+
+                  {/* 3 */}
+                  <div className="absolute right-6 top-[18px] flex items-center gap-4 text-[#A5ABBD]">
+                    <Tooltips
+                      trigger={
+                        <label htmlFor="fileUpload">
+                          <Paperclip
+                            size={20}
+                            className="cursor-pointer hover:text-black"
+                          />
+                        </label>
+                      }
+                      content={translationsComments(
+                        'comments.ctas.attach_file.placeholder',
+                      )}
+                    />
+
+                    <input
+                      type="file"
+                      id="fileUpload"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        if (e.target.files[0]) {
+                          uploadMedia(e.target.files[0]);
+                        }
+                      }}
+                    />
+
+                    <Tooltips
+                      trigger={
+                        createCommentMutation?.isPending ? (
+                          <Loading />
+                        ) : (
+                          <Button size="sm" onClick={handleSubmitComment}>
+                            Send
+                          </Button>
+                        )
+                      }
+                      content={translationsComments(
+                        'comments.ctas.send.placeholder',
+                      )}
+                    />
+                  </div>
                 </div>
-              )}
-            </section>
-          </div>
+
+                <div className="flex flex-col">
+                  {/* attached files */}
+                  {files?.length > 0 && (
+                    <span className="text-xs font-bold">
+                      {translationsComments('comments.attached_files_heading')}
+                    </span>
+                  )}
+                  <div className="flex flex-wrap gap-4">
+                    {files?.map((file) => (
+                      <div
+                        key={file.name}
+                        className="relative flex w-64 flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 shadow-sm"
+                      >
+                        {/* Remove Button */}
+                        <X
+                          size={16}
+                          onClick={() => handleFileRemove(file)}
+                          className="absolute right-2 top-2 cursor-pointer text-neutral-500 hover:text-red-500"
+                        />
+
+                        {/* File icon */}
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+                          {file.name.split('.').pop() === 'pdf' ? (
+                            <FileText size={16} className="text-red-600" />
+                          ) : (
+                            <Image size={16} className="text-primary" />
+                          )}
+                        </div>
+
+                        {/* File name */}
+                        <p className="truncate text-sm font-medium text-neutral-800">
+                          {file.name}
+                        </p>
+
+                        {/* Success message */}
+                        <div className="flex items-center gap-2">
+                          <div className="rounded-full bg-green-500/10 p-1.5 text-green-600">
+                            <Check size={12} />
+                          </div>
+                          <p className="text-xs font-medium text-green-600">
+                            {'File attached'}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* comments lists */}
+                <section className="flex flex-col gap-2">
+                  {isCommentLoading && <Loading />}
+                  {!isCommentLoading &&
+                    comments?.length > 0 &&
+                    comments?.map((comment) => (
+                      <Comment
+                        key={comment?.id}
+                        invalidateId={params.payment_id}
+                        comment={comment}
+                      />
+                    ))}
+
+                  {!isCommentLoading && comments?.length === 0 && (
+                    <div className="flex flex-col items-center justify-center gap-2 rounded-lg bg-gray-50 p-4 text-sm text-[#939090]">
+                      <h1>
+                        {translationsComments(
+                          'comments.emtpyStateComponent.title',
+                        )}
+                      </h1>
+                      <p>
+                        {translationsComments(
+                          'comments.emtpyStateComponent.para',
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </section>
+              </div>
+            </div>
+          )}
         </Wrapper>
       )}
     </ProtectedWrapper>

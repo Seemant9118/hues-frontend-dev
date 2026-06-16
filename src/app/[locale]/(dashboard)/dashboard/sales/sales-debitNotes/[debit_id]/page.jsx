@@ -44,6 +44,7 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import ActionsCard from '@/components/shared/ActionsCard';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { useCreditNotesColumns } from '../../sales-creditNotes/useCreditNotesColumns';
 import { SalesTable } from '../../salestable/SalesTable';
@@ -585,6 +586,38 @@ const ViewDebitNote = () => {
   });
   const creditNotesColumns = useCreditNotesColumns();
 
+  const recommendedActions = [];
+  const ancillaryActions = [];
+  const cancelAction = null;
+
+  if (
+    debitNoteDetails &&
+    !isAddingResponse &&
+    !isCreatingCreditNote &&
+    !isEditingResponse
+  ) {
+    if (itemsToCreateResponse?.length > 0) {
+      recommendedActions.push({
+        label: 'Add Response',
+        onClick: () => setIsAddingResponse(true),
+        icon: <PlusCircle size={14} className="mr-1 text-white" />,
+      });
+    }
+
+    if (
+      itemsToCreateResponse?.length === 0 &&
+      !debitNoteDetails?.creditNoteCompletedForAllItems
+    ) {
+      recommendedActions.push({
+        label: 'Finalize & Post Credit Note',
+        onClick: () => setIsCreatingCreditNote(true),
+        icon: <BookOpen size={14} className="mr-1 text-white" />,
+      });
+    }
+  }
+
+  const hasAnyActions = recommendedActions.length > 0;
+
   if (!permissions || permissions.length === 0) {
     return null; // or <Loading />
   }
@@ -645,45 +678,53 @@ const ViewDebitNote = () => {
                         {translations('tabs.tab2.title')}
                       </TabsTrigger>
                     </TabsList>
-
-                    <div className="flex items-center gap-2">
-                      {/* if all items response added then hide it */}
-                      {itemsToCreateResponse?.length > 0 && (
-                        <Button
-                          size="sm"
-                          onClick={() => setIsAddingResponse(true)}
-                        >
-                          <PlusCircle size={14} /> Add Response
-                        </Button>
-                      )}
-
-                      {itemsToCreateResponse?.length === 0 &&
-                        !debitNoteDetails?.creditNoteCompletedForAllItems && (
-                          <Button
-                            size="sm"
-                            onClick={() => setIsCreatingCreditNote(true)}
-                          >
-                            <BookOpen size={14} /> Finalize & Post Credit Note
-                          </Button>
-                        )}
-                    </div>
                   </section>
 
                   <TabsContent value="overview">
                     <div className="flex flex-col gap-4">
-                      {/* OVERVIEW SECTION */}
-                      <Overview
-                        collapsible={false}
-                        data={overviewData}
-                        labelMap={overviewLabels}
-                        customRender={customRender}
-                      />
+                      {hasAnyActions ? (
+                        <div className="grid grid-cols-1 items-start gap-2 lg:grid-cols-3">
+                          <div className="flex flex-col gap-4 lg:col-span-2">
+                            {/* OVERVIEW SECTION */}
+                            <Overview
+                              collapsible={false}
+                              data={overviewData}
+                              labelMap={overviewLabels}
+                              customRender={customRender}
+                            />
 
-                      {/* comment */}
-                      <CommentBox
-                        contextId={debitNoteId}
-                        context={'DEBIT_NOTE'}
-                      />
+                            {/* comment */}
+                            <CommentBox
+                              contextId={debitNoteId}
+                              context={'DEBIT_NOTE'}
+                            />
+                          </div>
+
+                          <div className="lg:col-span-1">
+                            <ActionsCard
+                              recommendedActions={recommendedActions}
+                              ancillaryActions={ancillaryActions}
+                              cancelAction={cancelAction}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-4">
+                          {/* OVERVIEW SECTION */}
+                          <Overview
+                            collapsible={false}
+                            data={overviewData}
+                            labelMap={overviewLabels}
+                            customRender={customRender}
+                          />
+
+                          {/* comment */}
+                          <CommentBox
+                            contextId={debitNoteId}
+                            context={'DEBIT_NOTE'}
+                          />
+                        </div>
+                      )}
 
                       <MergerDataTable
                         id="buyer-seller-table"

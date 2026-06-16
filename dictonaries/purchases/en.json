@@ -69,7 +69,7 @@
                 "title": {
                     "purchases": "Purchases",
                     "order_details": "Order details",
-                    "negotiation": "Review",
+                    "negotiation": "Negotiate",
                     "invoices": "Invoices",
                     "payment_advice": "Payment advise",
                     "upload_attachements": "Upload Documents"
@@ -98,8 +98,8 @@
                     },
                     "footer_ctas": {
                         "wait_response": "Awaiting response",
-                        "negotiate": "Review",
-                        "negotiateByBehalf": "Review on behalf",
+                        "negotiate": "Negotiate",
+                        "negotiateByBehalf": "Negotiate on behalf",
                         "accept": "Accept",
                         "acceptByBehalf": "Accept on behalf"
                     }

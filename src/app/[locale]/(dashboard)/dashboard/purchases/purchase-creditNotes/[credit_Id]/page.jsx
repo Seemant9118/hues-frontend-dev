@@ -7,9 +7,9 @@ import {
 } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
-import AccessDenied from '@/components/shared/AccessDenied';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import AccessDenied from '@/components/shared/AccessDenied';
 import { MergerDataTable } from '@/components/table/merger-data-table';
 import { Button } from '@/components/ui/button';
 import Overview from '@/components/ui/Overview';
@@ -368,13 +368,13 @@ const ViewCreditNote = () => {
 
                 {/* comment */}
                 <CommentBox contextId={creditNoteId} context={'CREDIT_NOTE'} />
-
-                <MergerDataTable
-                  id="buyer-seller-table"
-                  columns={creditNoteItemsColumns}
-                  data={mergedRows}
-                />
               </div>
+
+              <MergerDataTable
+                id="buyer-seller-table"
+                columns={creditNoteItemsColumns}
+                data={mergedRows}
+              />
             </TabsContent>
           </Tabs>
         </Wrapper>

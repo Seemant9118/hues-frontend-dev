@@ -2,7 +2,7 @@
     "landingPage": {
         "nav": {
             "contactUs": "Contact Us",
-            "register": "Join Beta"
+            "register": "Join for free"
         },
         "badge": {
             "verified": "Private Beta · Built deliberately. Released carefully."
@@ -12,11 +12,14 @@
                 "redefining": "Redefining",
                 "erp": "ERP",
                 "for": "for a",
-                "digitalBharat": "Reimagined for a digital-first India."
+                "digitalBharat": "ERP Reimagined for a digital-first India."
             },
-            "description": "A private operating system for modern businesses—governed access, verifiable records, and intelligent workflows.","cta": {
-                "tryForFree": "Try for Free"
+            "description": "A private operating system for modern businesses—governed access, verifiable records, and intelligent workflows.",
+            "cta": {
+                "tryForFree": "Try for Free",
+                "bookDemo": "Book a Demo"
             },
+            "freeText":"No credit card. No lock-in. Full access.",
             "imageAlt": "ERP Dashboard Preview"
         },
         "whyChoose": {

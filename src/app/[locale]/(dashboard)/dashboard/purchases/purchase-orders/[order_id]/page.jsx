@@ -46,6 +46,7 @@ import {
 } from 'lucide-react';
 import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
 import ProxyAcceptanceModal from '@/components/Modals/ProxyAcceptanceModal';
+import ActionsCard from '@/components/shared/ActionsCard';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -131,7 +132,7 @@ const ViewOrder = () => {
     {
       id: 3,
       name: isNegotiateOnBehalf
-        ? 'Review on Behalf'
+        ? 'Negotiate on Behalf'
         : translations('title.negotiation'),
       path: `/dashboard/purchases/purchase-orders/${params.order_id}/`,
       show: isNegotiation, // Show only if isNegotiation is true
@@ -559,6 +560,43 @@ const ViewOrder = () => {
     }
   }
 
+  const recommendedActions = [];
+  const ancillaryActions = [];
+  let cancelAction = null;
+
+  if (orderDetails) {
+    ctaList.forEach((cta) => {
+      if (cta.isHeader) {
+        // Skipped, kept in header
+      } else if (cta.isDropdown) {
+        if (cta.isThreeDots) {
+          (cta.actions || []).forEach((action) => {
+            if (action) {
+              if (action.key === 'withdraw') {
+                cancelAction = action;
+              } else {
+                ancillaryActions.push(action);
+              }
+            }
+          });
+        } else {
+          (cta.actions || []).forEach((action) => {
+            if (action) {
+              ancillaryActions.push(action);
+            }
+          });
+        }
+      } else {
+        recommendedActions.push(cta);
+      }
+    });
+  }
+
+  const hasAnyActions =
+    recommendedActions.length > 0 ||
+    ancillaryActions.length > 0 ||
+    !!cancelAction;
+
   return (
     <ProtectedWrapper permissionCode={'permission:purchase-view'}>
       <Wrapper className="h-full py-2">
@@ -630,60 +668,64 @@ const ViewOrder = () => {
                       />
                     )}
                   {/* Dynamic CTAs */}
-                  {ctaList.length > 0 &&
-                    ctaList.map((cta) => {
-                      if (cta.isHide) return null;
-                      if (cta.isDropdown) {
-                        const visibleActions = (cta.actions || []).filter(
-                          (action) => !!action && !action.isHide,
-                        );
-                        if (visibleActions.length === 0) return null;
-                        if (visibleActions.length === 1) {
-                          const singleAction = visibleActions[0];
-                          const ActionIcon = singleAction.icon;
+                  {ctaList.filter((cta) => cta.isHeader).length > 0 &&
+                    ctaList
+                      .filter((cta) => cta.isHeader)
+                      .map((cta) => {
+                        if (cta.isHide) return null;
+                        if (cta.isDropdown) {
+                          const visibleActions = (cta.actions || []).filter(
+                            (action) => !!action && !action.isHide,
+                          );
+                          if (visibleActions.length === 0) return null;
+                          if (visibleActions.length === 1) {
+                            const singleAction = visibleActions[0];
+                            const ActionIcon = singleAction.icon;
+                            return (
+                              <Button
+                                key={singleAction.key || singleAction.label}
+                                size="sm"
+                                variant={cta.variant || 'default'}
+                                onClick={singleAction.onClick}
+                                disabled={singleAction.disabled || cta.disabled}
+                                className={
+                                  cta.className ||
+                                  'flex items-center gap-1 font-bold'
+                                }
+                              >
+                                {ActionIcon && <ActionIcon size={14} />}
+                                {singleAction.label}
+                              </Button>
+                            );
+                          }
                           return (
-                            <Button
-                              key={singleAction.key || singleAction.label}
-                              size="sm"
-                              variant={cta.variant || 'default'}
-                              onClick={singleAction.onClick}
-                              disabled={singleAction.disabled || cta.disabled}
-                              className={
-                                cta.className ||
-                                'flex items-center gap-1 font-bold'
-                              }
-                            >
-                              {ActionIcon && <ActionIcon size={14} />}
-                              {singleAction.label}
-                            </Button>
+                            <ActionsDropdown
+                              key={cta.label}
+                              label={cta.label}
+                              variant={cta.variant}
+                              disabled={cta.disabled}
+                              actions={visibleActions}
+                              isThreeDots={cta.isThreeDots}
+                              isHide={cta.isHide}
+                            />
                           );
                         }
                         return (
-                          <ActionsDropdown
+                          <Button
                             key={cta.label}
-                            label={cta.label}
-                            variant={cta.variant}
+                            size="sm"
+                            variant={cta.variant || 'default'}
+                            onClick={cta.onClick}
                             disabled={cta.disabled}
-                            actions={visibleActions}
-                            isThreeDots={cta.isThreeDots}
-                            isHide={cta.isHide}
-                          />
+                            className={
+                              cta.className || 'flex items-center gap-1'
+                            }
+                          >
+                            {cta.icon}
+                            {cta.label}
+                          </Button>
                         );
-                      }
-                      return (
-                        <Button
-                          key={cta.label}
-                          size="sm"
-                          variant={cta.variant || 'default'}
-                          onClick={cta.onClick}
-                          disabled={cta.disabled}
-                          className={cta.className || 'flex items-center gap-1'}
-                        >
-                          {cta.icon}
-                          {cta.label}
-                        </Button>
-                      );
-                    })}
+                      })}
                 </div>
               </section>
               {/* switch tabs */}
@@ -729,23 +771,61 @@ const ViewOrder = () => {
                         value="overview"
                         className="flex flex-col gap-4"
                       >
-                        <OrdersOverview
-                          orderDetails={orderDetails}
-                          orderId={orderDetails?.referenceNumber}
-                          multiStatus={multiStatus}
-                          Name={orderDetails?.vendorName}
-                          mobileNumber={orderDetails?.vendorMobileNumber}
-                          amtPaid={orderDetails?.amountPaid}
-                          totalAmount={
-                            orderDetails.amount + orderDetails.gstAmount
-                          }
-                          setViewNegotiationHistory={setViewNegotiationHistory}
-                        />
+                        {hasAnyActions ? (
+                          <div className="grid grid-cols-1 items-start gap-2 lg:grid-cols-3">
+                            <div className="flex flex-col gap-4 lg:col-span-2">
+                              <OrdersOverview
+                                orderDetails={orderDetails}
+                                orderId={orderDetails?.referenceNumber}
+                                multiStatus={multiStatus}
+                                Name={orderDetails?.vendorName}
+                                mobileNumber={orderDetails?.vendorMobileNumber}
+                                amtPaid={orderDetails?.amountPaid}
+                                totalAmount={
+                                  orderDetails.amount + orderDetails.gstAmount
+                                }
+                                setViewNegotiationHistory={
+                                  setViewNegotiationHistory
+                                }
+                              />
 
-                        <CommentBox
-                          contextId={params.order_id}
-                          context={'ORDER'}
-                        />
+                              <CommentBox
+                                contextId={params.order_id}
+                                context={'ORDER'}
+                              />
+                            </div>
+
+                            <div className="lg:col-span-1">
+                              <ActionsCard
+                                recommendedActions={recommendedActions}
+                                ancillaryActions={ancillaryActions}
+                                cancelAction={cancelAction}
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-4">
+                            <OrdersOverview
+                              orderDetails={orderDetails}
+                              orderId={orderDetails?.referenceNumber}
+                              multiStatus={multiStatus}
+                              Name={orderDetails?.vendorName}
+                              mobileNumber={orderDetails?.vendorMobileNumber}
+                              amtPaid={orderDetails?.amountPaid}
+                              totalAmount={
+                                orderDetails.amount + orderDetails.gstAmount
+                              }
+                              setViewNegotiationHistory={
+                                setViewNegotiationHistory
+                              }
+                            />
+
+                            <CommentBox
+                              contextId={params.order_id}
+                              context={'ORDER'}
+                            />
+                          </div>
+                        )}
 
                         <DataTable
                           columns={OrderColumns}

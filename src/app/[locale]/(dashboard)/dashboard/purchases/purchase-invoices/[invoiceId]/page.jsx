@@ -47,6 +47,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import ModifyQuantityDialog from '@/components/deliveryManagement/ModifyItems';
+import ActionsCard from '@/components/shared/ActionsCard';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { useGrnColumns } from '../../../transport/grn/GRNColumns';
 import { debitNoteColumns } from './debitNoteColumns';
@@ -444,6 +445,54 @@ const ViewInvoice = () => {
   const GRNColumns = useGrnColumns();
   const debitNColumns = debitNoteColumns();
 
+  const recommendedActions = [];
+  const ancillaryActions = [];
+  const cancelAction = null;
+
+  if (
+    invoiceDetails?.invoiceDetails &&
+    !isPaymentAdvicing &&
+    !isCreatingDebitNote
+  ) {
+    if (
+      !invoiceDetails?.invoiceDetails?.debitNoteCreationCompleted &&
+      hasPermission('permission:purchase-debit-note-action')
+    ) {
+      ancillaryActions.push({
+        label: 'Create Debit Note',
+        onClick: () => setIsCreatingDebitNote(true),
+      });
+    }
+
+    if (
+      invoiceDetails?.invoiceDetails?.sellerType === 'UNINVITED-ENTERPRISE' &&
+      !invoiceDetails?.invoiceDetails?.isFullyDispatched
+    ) {
+      ancillaryActions.push({
+        label: 'Issue GRN',
+        onClick: handleOpenIssueGRNModal,
+      });
+    }
+
+    if (
+      (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status ===
+        'NOT_PAID' ||
+        invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status ===
+          'PARTIAL_PAID') &&
+      hasPermission('permission:purchase-create-payment')
+    ) {
+      recommendedActions.push({
+        label: translations('ctas.payment_advice'),
+        onClick: () => setIsPaymentAdvicing(true),
+      });
+    }
+  }
+
+  const hasAnyActions =
+    recommendedActions.length > 0 ||
+    ancillaryActions.length > 0 ||
+    !!cancelAction;
+
   const onRowClick = (row) => {
     router.push(`/dashboard/purchases/purchase-payments/${row.paymentId}`);
   };
@@ -475,58 +524,6 @@ const ViewInvoice = () => {
                   />
                 </div>
                 <div className="flex gap-2">
-                  {/* create debit note */}
-                  {!invoiceDetails?.invoiceDetails
-                    ?.debitNoteCreationCompleted &&
-                    !isCreatingDebitNote &&
-                    !isPaymentAdvicing && (
-                      <ProtectedWrapper
-                        permissionCode={'permission:purchase-debit-note-action'}
-                      >
-                        <Button
-                          size="sm"
-                          variant="blue_outline"
-                          onClick={() => setIsCreatingDebitNote(true)}
-                          className="font-bold"
-                        >
-                          Create Debit Note
-                        </Button>
-                      </ProtectedWrapper>
-                    )}
-
-                  {invoiceDetails?.invoiceDetails?.sellerType ===
-                    'UNINVITED-ENTERPRISE' &&
-                    !invoiceDetails?.invoiceDetails?.isFullyDispatched && (
-                      <Button
-                        size="sm"
-                        variant="blue_outline"
-                        onClick={handleOpenIssueGRNModal}
-                        className="font-bold"
-                      >
-                        Issue GRN
-                      </Button>
-                    )}
-
-                  {!isPaymentAdvicing &&
-                    !isCreatingDebitNote &&
-                    (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
-                      ?.status === 'NOT_PAID' ||
-                      invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment
-                        ?.status === 'PARTIAL_PAID') && (
-                      <ProtectedWrapper
-                        permissionCode={'permission:purchase-create-payment'}
-                      >
-                        <Button
-                          variant="blue_outline"
-                          size="sm"
-                          onClick={() => setIsPaymentAdvicing(true)}
-                          className="font-bold"
-                        >
-                          {translations('ctas.payment_advice')}
-                        </Button>
-                      </ProtectedWrapper>
-                    )}
-
                   <ProtectedWrapper
                     permissionCode={'permission:purchase-document'}
                   >
@@ -595,42 +592,117 @@ const ViewInvoice = () => {
                     {/* orders overview */}
                     {!isLoading && invoiceDetails?.invoiceDetails && (
                       <div className="flex flex-col gap-4">
-                        <InvoiceOverview
-                          isCollapsableOverview={false}
-                          invoiceDetails={invoiceDetails.invoiceDetails}
-                          invoiceId={
-                            invoiceDetails?.invoiceDetails
-                              ?.invoiceReferenceNumber
-                          }
-                          orderId={invoiceDetails?.invoiceDetails?.orderId}
-                          orderRefId={
-                            invoiceDetails?.invoiceDetails?.orderReferenceNumber
-                          }
-                          paymentStatus={paymentStatus}
-                          debitNoteStatus={debitNotesIds()}
-                          defectsStatus={defects()}
-                          hasDebitNote={hasDebitNote}
-                          Name={invoiceDetails?.invoiceDetails?.vendorName}
-                          type={invoiceDetails?.invoiceDetails?.invoiceType}
-                          date={invoiceDetails?.invoiceDetails?.invoiceDate}
-                          grossAmount={
-                            invoiceDetails?.invoiceDetails?.grossAmount
-                          }
-                          gstAmount={invoiceDetails?.invoiceDetails?.gstAmount}
-                          roundOff={invoiceDetails?.invoiceDetails?.roundOff}
-                          amount={invoiceDetails?.invoiceDetails?.totalAmount}
-                          roundOffAmount={
-                            invoiceDetails?.invoiceDetails?.roundOffAmount
-                          }
-                          amountPaid={
-                            invoiceDetails?.invoiceDetails?.amountPaid
-                          }
-                        />
+                        {hasAnyActions ? (
+                          <div className="grid grid-cols-1 items-start gap-2 lg:grid-cols-3">
+                            <div className="flex flex-col gap-4 lg:col-span-2">
+                              <InvoiceOverview
+                                isCollapsableOverview={false}
+                                invoiceDetails={invoiceDetails.invoiceDetails}
+                                invoiceId={
+                                  invoiceDetails?.invoiceDetails
+                                    ?.invoiceReferenceNumber
+                                }
+                                orderId={
+                                  invoiceDetails?.invoiceDetails?.orderId
+                                }
+                                orderRefId={
+                                  invoiceDetails?.invoiceDetails
+                                    ?.orderReferenceNumber
+                                }
+                                paymentStatus={paymentStatus}
+                                debitNoteStatus={debitNotesIds()}
+                                defectsStatus={defects()}
+                                hasDebitNote={hasDebitNote}
+                                Name={
+                                  invoiceDetails?.invoiceDetails?.vendorName
+                                }
+                                type={
+                                  invoiceDetails?.invoiceDetails?.invoiceType
+                                }
+                                date={
+                                  invoiceDetails?.invoiceDetails?.invoiceDate
+                                }
+                                grossAmount={
+                                  invoiceDetails?.invoiceDetails?.grossAmount
+                                }
+                                gstAmount={
+                                  invoiceDetails?.invoiceDetails?.gstAmount
+                                }
+                                roundOff={
+                                  invoiceDetails?.invoiceDetails?.roundOff
+                                }
+                                amount={
+                                  invoiceDetails?.invoiceDetails?.totalAmount
+                                }
+                                roundOffAmount={
+                                  invoiceDetails?.invoiceDetails?.roundOffAmount
+                                }
+                                amountPaid={
+                                  invoiceDetails?.invoiceDetails?.amountPaid
+                                }
+                              />
 
-                        <CommentBox
-                          contextId={params.invoiceId}
-                          context={'INVOICE'}
-                        />
+                              <CommentBox
+                                contextId={params.invoiceId}
+                                context={'INVOICE'}
+                              />
+                            </div>
+
+                            <div className="lg:col-span-1">
+                              <ActionsCard
+                                recommendedActions={recommendedActions}
+                                ancillaryActions={ancillaryActions}
+                                cancelAction={cancelAction}
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-4">
+                            <InvoiceOverview
+                              isCollapsableOverview={false}
+                              invoiceDetails={invoiceDetails.invoiceDetails}
+                              invoiceId={
+                                invoiceDetails?.invoiceDetails
+                                  ?.invoiceReferenceNumber
+                              }
+                              orderId={invoiceDetails?.invoiceDetails?.orderId}
+                              orderRefId={
+                                invoiceDetails?.invoiceDetails
+                                  ?.orderReferenceNumber
+                              }
+                              paymentStatus={paymentStatus}
+                              debitNoteStatus={debitNotesIds()}
+                              defectsStatus={defects()}
+                              hasDebitNote={hasDebitNote}
+                              Name={invoiceDetails?.invoiceDetails?.vendorName}
+                              type={invoiceDetails?.invoiceDetails?.invoiceType}
+                              date={invoiceDetails?.invoiceDetails?.invoiceDate}
+                              grossAmount={
+                                invoiceDetails?.invoiceDetails?.grossAmount
+                              }
+                              gstAmount={
+                                invoiceDetails?.invoiceDetails?.gstAmount
+                              }
+                              roundOff={
+                                invoiceDetails?.invoiceDetails?.roundOff
+                              }
+                              amount={
+                                invoiceDetails?.invoiceDetails?.totalAmount
+                              }
+                              roundOffAmount={
+                                invoiceDetails?.invoiceDetails?.roundOffAmount
+                              }
+                              amountPaid={
+                                invoiceDetails?.invoiceDetails?.amountPaid
+                              }
+                            />
+
+                            <CommentBox
+                              contextId={params.invoiceId}
+                              context={'INVOICE'}
+                            />
+                          </div>
+                        )}
 
                         <DataTable
                           data={invoiceItems}

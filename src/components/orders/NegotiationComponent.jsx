@@ -210,7 +210,7 @@ const NegotiationComponent = ({
 
     if (isNegotiateOnBehalf) {
       if (!behalfReason) {
-        toast.error('Please select a reason for reviewing on behalf.');
+        toast.error('Please select a reason for negotiating on behalf.');
         return;
       }
       if (!behalfConsentNote.trim()) {
@@ -553,7 +553,7 @@ const NegotiationComponent = ({
           {/* Reason Select */}
           <div className="flex w-full flex-col gap-1.5 md:w-1/2">
             <Label>
-              Reason for reviewing on behalf{' '}
+              Reason for negotiating on behalf{' '}
               <span className="text-red-500">*</span>
             </Label>
             <Select value={behalfReason} onValueChange={setBehalfReason}>

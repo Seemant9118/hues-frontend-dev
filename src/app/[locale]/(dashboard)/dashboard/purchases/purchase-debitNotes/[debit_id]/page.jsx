@@ -43,6 +43,7 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import ActionsCard from '@/components/shared/ActionsCard';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { useCreditNotesColumns } from '../../purchase-creditNotes/useCreditNotesColumns';
 import { PurchaseTable } from '../../purchasetable/PurchaseTable';
@@ -405,6 +406,21 @@ const ViewDebitNote = () => {
     onEditLine: handleEditLine,
     isDebitNotePosted: debitNoteDetails?.status === 'SENT',
   });
+
+  const recommendedActions = [];
+  const ancillaryActions = [];
+  const cancelAction = null;
+
+  if (debitNoteDetails && debitNoteDetails?.status === 'DRAFT') {
+    recommendedActions.push({
+      label: 'Finalize & Post Debit Note',
+      onClick: () => handleSubmit('SENT'),
+      disabled: updateDebitNoteMutation?.isPending,
+      icon: <BookOpen size={14} className="mr-1 text-white" />,
+    });
+  }
+
+  const hasAnyActions = recommendedActions.length > 0;
   if (!hasPermission('permission:purchase-view')) {
     router.replace('/dashboard/unauthorized');
     return null;
@@ -458,40 +474,53 @@ const ViewDebitNote = () => {
                     {translations('tabs.tab2.title')}
                   </TabsTrigger>
                 </TabsList>
-
-                {debitNoteDetails?.status === 'DRAFT' && (
-                  <div className="flex items-center gap-2">
-                    {/* <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={updateDebitNoteMutation?.isPending}
-                  onClick={() => handleSubmit('DRAFT')}
-                >
-                  <Save size={14} /> Save as Draft
-                </Button> */}
-                    <Button
-                      disabled={updateDebitNoteMutation?.isPending}
-                      size="sm"
-                      onClick={() => handleSubmit('SENT')}
-                    >
-                      <BookOpen size={14} /> Finalize & Post Debit Note
-                    </Button>
-                  </div>
-                )}
               </section>
 
               <TabsContent value="overview">
                 <div className="flex flex-col gap-4">
-                  {/* OVERVIEW SECTION */}
-                  <Overview
-                    collapsible={false}
-                    data={overviewData}
-                    labelMap={overviewLabels}
-                    customRender={customRender}
-                  />
+                  {hasAnyActions ? (
+                    <div className="grid grid-cols-1 items-start gap-2 lg:grid-cols-3">
+                      <div className="flex flex-col gap-4 lg:col-span-2">
+                        {/* OVERVIEW SECTION */}
+                        <Overview
+                          collapsible={false}
+                          data={overviewData}
+                          labelMap={overviewLabels}
+                          customRender={customRender}
+                        />
 
-                  {/* comment */}
-                  <CommentBox contextId={debitNoteId} context={'DEBIT_NOTE'} />
+                        {/* comment */}
+                        <CommentBox
+                          contextId={debitNoteId}
+                          context={'DEBIT_NOTE'}
+                        />
+                      </div>
+
+                      <div className="lg:col-span-1">
+                        <ActionsCard
+                          recommendedActions={recommendedActions}
+                          ancillaryActions={ancillaryActions}
+                          cancelAction={cancelAction}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      {/* OVERVIEW SECTION */}
+                      <Overview
+                        collapsible={false}
+                        data={overviewData}
+                        labelMap={overviewLabels}
+                        customRender={customRender}
+                      />
+
+                      {/* comment */}
+                      <CommentBox
+                        contextId={debitNoteId}
+                        context={'DEBIT_NOTE'}
+                      />
+                    </div>
+                  )}
 
                   <DataTable
                     id="grns"
