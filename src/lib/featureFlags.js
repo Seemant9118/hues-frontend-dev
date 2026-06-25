@@ -45,4 +45,22 @@ export const FEATURE_FLAGS = {
       },
     },
   },
+  BUILDER_TEMPLATES: {
+    enabled: process.env.NEXT_PUBLIC_NODE_ENV === 'dev',
+    label: 'Builder Templates Module',
+    routePrefixes: [
+      '/dashboard/templates/drafts',
+      '/dashboard/templates/forms',
+    ],
+  },
+  BUILDER_FORMS: {
+    enabled: false,
+    label: 'Builder Forms Module',
+    routePrefixes: ['/dashboard/templates/forms'],
+  },
+  BUILDER_CONTRACTS: {
+    enabled: process.env.NEXT_PUBLIC_NODE_ENV === 'dev',
+    label: 'Builder Contracts Module',
+    routePrefixes: ['/dashboard/templates/contracts'],
+  },
 };

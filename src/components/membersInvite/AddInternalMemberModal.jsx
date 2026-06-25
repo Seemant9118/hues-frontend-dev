@@ -19,6 +19,7 @@ import ReactSelect from 'react-select';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { associateMemberApi } from '@/api/associateMembers/associateMembersApi';
 import { rolesApi } from '@/api/rolesApi/rolesApi';
+import { templateBuilderApi } from '@/api/template-builder/template_builder_api';
 import {
   convertSnakeToTitleCase,
   getEnterpriseId,
@@ -28,6 +29,7 @@ import {
   updateAssociateMember,
 } from '@/services/Associate_Members_Services/AssociateMembersServices';
 import { getRoles } from '@/services/Roles_Services/Roles_Services';
+import { getTemplates } from '@/services/template-builder/TemplateBuilderServices';
 import { toast } from 'sonner';
 import moment from 'moment';
 
@@ -95,6 +97,19 @@ export default function AddInternalMemberModal({
     queryFn: getRoles,
     select: (data) => data.data.data,
     enabled: !!isOpen,
+  });
+
+  // Load templates list from query
+  const { data: templatesList } = useQuery({
+    queryKey: [
+      templateBuilderApi.getTemplates.endpointKey,
+      enterpriseId,
+      'MEMBERS',
+    ],
+    queryFn: () =>
+      getTemplates({ enterpriseId, type: 'MEMBERS', isPublished: true }),
+    select: (data) => data?.data?.data || [],
+    enabled: !!isOpen && !!enterpriseId,
   });
 
   useEffect(() => {
@@ -210,6 +225,8 @@ export default function AddInternalMemberModal({
       employeeCode: formData.employeeCode,
       dateOfJoining: formData.dateOfJoining || null,
       isActive: formData.status,
+      agreementTemplateId:
+        formData.agreement !== 'none' ? Number(formData.agreement) : null,
     };
 
     if (isEditMode && membersInfo?.id) {
@@ -398,7 +415,9 @@ export default function AddInternalMemberModal({
               <div className="flex flex-col gap-1.5">
                 <Label>Select Signed Agreement from Templates</Label>
                 <Select
-                  value={formData.agreement}
+                  value={
+                    formData.agreement ? String(formData.agreement) : 'none'
+                  }
                   onValueChange={(val) => handleSelectChange('agreement', val)}
                 >
                   <SelectTrigger>
@@ -406,10 +425,11 @@ export default function AddInternalMemberModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="nda">Employee ND Agreement</SelectItem>
-                    <SelectItem value="coc">
-                      Internal Code of Conduct
-                    </SelectItem>
+                    {templatesList?.map((template) => (
+                      <SelectItem key={template.id} value={String(template.id)}>
+                        {template.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

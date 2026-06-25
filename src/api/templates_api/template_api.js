@@ -50,4 +50,9 @@ export const templateApi = {
     endpoint: `/template/form/view`,
     endpointKey: 'view_document',
   },
+
+  signAgreement: {
+    endpoint: `/agreements/users/agreements/:id/sign`,
+    endpointKey: `sign_agreement`,
+  },
 };

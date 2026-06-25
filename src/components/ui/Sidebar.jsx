@@ -25,6 +25,7 @@ import {
   Database,
   FileCheck,
   FileSignature,
+  FileSignatureIcon,
   FileSymlink,
   FileText,
   FileTextIcon,
@@ -358,6 +359,32 @@ const Sidebar = () => {
         icon: <Users size={ICON_SIZE} />,
         path: '/dashboard/members',
       },
+      hasPermission(PERMISSIONS.VIEW_DASHBOARD) &&
+        (isRouteEnabled('/dashboard/templates/template') ||
+          isRouteEnabled('/dashboard/templates/forms')) && {
+          name: 'sidebar.templates',
+          icon: <Blocks size={ICON_SIZE} />,
+          path: isRouteEnabled('/dashboard/templates/drafts')
+            ? '/dashboard/templates/drafts'
+            : '/dashboard/templates/forms',
+          subTab: [
+            isRouteEnabled('/dashboard/templates/drafts') && {
+              name: 'sidebar.subTabs.drafts',
+              icon: <FileText size={ICON_SIZE} />,
+              path: '/dashboard/templates/drafts',
+            },
+            isRouteEnabled('/dashboard/templates/forms') && {
+              name: 'sidebar.subTabs.forms',
+              icon: <ScrollText size={ICON_SIZE} />,
+              path: '/dashboard/templates/forms',
+            },
+            isRouteEnabled('/dashboard/templates/contracts') && {
+              name: 'sidebar.subTabs.contracts',
+              icon: <FileSignatureIcon size={ICON_SIZE} />,
+              path: '/dashboard/templates/contracts',
+            },
+          ].filter(Boolean),
+        },
     ].filter(Boolean);
 
     return links;

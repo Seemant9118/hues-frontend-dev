@@ -5,6 +5,7 @@ import {
   convertSnakeToTitleCase,
   getEnterpriseId,
 } from '@/appUtils/helperFunctions';
+import AgreementSignModal from '@/components/Modals/AgreementSignModal';
 import AssignUserModal from '@/components/membersInvite/AssignUserModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { DataTable } from '@/components/table/data-table';
@@ -21,6 +22,7 @@ import {
   removeExternalMember,
 } from '@/services/Associate_Members_Services/AssociateMembersServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import React, { useState } from 'react';
@@ -38,6 +40,7 @@ export default function MemberDetailsPage() {
   const [isAssignUserOpen, setIsAssignUserOpen] = useState(false);
   const [editUser, setEditUser] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
 
   const removeMutation = useMutation({
     mutationKey: [associateMemberApi.removeExternalMember.endpointKey],
@@ -167,6 +170,20 @@ export default function MemberDetailsPage() {
           {convertSnakeToTitleCase(r.name)}
         </Badge>
       )),
+      agreementStatus: memberDetails?.agreement ? (
+        <Badge
+          variant="outline"
+          className={
+            memberDetails.agreement.status === 'SIGNED'
+              ? 'border-green-200 bg-green-50 font-semibold text-green-700 hover:bg-green-50'
+              : 'border-amber-200 bg-amber-50 font-semibold text-amber-700 hover:bg-amber-50'
+          }
+        >
+          {memberDetails.agreement.status === 'SIGNED' ? 'Signed' : 'Unsigned'}
+        </Badge>
+      ) : (
+        '-'
+      ),
     };
   }, [memberDetails, enterpriseId, translation]);
 
@@ -206,7 +223,22 @@ export default function MemberDetailsPage() {
             <div className="flex gap-2">
               <OrderBreadCrumbs possiblePagesBreadcrumbs={memberBreadCrumbs} />
             </div>
-            <div className="flex gap-2"></div>
+            {memberDetails &&
+              memberDetails.agreementId &&
+              Number(enterpriseId) ===
+                Number(memberDetails.enterpriseId?.id) && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => setIsAgreementModalOpen(true)}
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                  >
+                    <Eye className="h-4 w-4" />
+                    View Agreement
+                  </Button>
+                </div>
+              )}
           </section>
 
           {isMemberDetailsLoading ? (
@@ -266,6 +298,7 @@ export default function MemberDetailsPage() {
                       translation('tableColumns.employeeCode') ||
                       'EMPLOYEE CODE',
                     roles: translation('tableColumns.role') || 'ROLES',
+                    agreementStatus: 'Agreement Status',
                   }}
                 />
               </TabsContent>
@@ -291,6 +324,20 @@ export default function MemberDetailsPage() {
             editUser={editUser}
             isEditMode={isEditMode}
           />
+          {memberDetails?.agreementId && (
+            <AgreementSignModal
+              isOpen={isAgreementModalOpen}
+              onClose={() => setIsAgreementModalOpen(false)}
+              agreementDocUrl={
+                memberDetails?.agreement?.signedDocument
+                  ? memberDetails?.agreement?.signedDocument?.documentSlug
+                  : memberDetails?.agreement?.generatedDocument?.documentSlug
+              }
+              agreementId={memberDetails?.agreementId}
+              isReadOnly={true}
+              enterpriseName={memberDetails?.enterpriseId?.name}
+            />
+          )}
         </div>
       </Wrapper>
     </ProtectedWrapper>

@@ -237,3 +237,13 @@ input[type='number'] {
 .animate-float-fast {
   animation: float-fast 3s ease-in-out infinite;
 }
+
+/* Tiptap Placeholder Style */
+.tiptap p.is-editor-empty:first-child::before,
+.tiptap p.is-empty::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}

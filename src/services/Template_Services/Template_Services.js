@@ -80,3 +80,10 @@ export const viewPdfInNewTab = async (urlString) => {
     toast.error('Error fetching PDF');
   }
 };
+
+export function signAgreement(agreementId, data) {
+  return APIinstance.post(
+    templateApi.signAgreement.endpoint.replace(':id', agreementId),
+    data,
+  );
+}

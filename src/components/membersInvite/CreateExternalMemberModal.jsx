@@ -26,6 +26,8 @@ import {
 import { getClients } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { getVendors } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
 import { getRoles } from '@/services/Roles_Services/Roles_Services';
+import { templateBuilderApi } from '@/api/template-builder/template_builder_api';
+import { getTemplates } from '@/services/template-builder/TemplateBuilderServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Check,
@@ -150,6 +152,19 @@ export default function CreateExternalMemberModal({
     enabled: !!isOpen && contactMode === 'Vendor',
   });
 
+  // Load templates list from query
+  const { data: templatesList } = useQuery({
+    queryKey: [
+      templateBuilderApi.getTemplates.endpointKey,
+      enterpriseId,
+      'MEMBERS',
+    ],
+    queryFn: () =>
+      getTemplates({ enterpriseId, type: 'MEMBERS', isPublished: true }),
+    select: (data) => data?.data?.data || [],
+    enabled: !!isOpen && !!enterpriseId,
+  });
+
   const contactsList = contactMode === 'Client' ? clientsData : vendorsData;
 
   // Form states
@@ -161,6 +176,7 @@ export default function CreateExternalMemberModal({
     roles: [],
     gstin: '',
     pan: '',
+    agreement: 'none',
   });
 
   const [optionsForRoles, setOptionsForRoles] = useState([]);
@@ -307,6 +323,7 @@ export default function CreateExternalMemberModal({
         roles: membersInfo.roles?.map((role) => role.roleId) || [],
         gstin: membersInfo.enterpriseId?.gsts?.[0]?.gst || '',
         pan: membersInfo.panNumber || '',
+        agreement: membersInfo.agreementTemplateId || 'none',
       });
     } else {
       setMemberIdentity({
@@ -317,6 +334,7 @@ export default function CreateExternalMemberModal({
         roles: [],
         gstin: '',
         pan: '',
+        agreement: 'none',
       });
     }
   }, [membersInfo, isEditMode, isOpen, enterpriseId]);
@@ -334,6 +352,7 @@ export default function CreateExternalMemberModal({
         roles: memberIdentity.roles, // preserve roles
         gstin: selectedContact.gstin,
         pan: selectedContact.pan,
+        agreement: memberIdentity.agreement, // preserve agreement
       });
     }
   }, [selectedContact, isEditMode]);
@@ -410,6 +429,10 @@ export default function CreateExternalMemberModal({
       enterpriseId,
       rolesIds: memberIdentity.roles,
       isActive: membersInfo?.isActive ?? true,
+      agreementTemplateId:
+        memberIdentity.agreement !== 'none'
+          ? Number(memberIdentity.agreement)
+          : null,
     };
 
     // Filter out undefined, null, empty string, or empty arrays from payload
@@ -440,6 +463,10 @@ export default function CreateExternalMemberModal({
       toEnterpriseId: selectedContact?.id || null,
       email: memberIdentity.email,
       roleIds: memberIdentity.roles,
+      agreementTemplateId:
+        memberIdentity.agreement !== 'none'
+          ? Number(memberIdentity.agreement)
+          : null,
     };
 
     inviteMutation.mutate(payload);
@@ -466,6 +493,7 @@ export default function CreateExternalMemberModal({
             roles: [],
             gstin: '',
             pan: '',
+            agreement: 'none',
           });
         }
       }}
@@ -532,7 +560,7 @@ export default function CreateExternalMemberModal({
               <span
                 className={`text-sm font-bold ${step === 3 ? 'text-[#0D3B66]' : 'text-gray-400'}`}
               >
-                Consent
+                Consent + Agreement
               </span>
             </div>
           </div>
@@ -859,6 +887,38 @@ export default function CreateExternalMemberModal({
                   Please verify that all information is accurate and that you
                   have the internal authorization to execute this linking.
                 </p>
+              </div>
+
+              {/* Agreement Select Field */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-sm font-bold text-[#0D3B66]">
+                  Select Signed Agreement from Templates
+                </Label>
+                <Select
+                  value={
+                    memberIdentity.agreement
+                      ? String(memberIdentity.agreement)
+                      : 'none'
+                  }
+                  onValueChange={(val) => {
+                    setMemberIdentity((prev) => ({
+                      ...prev,
+                      agreement: val,
+                    }));
+                  }}
+                >
+                  <SelectTrigger className="h-10 rounded-md border border-gray-200 text-[#0D3B66] focus:border-primary focus:ring-1 focus:ring-primary">
+                    <SelectValue placeholder="None" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {templatesList?.map((template) => (
+                      <SelectItem key={template.id} value={String(template.id)}>
+                        {template.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Consent Checkbox */}
