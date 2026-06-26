@@ -78,17 +78,22 @@ const MembersPage = () => {
 
       {enterpriseId && isEnterpriseOnboardingComplete && (
         <Wrapper className="h-screen">
-          <AddInternalMemberModal
-            isOpen={isAddInternalOpen}
-            setIsOpen={setIsAddInternalOpen}
-          />
+          {isAddInternalOpen && (
+            <AddInternalMemberModal
+              isOpen={isAddInternalOpen}
+              setIsOpen={setIsAddInternalOpen}
+            />
+          )}
 
-          <CreateExternalMemberModal
-            isOpen={isCreateExternalOpen}
-            setIsOpen={setIsCreateExternalOpen}
-          />
+          {isCreateExternalOpen && (
+            <CreateExternalMemberModal
+              isOpen={isCreateExternalOpen}
+              setIsOpen={setIsCreateExternalOpen}
+            />
+          )}
 
-          {selectedMember &&
+          {isMemberEditing &&
+          selectedMember &&
           selectedMember.membershipType === 'EXTERNAL_MEMBER' ? (
             <CreateExternalMemberModal
               isOpen={isMemberEditing}
@@ -96,7 +101,7 @@ const MembersPage = () => {
               membersInfo={selectedMember}
               isEditMode={true}
             />
-          ) : selectedMember ? (
+          ) : isMemberEditing && selectedMember ? (
             <AddInternalMemberModal
               isOpen={isMemberEditing}
               setIsOpen={setIsMemberEditing}

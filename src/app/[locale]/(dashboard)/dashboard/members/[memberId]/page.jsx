@@ -22,7 +22,7 @@ import {
   removeExternalMember,
 } from '@/services/Associate_Members_Services/AssociateMembersServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Eye } from 'lucide-react';
+import { Eye, FileSignature } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import React, { useState } from 'react';
@@ -223,11 +223,10 @@ export default function MemberDetailsPage() {
             <div className="flex gap-2">
               <OrderBreadCrumbs possiblePagesBreadcrumbs={memberBreadCrumbs} />
             </div>
-            {memberDetails &&
-              memberDetails.agreementId &&
-              Number(enterpriseId) ===
-                Number(memberDetails.enterpriseId?.id) && (
-                <div className="flex items-center gap-2">
+            {memberDetails && memberDetails.agreementId && (
+              <div className="flex items-center gap-2">
+                {Number(enterpriseId) ===
+                Number(memberDetails.enterpriseId?.id) ? (
                   <Button
                     onClick={() => setIsAgreementModalOpen(true)}
                     variant="outline"
@@ -237,8 +236,32 @@ export default function MemberDetailsPage() {
                     <Eye className="h-4 w-4" />
                     View Agreement
                   </Button>
-                </div>
-              )}
+                ) : (
+                  <Button
+                    onClick={() => setIsAgreementModalOpen(true)}
+                    variant={
+                      memberDetails?.agreement?.signedDocument
+                        ? 'outline'
+                        : 'default'
+                    }
+                    size="sm"
+                    className="gap-1.5"
+                  >
+                    {memberDetails?.agreement?.signedDocument ? (
+                      <>
+                        <Eye className="h-4 w-4" />
+                        View Agreement
+                      </>
+                    ) : (
+                      <>
+                        <FileSignature className="h-4 w-4" />
+                        Sign Agreement
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            )}
           </section>
 
           {isMemberDetailsLoading ? (
@@ -334,8 +357,18 @@ export default function MemberDetailsPage() {
                   : memberDetails?.agreement?.generatedDocument?.documentSlug
               }
               agreementId={memberDetails?.agreementId}
-              isReadOnly={true}
+              isReadOnly={
+                Number(enterpriseId) ===
+                  Number(memberDetails.enterpriseId?.id) ||
+                !!memberDetails?.agreement?.signedDocument
+              }
               enterpriseName={memberDetails?.enterpriseId?.name}
+              onSignComplete={() => {
+                queryClient.invalidateQueries([
+                  associateMemberApi.getMember.endpointKey,
+                  memberId,
+                ]);
+              }}
             />
           )}
         </div>

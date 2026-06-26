@@ -19,7 +19,7 @@ export const associateMemberApi = {
 
   // 4. Send invitation
   sendInviteToExternalMember: {
-    endpoint: `/enterprise/invitation/external-member-invite/send`,
+    endpoint: `/enterprise/user/external-member/add`,
     endpointKey: 'send_invitation_member',
   },
 
