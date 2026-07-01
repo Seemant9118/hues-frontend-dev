@@ -302,13 +302,6 @@ export default function HeroSection({ isEmbed = false }) {
                     {t('nav.contactUs')}
                   </Link>
                 </NavigationMenuItem>
-                <Button
-                  size="sm"
-                  className="transition-all duration-300 hover:scale-105 hover:shadow-sm"
-                  onClick={() => router.push('/login')}
-                >
-                  {t('nav.register')}
-                </Button>
               </NavigationMenuList>
             </NavigationMenu>
 
@@ -456,10 +449,7 @@ export default function HeroSection({ isEmbed = false }) {
         <ScrollReveal animation="slide-up">
           <div className="mx-auto max-w-6xl text-center">
             <h2 className="flex items-center justify-center gap-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-              <span className="font-handwriting text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-                {t('whyChoose.title.clarity')}{' '}
-              </span>
-              {t('whyChoose.title.atScale')}
+              {t('whyChoose.title.clarity')} {t('whyChoose.title.atScale')}
             </h2>
             <p className="mt-4 text-base text-gray-600">
               {t('whyChoose.subtitle')}
@@ -498,7 +488,7 @@ export default function HeroSection({ isEmbed = false }) {
               <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">
                 {t('builtSecure.title.line1')}
               </h2>
-              <h2 className="mt-2 font-handwriting text-4xl font-bold tracking-tight sm:text-5xl md:text-7xl">
+              <h2 className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
                 {t('builtSecure.title.line2')}
               </h2>
             </div>
@@ -557,7 +547,7 @@ export default function HeroSection({ isEmbed = false }) {
             <div className="mb-12 text-center">
               <h2 className="text-3xl font-bold leading-tight tracking-tight text-gray-900 sm:text-5xl">
                 {t('onePlatform.title.onePlatform')}{' '}
-                <span className="mt-2 font-handwriting text-4xl font-bold tracking-tight sm:text-5xl md:text-7xl">
+                <span className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl md:text-5xl">
                   {t('onePlatform.title.allYourBusiness')}
                 </span>{' '}
                 <span>{t('onePlatform.title.needs')}</span>
@@ -608,7 +598,7 @@ export default function HeroSection({ isEmbed = false }) {
             <div className="flex w-full flex-col justify-center text-left sm:h-[400px]">
               <h2 className="text-base font-semibold text-gray-900 sm:text-4xl md:text-5xl">
                 {t('dataThatWorks.title.dataThatWorks')}{' '}
-                <span className="mb-2 inline-block font-handwriting text-lg sm:text-5xl md:text-6xl">
+                <span className="mb-2 inline-block text-lg sm:text-5xl md:text-5xl">
                   {t('dataThatWorks.title.forYou')}
                 </span>{' '}
               </h2>
@@ -630,7 +620,7 @@ export default function HeroSection({ isEmbed = false }) {
           <div className="mx-auto max-w-4xl text-center">
             <h2 className="text-xl font-semibold tracking-tight text-gray-900 sm:text-3xl md:text-5xl">
               {t('audience.title.for')}{' '}
-              <span className="inline-block font-handwriting text-2xl sm:text-4xl md:text-6xl">
+              <span className="inline-block text-2xl sm:text-4xl md:text-5xl">
                 {t('audience.title.enterprises')}
               </span>{' '}
               {t('audience.title.andEveryone')}
@@ -670,7 +660,7 @@ export default function HeroSection({ isEmbed = false }) {
           <ScrollReveal animation="slide-up">
             <h2 className="text-xl font-semibold leading-tight sm:text-3xl md:text-4xl lg:text-5xl">
               {t('pricing.title.transparent')}{' '}
-              <span className="inline-block font-handwriting text-2xl sm:text-4xl md:text-5xl lg:text-6xl">
+              <span className="inline-block  text-2xl sm:text-4xl md:text-5xl lg:text-6xl">
                 {t('pricing.title.pricing')}
               </span>
               <br />
