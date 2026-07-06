@@ -31,8 +31,9 @@ export default function MultiStepForm({
   finalStepActions,
   headerExtra,
   onBack,
+  initialStep = 0,
 }) {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(initialStep);
 
   const totalSteps = steps.length;
   const isFirstStep = currentStep === 0;

@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { getAllSalesInvoices } from '@/services/Invoice_Services/Invoice_Services';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import moment from 'moment';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 const PAGE_LIMIT = 10;
@@ -22,8 +23,12 @@ export default function SearchListLayout({
 }) {
   const enterpriseId = getEnterpriseId();
   const { hasPermission } = usePermission();
+  const searchParams = useSearchParams();
+  const initialRefNum = searchParams.get('referenceNumber');
 
   const [filterData, setFilterData] = useState({});
+  const [searchString, setSearchString] = useState(initialRefNum || '');
+  const hasAutoSelectedRef = useRef(false);
 
   // selection view (selected invoice only)
   const [isSelectionView, setIsSelectionView] = useState(false);
@@ -48,6 +53,7 @@ export default function SearchListLayout({
       invoiceApi.getAllSalesInvoices.endpointKey,
       enterpriseId,
       stableFilterKey,
+      searchString,
     ],
     queryFn: async ({ pageParam = 1 }) => {
       const payload = {
@@ -55,6 +61,10 @@ export default function SearchListLayout({
         limit: PAGE_LIMIT,
         ...(filterData || {}),
       };
+
+      if (searchString) {
+        payload.searchString = searchString;
+      }
 
       return getAllSalesInvoices({
         id: enterpriseId,
@@ -113,6 +123,34 @@ export default function SearchListLayout({
     return items.find((it) => it.value === selectedValue) || null;
   }, [items, selectedValue]);
 
+  const handleSelectInvoice = (invoiceId, orderId, isFullyDispatched) => {
+    // block selection
+    if (isFullyDispatched) return;
+
+    onSelect(invoiceId, orderId);
+    setIsSelectionView(true);
+  };
+
+  // Auto-selection logic
+  useEffect(() => {
+    if (
+      initialRefNum &&
+      items.length > 0 &&
+      !selectedValue &&
+      !hasAutoSelectedRef.current
+    ) {
+      const matchedItem = items.find(
+        (item) =>
+          item.title === initialRefNum ||
+          item.title.toLowerCase() === initialRefNum.toLowerCase(),
+      );
+      if (matchedItem && !matchedItem.isFullyDispatched) {
+        hasAutoSelectedRef.current = true;
+        handleSelectInvoice(matchedItem.value, matchedItem.orderId, false);
+      }
+    }
+  }, [items, initialRefNum, selectedValue]);
+
   // infinite scroll (only list view)
   useEffect(() => {
     if (isSelectionView) return;
@@ -133,15 +171,9 @@ export default function SearchListLayout({
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage, isSelectionView]);
 
-  const handleSelectInvoice = (invoiceId, orderId, isFullyDispatched) => {
-    // block selection
-    if (isFullyDispatched) return;
-
-    onSelect(invoiceId, orderId);
-    setIsSelectionView(true);
-  };
-
   const handleChangeInvoice = () => {
+    setSearchString('');
+    onSelect('', '');
     setIsSelectionView(false);
   };
 

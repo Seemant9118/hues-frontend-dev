@@ -60,7 +60,9 @@ const DispatchedNotes = () => {
   const [paginationData, setPaginationData] = useState(null);
   const [tab, setTab] = useState('ALL');
   const [isCreatingDispatch, setIsCreatingDispatch] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState(() => ({
+    movementType: searchParams.get('movementType') || undefined,
+  }));
   const [errors, setErrors] = useState({});
 
   const isSearching = searchTerm?.length > 0;
@@ -472,6 +474,7 @@ const DispatchedNotes = () => {
               steps={directDispatchSteps}
               formData={formData}
               setFormData={setFormData}
+              initialStep={searchParams.get('referenceNumber') ? 1 : 0}
               errors={errors}
               setErrors={setErrors}
               onSubmit={handleSubmit}

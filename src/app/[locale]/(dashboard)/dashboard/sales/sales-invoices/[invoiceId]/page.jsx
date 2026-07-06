@@ -9,7 +9,6 @@ import { getQCDefectStatuses } from '@/appUtils/helperFunctions';
 import AccessDenied from '@/components/shared/AccessDenied';
 import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
-import CreateDispatchNote from '@/components/dispatchNote/CreateDispatchNote';
 import { useDispatchNoteColumns } from '@/components/dispatchNote/dispatchNotesColumns';
 import InvoiceOverview from '@/components/invoices/InvoiceOverview';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
@@ -61,7 +60,6 @@ const ViewInvoice = () => {
   const searchParams = useSearchParams();
   const [tab, setTab] = useState('overview');
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
-  const [isCreatingDispatchNote, setIsCreatingDispatchNote] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isPINModalOpen, setIsPINModalOpen] = useState(false);
   const [withdrawReason, setWithdrawReason] = useState('');
@@ -118,12 +116,6 @@ const ViewInvoice = () => {
       path: `/dashboard/sales/sales-invoices/${params.invoiceId}`,
       show: isRecordingPayment, // Show only if isGenerateInvoice is true
     },
-    {
-      id: 4,
-      name: translations('title.create_dispatch_note'),
-      path: `/dashboard/sales/sales-invoices/${params.invoiceId}`,
-      show: isCreatingDispatchNote, // Show only if isCreatingDispatchNote is true
-    },
   ];
 
   useEffect(() => {
@@ -131,7 +123,6 @@ const ViewInvoice = () => {
     const state = searchParams.get('state');
 
     setIsRecordingPayment(state === 'recordPayment');
-    setIsCreatingDispatchNote(state === 'createDispatchNote');
   }, [searchParams]);
 
   useEffect(() => {
@@ -140,14 +131,12 @@ const ViewInvoice = () => {
 
     if (isRecordingPayment) {
       newPath += '?state=recordPayment';
-    } else if (isCreatingDispatchNote) {
-      newPath += '?state=createDispatchNote';
     } else {
       newPath += '';
     }
 
     router.push(newPath);
-  }, [params.invoiceId, isRecordingPayment, isCreatingDispatchNote, router]);
+  }, [params.invoiceId, isRecordingPayment, router]);
 
   // Function to handle tab change
   const onTabChange = (value) => {
@@ -263,11 +252,7 @@ const ViewInvoice = () => {
   const ancillaryActions = [];
   let cancelAction = null;
 
-  if (
-    invoiceDetails?.invoiceDetails &&
-    !isRecordingPayment &&
-    !isCreatingDispatchNote
-  ) {
+  if (invoiceDetails?.invoiceDetails && !isRecordingPayment) {
     if (
       hasPermission('permission:sales-create-payment') &&
       (invoiceDetails?.invoiceDetails?.invoiceMetaData?.payment?.status ===
@@ -290,7 +275,11 @@ const ViewInvoice = () => {
       ancillaryActions.push({
         key: 'dispatch',
         label: translations('ctas.create_dispatch_note'),
-        onClick: () => setIsCreatingDispatchNote(true),
+        onClick: () => {
+          router.push(
+            `/dashboard/transport/dispatch?action=create&movementType=OUTWARD&referenceNumber=${invoiceDetails?.invoiceDetails?.invoiceReferenceNumber}`,
+          );
+        },
       });
     }
 
@@ -352,7 +341,7 @@ const ViewInvoice = () => {
                 )}
 
                 {/* download CTA */}
-                {!isRecordingPayment && !isCreatingDispatchNote && (
+                {!isRecordingPayment && (
                   <Tooltips
                     trigger={
                       <Button
@@ -375,7 +364,7 @@ const ViewInvoice = () => {
               </ProtectedWrapper>
             </div>
           </section>
-          {!isRecordingPayment && !isCreatingDispatchNote && (
+          {!isRecordingPayment && (
             <Tabs
               value={tab}
               onValueChange={onTabChange}
@@ -601,21 +590,13 @@ const ViewInvoice = () => {
           )}
 
           {/* recordPayment component */}
-          {isRecordingPayment && !isCreatingDispatchNote && (
+          {isRecordingPayment && (
             <MakePaymentNewInvoice
               paymentStatus={paymentStatus}
               debitNoteStatus={debitNoteStatus}
               invoiceDetails={invoiceDetails?.invoiceDetails}
               setIsRecordingPayment={setIsRecordingPayment}
               contextType={'PAYMENT'}
-            />
-          )}
-
-          {isCreatingDispatchNote && (
-            <CreateDispatchNote
-              invoiceDetails={invoiceDetails}
-              isCreatingDispatchNote={isCreatingDispatchNote}
-              setIsCreatingDispatchNote={setIsCreatingDispatchNote}
             />
           )}
 
