@@ -733,7 +733,7 @@ export default function HeroSection({ isEmbed = false }) {
               </span>
             </h2>
 
-            <p className="text-sm md:text-base">{t('footer.subtitle')}</p>
+            {/* <p className="text-sm md:text-base">{t('footer.subtitle')}</p> */}
 
             <div className="mt-4 flex flex-wrap justify-center gap-4">
               <a
