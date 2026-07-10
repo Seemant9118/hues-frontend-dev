@@ -15,13 +15,24 @@ export default function PromotionalContents({
 }) {
   // handle nested offers state
   const handleChange = (key) => (value) => {
-    setFormData((prev) => ({
-      ...prev,
-      seo: {
-        ...(prev.seo || {}),
-        [key]: value,
-      },
-    }));
+    setFormData((prev) => {
+      const currentSeo =
+        typeof prev.seo === 'object' && prev.seo !== null ? prev.seo : {};
+
+      const cleanSeo = {
+        seoTitle: currentSeo.seoTitle ?? null,
+        seoKeywords: currentSeo.seoKeywords ?? null,
+        seoMetaDescription: currentSeo.seoMetaDescription ?? null,
+      };
+
+      return {
+        ...prev,
+        seo: {
+          ...cleanSeo,
+          [key]: value,
+        },
+      };
+    });
   };
 
   // Upload handler (images / videos)
@@ -46,6 +57,20 @@ export default function PromotionalContents({
         [type]: prev.files[type].filter((_, i) => i !== index),
       },
     }));
+  };
+
+  // Remove existing file
+  const handleRemoveExisting = (type, index) => {
+    setFormData((prev) => ({
+      ...prev,
+      [type]: (prev[type] || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const getFilenameFromUrl = (url) => {
+    if (!url) return 'file';
+    const path = url.split('?')[0];
+    return path.substring(path.lastIndexOf('/') + 1) || 'file';
   };
 
   return (
@@ -73,15 +98,51 @@ export default function PromotionalContents({
             </div>
           </FileUploader>
 
-          {/* Image List */}
+          {/* Existing Images */}
+          {formData?.imageDocuments?.map((doc, index) => {
+            const name =
+              doc?.fileName ||
+              doc?.name ||
+              getFilenameFromUrl(doc?.url || doc?.document?.url) ||
+              `Image ${index + 1}`;
+            const url = doc?.url || doc?.document?.url;
+            return (
+              <div
+                key={doc.id || url || index}
+                className="mt-2 flex items-center justify-between rounded border border-blue-200 bg-blue-50/50 p-2 text-xs"
+              >
+                {url ? (
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="max-w-[80%] truncate font-medium text-blue-600 underline hover:text-blue-800"
+                  >
+                    {name}
+                  </a>
+                ) : (
+                  <span className="max-w-[80%] truncate font-medium text-gray-500">
+                    {name}
+                  </span>
+                )}
+                <X
+                  className="cursor-pointer text-red-500 hover:text-red-700"
+                  size={14}
+                  onClick={() => handleRemoveExisting('imageDocuments', index)}
+                />
+              </div>
+            );
+          })}
+
+          {/* New Image List */}
           {formData?.files?.images?.map((file, index) => (
             <div
               key={file.name}
               className="mt-2 flex items-center justify-between rounded border p-2 text-xs"
             >
-              <span>{file.name}</span>
+              <span className="max-w-[80%] truncate">{file.name}</span>
               <X
-                className="cursor-pointer text-red-500"
+                className="cursor-pointer text-red-500 hover:text-red-700"
                 size={14}
                 onClick={() => handleRemove('images', index)}
               />
@@ -107,14 +168,51 @@ export default function PromotionalContents({
             </div>
           </FileUploader>
 
+          {/* Existing Videos */}
+          {formData?.videoDocuments?.map((doc, index) => {
+            const name =
+              doc?.fileName ||
+              doc?.name ||
+              getFilenameFromUrl(doc?.url || doc?.document?.url) ||
+              `Video ${index + 1}`;
+            const url = doc?.url || doc?.document?.url;
+            return (
+              <div
+                key={doc.id || url || index}
+                className="mt-2 flex items-center justify-between rounded border border-blue-200 bg-blue-50/50 p-2 text-xs"
+              >
+                {url ? (
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="max-w-[80%] truncate font-medium text-blue-600 underline hover:text-blue-800"
+                  >
+                    {name}
+                  </a>
+                ) : (
+                  <span className="max-w-[80%] truncate font-medium text-gray-500">
+                    {name}
+                  </span>
+                )}
+                <X
+                  className="cursor-pointer text-red-500 hover:text-red-700"
+                  size={14}
+                  onClick={() => handleRemoveExisting('videoDocuments', index)}
+                />
+              </div>
+            );
+          })}
+
+          {/* New Video List */}
           {formData?.files?.videos?.map((file, index) => (
             <div
               key={file.name}
               className="mt-2 flex items-center justify-between rounded border p-2 text-xs"
             >
-              <span>{file.name}</span>
+              <span className="max-w-[80%] truncate">{file.name}</span>
               <X
-                className="cursor-pointer text-red-500"
+                className="cursor-pointer text-red-500 hover:text-red-700"
                 size={14}
                 onClick={() => handleRemove('videos', index)}
               />

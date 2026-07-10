@@ -18,6 +18,15 @@ import Wrapper from '../wrappers/Wrapper';
 import MultiStepForm from './multi-step-form/MultiStepForm';
 import { stepsGoodsConfig } from './multi-step-form/goods-form-configs/stepsConfig';
 
+const sanitizeSeo = (seoValue) => {
+  const parsed = safeJsonParse(seoValue, {});
+  return {
+    seoTitle: parsed?.seoTitle || null,
+    seoKeywords: parsed?.seoKeywords || null,
+    seoMetaDescription: parsed?.seoMetaDescription || null,
+  };
+};
+
 const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
   const translation = useTranslations('components.addGoods');
   const queryClient = useQueryClient();
@@ -90,10 +99,7 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
           ? draftData.offers
           : prev.offers,
 
-      seo: {
-        ...prev.seo,
-        ...(draftData.seo || {}),
-      },
+      seo: sanitizeSeo(draftData.seo),
 
       attributes: draftData.attributes || [],
 
@@ -137,10 +143,7 @@ const AddGoods = ({ setIsCreatingGoods, goodsToEdit }) => {
           ? goodsToEdit?.offers
           : prev.offers,
 
-      seo: {
-        ...prev.seo,
-        ...(goodsToEdit?.seo || {}),
-      },
+      seo: sanitizeSeo(goodsToEdit?.seo),
 
       attributes: goodsToEdit?.attributes
         ? safeJsonParse(goodsToEdit?.attributes)

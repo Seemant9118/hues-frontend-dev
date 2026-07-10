@@ -33,6 +33,7 @@ import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
+import EnterpriseChat from '@/components/shared/EnterpriseChat';
 import { useAuthorizedPersonColumns } from './columns/useAuthorizedPersonsColumns';
 import { useDocumentsColumns } from './columns/useDocumentsColumns';
 import { useLedgerColumns } from './columns/useLedgerColumns';
@@ -98,6 +99,9 @@ export default function VendorsDetailsPage() {
       return failureCount < 3;
     },
   });
+
+  const isAccepted =
+    (vendorDetails?.invitation?.status ?? 'ACCEPTED') === 'ACCEPTED';
 
   // api calling for vendorLedger
   const {
@@ -381,6 +385,11 @@ export default function VendorsDetailsPage() {
                   {translations('tabs.tab1.title')}
                 </TabsTrigger>
                 <TabsTrigger value="authorized">Authorized Persons</TabsTrigger>
+                {isAccepted && (
+                  <TabsTrigger value="chat" className="flex items-center gap-2">
+                    Chat
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="ledger" className="flex items-center gap-2">
                   Ledger
                 </TabsTrigger>
@@ -531,6 +540,14 @@ export default function VendorsDetailsPage() {
                 )}
               </div>
             </TabsContent>
+            {isAccepted && (
+              <TabsContent value="chat">
+                <EnterpriseChat
+                  enterpriseId={vendorId}
+                  enterpriseType="VENDOR"
+                />
+              </TabsContent>
+            )}
             <TabsContent value="tickets">
               <div className="flex flex-col gap-2">
                 <div className="flex flex-col gap-3">

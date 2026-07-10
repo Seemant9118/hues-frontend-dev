@@ -12,6 +12,7 @@ import TicketChatModal from '@/components/Modals/TicketChatModal';
 import TicketModal from '@/components/Modals/TicketModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import AccessDenied from '@/components/shared/AccessDenied';
+import EnterpriseChat from '@/components/shared/EnterpriseChat';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import Overview from '@/components/ui/Overview';
@@ -24,9 +25,9 @@ import {
   getClientLedger,
 } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import {
+  createManualTicket,
   getTickets,
   updateTicketStatus,
-  createManualTicket,
 } from '@/services/Tickets_Services/Tickets_Services';
 import {
   keepPreviousData,
@@ -103,6 +104,9 @@ export default function ClientDetailsPage() {
       return failureCount < 3;
     },
   });
+
+  const isAccepted =
+    (clientDetails?.invitation?.status ?? 'ACCEPTED') === 'ACCEPTED';
 
   // api calling for clientLedger
   const {
@@ -392,6 +396,11 @@ export default function ClientDetailsPage() {
                     defaultValue: 'Authorized Persons',
                   })}
                 </TabsTrigger>
+                {isAccepted && (
+                  <TabsTrigger value="chat" className="flex items-center gap-2">
+                    Chat
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="ledger" className="flex items-center gap-2">
                   Ledger
                 </TabsTrigger>
@@ -544,6 +553,15 @@ export default function ClientDetailsPage() {
                 )}
               </div>
             </TabsContent>
+
+            {isAccepted && (
+              <TabsContent value="chat">
+                <EnterpriseChat
+                  enterpriseId={clientId}
+                  enterpriseType="CLIENT"
+                />
+              </TabsContent>
+            )}
 
             <TabsContent value="tickets">
               <div className="flex flex-col gap-2">

@@ -21,6 +21,7 @@ const InvoiceMediaViewModal = ({
   onOpenChange,
   cta,
   Url,
+  resolvedUrl,
   isDownloadable = true,
 }) => {
   const translations = useTranslations('components.invoice_modal');
@@ -33,7 +34,8 @@ const InvoiceMediaViewModal = ({
   }, [open]);
 
   useEffect(() => {
-    const fileExt = Url?.split('?')[0].toLowerCase();
+    const targetUrl = resolvedUrl || Url;
+    const fileExt = targetUrl?.split('?')[0].toLowerCase();
     setIsPDF(fileExt?.endsWith('.pdf'));
     setIsImage(
       fileExt?.endsWith('.png') ||
@@ -42,14 +44,16 @@ const InvoiceMediaViewModal = ({
         fileExt?.endsWith('.gif') ||
         fileExt?.endsWith('.webp'),
     );
-  }, [Url]);
+  }, [Url, resolvedUrl]);
 
   const { data: mediaDoc } = useQuery({
     queryKey: [templateApi.getS3Document.endpointKey, Url],
     queryFn: () => getDocument(Url),
-    enabled: isOpen && !!Url,
+    enabled: isOpen && !!Url && !resolvedUrl,
     select: (res) => res.data.data,
   });
+
+  const displayUrl = resolvedUrl || mediaDoc?.publicUrl;
 
   return (
     <Dialog
@@ -80,7 +84,7 @@ const InvoiceMediaViewModal = ({
 
         <DialogTitle className="text-white">{'Preview'}</DialogTitle>
 
-        {!mediaDoc ? (
+        {!displayUrl ? (
           <div className="flex items-center justify-center py-10">
             <span className="text-white">
               {translations('loading_document')}
@@ -89,11 +93,11 @@ const InvoiceMediaViewModal = ({
         ) : (
           <div className="relative h-full w-full">
             {isPDF ? (
-              <ViewPdf isAttachement={true} url={mediaDoc.publicUrl} isPDF />
+              <ViewPdf isAttachement={true} url={displayUrl} isPDF />
             ) : isImage ? (
               <div className="relative h-full w-full">
                 <Image
-                  src={mediaDoc.publicUrl}
+                  src={displayUrl}
                   alt="Preview"
                   fill
                   className="rounded-md object-contain"
@@ -108,17 +112,14 @@ const InvoiceMediaViewModal = ({
         )}
 
         <DialogFooter>
-          {isDownloadable && mediaDoc?.publicUrl && (
+          {isDownloadable && displayUrl && (
             <div className="flex w-full items-center gap-4">
-              <a
-                href={mediaDoc.publicUrl}
-                download={getFilenameFromUrl(mediaDoc.publicUrl)}
-              >
+              <a href={displayUrl} download={getFilenameFromUrl(displayUrl)}>
                 <Download size={24} className="text-white hover:text-primary" />
               </a>
               <p
                 onClick={() => {
-                  navigator.clipboard.writeText(mediaDoc.publicUrl);
+                  navigator.clipboard.writeText(displayUrl);
                   toast.success('Link copied to clipboard');
                 }}
               >
