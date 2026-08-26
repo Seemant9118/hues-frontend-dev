@@ -73,6 +73,8 @@ const ProfileInfoPopUp = ({
     mutationFn: switchAccount,
     onSuccess: (data) => {
       setOpen(false);
+      LocalStorageService.clearDynamicFormConfigs();
+      SessionStorageService.clear();
 
       const {
         userId,
@@ -94,7 +96,11 @@ const ProfileInfoPopUp = ({
       toast.success('Enterprise Switch Successfully');
 
       // reload immediately
-      window.location.href = goToHomePage();
+      const homePath = goToHomePage();
+      window.location.href = homePath;
+      if (window.location.pathname === homePath) {
+        window.location.reload();
+      }
     },
     onError: (error) => {
       toast.error(error.response.data.message || 'Something went wrong');
@@ -106,6 +112,8 @@ const ProfileInfoPopUp = ({
     mutationKey: [userAuth.addAnotherEnterprise.endpointKey],
     mutationFn: addAnotherEnterprise,
     onSuccess: (data) => {
+      LocalStorageService.clearDynamicFormConfigs();
+      SessionStorageService.clear();
       // eslint-disable-next-line camelcase
       const { userId, access_token, refresh_token } = data.data.data;
 
@@ -130,6 +138,8 @@ const ProfileInfoPopUp = ({
     mutationKey: [AdminAPIs.revertSwitchedEnterprise.endpointKey],
     mutationFn: revertSwitchedEnterprise,
     onSuccess: (data) => {
+      LocalStorageService.clearDynamicFormConfigs();
+      SessionStorageService.clear();
       // eslint-disable-next-line camelcase
       const { access_token, refresh_token } = data.data.data;
 
@@ -148,7 +158,11 @@ const ProfileInfoPopUp = ({
       );
 
       // reload immediately
-      window.location.href = goToHomePage();
+      const homePath = goToHomePage();
+      window.location.href = homePath;
+      if (window.location.pathname === homePath) {
+        window.location.reload();
+      }
     },
     onError: () => {
       toast.error('Failed to revert admin view. Please try again.');

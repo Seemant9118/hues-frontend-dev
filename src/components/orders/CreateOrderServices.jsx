@@ -10,9 +10,11 @@ import React, { useEffect } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { orderApi } from '@/api/order_api/order_api';
+import { useActiveWorkflowRuntime } from '@/hooks/workflows/useWorkflowRuntime';
 import MultiStepForm from '../shared/MultiStepForm/MultiStepForm';
 import { Button } from '../ui/button';
-import { getSalesServiceFormSteps } from './Sales_Service_MultiStep_Form/Create-Sales-Service-config';
+import { getWorkflowEnhancedServiceStepsConfig } from './Sales_Service_MultiStep_Form/Create-Sales-Service-config';
+import { buildEnhancedOrderPayload } from './utils/orderPayloadHelper';
 
 const CreateOrderServices = ({
   createSalesServiceBreadCrumbs,
@@ -161,19 +163,30 @@ const CreateOrderServices = ({
     },
   });
 
+  const moduleName = 'ORDER';
+  const { data: activeWorkflowData } = useActiveWorkflowRuntime(moduleName);
+
   const handleSubmit = async () => {
+    const cleanPayload = buildEnhancedOrderPayload(
+      formData,
+      activeWorkflowData,
+      [],
+    );
+
     if (orderId) {
       if (
         cta === 'offer' &&
         fetchedOrderDetails?.buyerType !== 'UNINVITED-ENTERPRISE'
       ) {
-        updateOrderForUnRepliedSalesMutation.mutate({ ...formData, orderId });
+        updateOrderForUnRepliedSalesMutation.mutate({
+          ...cleanPayload,
+          orderId,
+        });
       } else {
-        updateOrderMutation.mutate({ ...formData, orderId });
+        updateOrderMutation.mutate({ ...cleanPayload, orderId });
       }
     } else {
-      // console.log('formData', formData);
-      orderMutation.mutate(formData);
+      orderMutation.mutate(cleanPayload);
     }
   };
 
@@ -185,7 +198,13 @@ const CreateOrderServices = ({
     }
   };
 
-  const directServiceOrderSteps = getSalesServiceFormSteps({ cta });
+  const directServiceOrderSteps = React.useMemo(() => {
+    return getWorkflowEnhancedServiceStepsConfig({
+      cta,
+      activeWorkflow: activeWorkflowData,
+      moduleName,
+    });
+  }, [cta, activeWorkflowData, moduleName]);
 
   return (
     <MultiStepForm

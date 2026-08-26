@@ -6,7 +6,7 @@ import { directorApi } from '@/api/director/directorApi';
 import { apiErrorHandler } from '@/appUtils/apiErrorHandler';
 import { handleOtpRedirection } from '@/appUtils/onboardingRedirectionLogics';
 import Loading from '@/components/ui/Loading';
-import { LocalStorageService } from '@/lib/utils';
+import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 import { directorInviteList } from '@/services/Director_Services/DirectorServices';
 import {
   userGenerateOtp,
@@ -61,6 +61,8 @@ const MobileLoginPage = () => {
     mutationFn: (data) => userVerifyOtp(data),
 
     onSuccess: async (data) => {
+      LocalStorageService.clearDynamicFormConfigs();
+      SessionStorageService.clear();
       const redirectedUrl = LocalStorageService.get('redirectUrl');
 
       // set tokens

@@ -9,6 +9,8 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { FeatureFlagWrapper } from '@/components/wrappers/FeatureFlagWrapper';
 import { Link } from '@/i18n/routing';
 import TemplateTypeModal from '@/components/Modals/TemplateTypeModal';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
+import { usePermission } from '@/hooks/usePermissions';
 import {
   createTemplate,
   getTemplateDetails,
@@ -58,6 +60,10 @@ export default function TemplateBuilderPage() {
   const router = useRouter();
   const templateId = searchParams.get('id');
 
+  const isFeatureEnabled = useFeatureFlag('BUILDER_TEMPLATES');
+  const { hasPermission } = usePermission();
+  const hasConfigPermission = hasPermission('permission:form-config-manage');
+
   // Page States
   const [templateName, setTemplateName] = useState('Untitled Template');
   const [isEditingName, setIsEditingName] = useState(false);
@@ -76,6 +82,7 @@ export default function TemplateBuilderPage() {
   const { data: apiVariables = [] } = useQuery({
     queryKey: ['get_builder_variables'],
     queryFn: () => getVariables().then((res) => res.data?.data || []),
+    enabled: isFeatureEnabled && hasConfigPermission,
   });
 
   // Categorize variables for Variable Library UI
@@ -128,9 +135,9 @@ export default function TemplateBuilderPage() {
         ) {
           return firstLevel.data;
         }
-        return firstLevel;
+        return firstLevel || res.data;
       }),
-    enabled: !!templateId,
+    enabled: isFeatureEnabled && hasConfigPermission && !!templateId,
   });
 
   // Mutations for creating
@@ -140,7 +147,7 @@ export default function TemplateBuilderPage() {
       toast.success(res.data?.message || 'Template created successfully!');
       queryClient.invalidateQueries({ queryKey: ['get_builder_templates'] });
       setTimeout(() => {
-        router.push('/dashboard/templates/drafts');
+        router.push('/dashboard/templates/agreements');
       }, 1500);
     },
     onError: (err) => {
@@ -160,7 +167,7 @@ export default function TemplateBuilderPage() {
         queryKey: ['get_builder_template', templateId],
       });
       setTimeout(() => {
-        router.push('/dashboard/templates/drafts');
+        router.push('/dashboard/templates/agreements');
       }, 1500);
     },
     onError: (err) => {
@@ -180,7 +187,7 @@ export default function TemplateBuilderPage() {
         queryKey: ['get_builder_template', templateId],
       });
       setTimeout(() => {
-        router.push('/dashboard/templates/drafts');
+        router.push('/dashboard/templates/agreements');
       }, 1500);
     },
     onError: (err) => {
@@ -204,7 +211,7 @@ export default function TemplateBuilderPage() {
         publishMutation.mutate(variables.id);
       } else {
         setTimeout(() => {
-          router.push('/dashboard/templates/drafts');
+          router.push('/dashboard/templates/agreements');
         }, 1500);
       }
     },
@@ -382,7 +389,7 @@ export default function TemplateBuilderPage() {
         <header className="sticky top-0 z-20 flex shrink-0 items-center justify-between border-b border-neutral-200 bg-white py-4">
           <div className="flex items-center gap-3">
             <Link
-              href="/dashboard/templates/drafts"
+              href="/dashboard/templates/agreements"
               className="flex h-8 w-8 items-center justify-center rounded-sm border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
             >
               <ChevronLeft size={18} />

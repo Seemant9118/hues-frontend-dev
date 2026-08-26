@@ -16,10 +16,10 @@ export default function MultiStepForm({
   onCancel,
   isSubmitting = false,
 
-  // ✅ NEW generic prop
+  // NEW generic prop
   breadcrumbs = [],
 
-  // ✅ fallback breadcrumb props
+  // fallback breadcrumb props
   breadcrumbHome = '/',
   breadcrumbHomeText = 'Home',
   breadcrumbTitle = 'Multi-Step Form',
@@ -126,9 +126,9 @@ export default function MultiStepForm({
   const CurrentStepComponent = steps[currentStep].component;
 
   return (
-    <div className="flex h-[calc(100vh-0px)] flex-col gap-2 py-2">
+    <div className="flex h-[calc(100vh-0px)] flex-col gap-2">
       {/* Breadcrumbs */}
-      <div className="flex items-center gap-2">
+      <div className="mt-2 flex items-center gap-2">
         {onBack && (
           <button onClick={onBack} className="rounded-sm p-2 hover:bg-gray-100">
             <ArrowLeft size={16} />

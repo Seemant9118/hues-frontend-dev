@@ -10,6 +10,8 @@ import {
 import { UserProvider } from '@/context/UserContext';
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext';
 import { StockProvider } from '@/context/StockContext';
+import { DeveloperModeProvider } from '@/context/DeveloperModeContext';
+import DeveloperModeToggle from '@/components/ui/DeveloperModeToggle';
 import { parseJwt } from '@/appUtils/helperFunctions';
 import AuthInitializer from '@/components/wrappers/AuthInitializer';
 import useClarityTracking from '@/hooks/useClarityTracking';
@@ -25,6 +27,7 @@ function DashboardShell({ children }) {
       className="relative grid h-screen min-w-0 flex-grow overflow-hidden transition-[grid-template-columns] duration-300 ease-in-out [grid-template-columns:var(--sidebar-width)_minmax(0,1fr)]"
       style={{ '--sidebar-width': isCollapsed ? '72px' : '225px' }}
     >
+      <DeveloperModeToggle />
       <Sidebar />
       <main className="scrollBarStyles min-w-0 overflow-y-auto overflow-x-hidden bg-white px-4">
         {children}
@@ -65,7 +68,9 @@ export default function DashBoardLayout({ children }) {
           <UserProvider>
             <SidebarLayoutProvider>
               <StockProvider>
-                <DashboardShell>{children}</DashboardShell>
+                <DeveloperModeProvider>
+                  <DashboardShell>{children}</DashboardShell>
+                </DeveloperModeProvider>
               </StockProvider>
             </SidebarLayoutProvider>
           </UserProvider>

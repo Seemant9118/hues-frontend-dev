@@ -9,6 +9,7 @@ import {
 } from '@/appUtils/helperFunctions';
 import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import { useAuth } from '@/context/AuthContext';
+import { useDeveloperMode } from '@/context/DeveloperModeContext';
 import { useFeatureFlags } from '@/context/FeatureFlagContext';
 import { useSidebarLayout } from '@/context/SidebarLayoutContext';
 import { usePermission } from '@/hooks/usePermissions';
@@ -32,6 +33,7 @@ import {
   Gauge,
   GitGraph,
   HandPlatter,
+  Network,
   IndianRupee,
   NotebookTabs,
   NotepadText,
@@ -76,12 +78,14 @@ const PERMISSIONS = {
   VENDORS: 'permission:vendors-view',
   CUSTOMERS: 'permission:customers-view',
   MEMBERS: 'permission:members-view',
+  CONFIG_MANAGE: 'permission:form-config-manage',
 };
 
 const ICON_SIZE = 16;
 
 const Sidebar = () => {
   const { name, roles } = useAuth();
+  const { isDeveloperMode } = useDeveloperMode();
   const { isRouteEnabled } = useFeatureFlags();
   const { isCollapsed, toggleSidebar } = useSidebarLayout();
   const { hasPermission } = usePermission();
@@ -359,36 +363,64 @@ const Sidebar = () => {
         icon: <Users size={ICON_SIZE} />,
         path: '/dashboard/members',
       },
-      hasPermission(PERMISSIONS.VIEW_DASHBOARD) &&
-        (isRouteEnabled('/dashboard/templates/template') ||
-          isRouteEnabled('/dashboard/templates/forms')) && {
+      hasPermission(PERMISSIONS.CONFIG_MANAGE) &&
+        (isRouteEnabled('/dashboard/templates/agreements') ||
+          isRouteEnabled('/dashboard/templates/forms') ||
+          isRouteEnabled('/dashboard/templates/contracts')) && {
           name: 'sidebar.templates',
           icon: <Blocks size={ICON_SIZE} />,
-          path: isRouteEnabled('/dashboard/templates/drafts')
-            ? '/dashboard/templates/drafts'
-            : '/dashboard/templates/forms',
+          path: isRouteEnabled('/dashboard/templates/agreements')
+            ? '/dashboard/templates/agreements'
+            : isRouteEnabled('/dashboard/templates/forms')
+              ? '/dashboard/templates/forms'
+              : '/dashboard/templates/contracts',
           subTab: [
-            isRouteEnabled('/dashboard/templates/drafts') && {
-              name: 'sidebar.subTabs.drafts',
+            isRouteEnabled('/dashboard/templates/agreements') && {
+              name: 'sidebar.subTabs.agreements',
               icon: <FileText size={ICON_SIZE} />,
-              path: '/dashboard/templates/drafts',
-            },
-            isRouteEnabled('/dashboard/templates/forms') && {
-              name: 'sidebar.subTabs.forms',
-              icon: <ScrollText size={ICON_SIZE} />,
-              path: '/dashboard/templates/forms',
+              path: '/dashboard/templates/agreements',
             },
             isRouteEnabled('/dashboard/templates/contracts') && {
               name: 'sidebar.subTabs.contracts',
               icon: <FileSignatureIcon size={ICON_SIZE} />,
               path: '/dashboard/templates/contracts',
             },
+            isRouteEnabled('/dashboard/templates/forms') && {
+              name: 'sidebar.subTabs.forms',
+              icon: <ScrollText size={ICON_SIZE} />,
+              path: '/dashboard/templates/forms',
+            },
           ].filter(Boolean),
+        },
+      isDeveloperMode &&
+        hasPermission(PERMISSIONS.CONFIG_MANAGE) &&
+        isRouteEnabled('/dashboard/studio') && {
+          name: 'sidebar.studio',
+          icon: <Wrench size={ICON_SIZE} />,
+          path: '/dashboard/studio',
+        },
+      hasPermission(PERMISSIONS.VIEW_DASHBOARD) && {
+        name: 'Custom Forms',
+        icon: <ScrollText size={ICON_SIZE} />,
+        path: '/dashboard/custom-forms',
+      },
+      isRouteEnabled('/dashboard/work-flow-engine') &&
+        isDeveloperMode &&
+        hasPermission(PERMISSIONS.VIEW_DASHBOARD) && {
+          name: 'sidebar.workflowEngine',
+          icon: <Network size={ICON_SIZE} />,
+          path: '/dashboard/work-flow-engine',
         },
     ].filter(Boolean);
 
     return links;
-  }, [hasPermission, isRouteEnabled, contactSubTabs, contactsLink]);
+  }, [
+    hasPermission,
+    isRouteEnabled,
+    contactSubTabs,
+    contactsLink,
+    isDeveloperMode,
+  ]);
 
   const actionLinks = useMemo(() => {
     return [

@@ -5,7 +5,9 @@ import { orderApi } from '@/api/order_api/order_api';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
+import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
 import FilterModal from '@/components/orders/FilterModal';
+import WorkflowModuleForm from '@/components/shared/WorkflowModuleForm';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -37,15 +39,17 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import Select from 'react-select';
 import { toast } from 'sonner';
-import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
 import { SalesTable } from '../salestable/SalesTable';
 import { useSalesColumns } from './useSalesColumns';
 
 // dynamic imports
 // GOODS
-const CreateOrder = dynamic(() => import('@/components/orders/CreateOrderS'), {
-  loading: () => <Loading />,
-});
+const CreateOrder = dynamic(
+  () => import('@/components/orders/DynamicCreateOrderS'),
+  {
+    loading: () => <Loading />,
+  },
+);
 const EditOrder = dynamic(() => import('@/components/orders/EditOrderS'), {
   loading: () => <Loading />,
 });
@@ -90,6 +94,7 @@ const SalesOrder = () => {
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [isCreatingSalesService, setIsCreatingSalesService] = useState(false);
   const [isEditingSalesService, setIsEditingSalesService] = useState(false);
+  const [isCreatingWorkflowOrder, setIsCreatingWorkflowOrder] = useState(false);
   // const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
@@ -386,7 +391,8 @@ const SalesOrder = () => {
           {!isCreatingSales &&
             !isEditingOrder &&
             !isCreatingSalesService &&
-            !isEditingSalesService && (
+            !isEditingSalesService &&
+            !isCreatingWorkflowOrder && (
               <Wrapper className="h-screen overflow-hidden">
                 {/* Headers */}
                 <SubHeader
@@ -650,6 +656,19 @@ const SalesOrder = () => {
                 setIsCreatingSalesService={setIsEditingSalesService}
                 cta="offer"
                 orderId={orderId}
+              />
+            )}
+
+          {/* Workflow Driven Order Form Component */}
+          {isCreatingWorkflowOrder &&
+            !isCreatingSales &&
+            !isEditingOrder &&
+            !isCreatingSalesService &&
+            !isEditingSalesService && (
+              <WorkflowModuleForm
+                module="ORDER"
+                title="Workflow-Driven Sales Order"
+                onCancel={() => setIsCreatingWorkflowOrder(false)}
               />
             )}
         </>

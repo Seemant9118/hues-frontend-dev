@@ -48,13 +48,10 @@ export const FEATURE_FLAGS = {
   BUILDER_TEMPLATES: {
     enabled: process.env.NEXT_PUBLIC_NODE_ENV === 'dev',
     label: 'Builder Templates Module',
-    routePrefixes: [
-      '/dashboard/templates/drafts',
-      '/dashboard/templates/forms',
-    ],
+    routePrefixes: ['/dashboard/templates/drafts'],
   },
   BUILDER_FORMS: {
-    enabled: false,
+    enabled: process.env.NEXT_PUBLIC_NODE_ENV === 'dev',
     label: 'Builder Forms Module',
     routePrefixes: ['/dashboard/templates/forms'],
   },
@@ -62,5 +59,19 @@ export const FEATURE_FLAGS = {
     enabled: process.env.NEXT_PUBLIC_NODE_ENV === 'dev',
     label: 'Builder Contracts Module',
     routePrefixes: ['/dashboard/templates/contracts'],
+  },
+  BUILDER_STUDIO: {
+    enabled: process.env.NEXT_PUBLIC_NODE_ENV === 'dev',
+    label: 'Builder Studio Module',
+    routePrefixes: ['/dashboard/studio'],
+  },
+  DEVELOPER_MODE_TOGGLE: {
+    enabled: process.env.NEXT_PUBLIC_NODE_ENV === 'dev',
+    label: 'Developer Mode Toggle',
+  },
+  WORKFLOW_ENGINE: {
+    enabled: false,
+    label: 'Workflow Engine',
+    routePrefixes: ['/dashboard/work-flow-engine'],
   },
 };

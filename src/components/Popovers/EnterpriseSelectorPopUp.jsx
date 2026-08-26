@@ -4,7 +4,7 @@ import { AdminAPIs } from '@/api/adminApi/AdminApi';
 import { capitalize, parseJwt } from '@/appUtils/helperFunctions';
 import { goToHomePage } from '@/appUtils/redirectionUtilFn';
 import { Button } from '@/components/ui/button';
-import { cn, LocalStorageService } from '@/lib/utils';
+import { cn, LocalStorageService, SessionStorageService } from '@/lib/utils';
 import {
   getSearchedEnterprises,
   revertSwitchedEnterprise,
@@ -36,6 +36,8 @@ export default function EnterpriseSelectorPopUp({ collapsed = false }) {
     mutationKey: [AdminAPIs.revertSwitchedEnterprise.endpointKey],
     mutationFn: revertSwitchedEnterprise,
     onSuccess: (data) => {
+      LocalStorageService.clearDynamicFormConfigs();
+      SessionStorageService.clear();
       // eslint-disable-next-line camelcase
       const { access_token, refresh_token } = data.data.data;
 
@@ -54,7 +56,11 @@ export default function EnterpriseSelectorPopUp({ collapsed = false }) {
       );
 
       // reload immediately
-      window.location.href = goToHomePage();
+      const homePath = goToHomePage();
+      window.location.href = homePath;
+      if (window.location.pathname === homePath) {
+        window.location.reload();
+      }
     },
     onError: () => {
       toast.error('Failed to revert admin view. Please try again.');
@@ -71,6 +77,8 @@ export default function EnterpriseSelectorPopUp({ collapsed = false }) {
     mutationKey: [AdminAPIs.switchEnterprise.endpointKey],
     mutationFn: ({ enterpriseId }) => switchEnterprise({ enterpriseId }),
     onSuccess: (data, variables) => {
+      LocalStorageService.clearDynamicFormConfigs();
+      SessionStorageService.clear();
       // store tokens
       // eslint-disable-next-line camelcase
       const { access_token, refresh_token } = data.data.data;
@@ -94,7 +102,11 @@ export default function EnterpriseSelectorPopUp({ collapsed = false }) {
       );
 
       // reload immediately
-      window.location.href = goToHomePage();
+      const homePath = goToHomePage();
+      window.location.href = homePath;
+      if (window.location.pathname === homePath) {
+        window.location.reload();
+      }
     },
     onError: () => {
       toast.error('Failed to switch enterprise. Please try again.');

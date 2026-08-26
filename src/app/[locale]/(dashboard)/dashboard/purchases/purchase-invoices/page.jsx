@@ -5,7 +5,7 @@ import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import Tooltips from '@/components/auth/Tooltips';
-import CreatePurchaseInvoice from '@/components/invoices/CreatePurchaseInvoice';
+import CreatePurchaseInvoice from '@/components/invoices/purchase/DynamicCreatePurchaseInvoice';
 import FilterInvoices from '@/components/invoices/FilterInvoices';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import AuthenticationExpired from '@/components/gst/AuthenticationExpired';

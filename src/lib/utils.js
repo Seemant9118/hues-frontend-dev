@@ -36,6 +36,16 @@ export class LocalStorageService {
     if (!isBrowser) return;
     localStorage.clear();
   }
+
+  static clearDynamicFormConfigs() {
+    if (!isBrowser) return;
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('form_config_')) {
+        localStorage.removeItem(key);
+      }
+    }
+  }
 }
 
 // SessionStorageService.js

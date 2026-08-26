@@ -1,96 +1,153 @@
-import ViewTemplate from '@/components/templates/ViewTemplate';
-import { Button } from '@/components/ui/button';
-import { MessageSquareText } from 'lucide-react';
-import Image from 'next/image';
-import CreateTemplateForm from './CreateTemplateForm';
+'use client';
 
-const TemplateCard = ({
-  // onViewFormClick,
-  // onDelete,
-  viewResponseClick,
-  // name,
-  // type,
-  templateUrl,
-  templateName,
-  id,
-  signatureBoxPlacement,
-}) => {
-  // const getfileExtension = type.replace(/(.*)\//g, "");
-  // const queryClient = useQueryClient();
-  // const { mutate, isPending } = useMutation({
-  //   mutationFn: () => deleteTemplate(id),
-  //   onSuccess: () => {
-  //     toast.success('Template Deleted Successfully.');
-  //     queryClient.invalidateQueries({
-  //       queryKey: [templateApi.getTemplates.endpointKey],
-  //     });
-  //   },
-  //   onError: () => {
-  //     toast.error('Failed to delete template.');
-  //   },
-  // });
+import React from 'react';
+import {
+  Clock,
+  Edit,
+  FileText,
+  MoreVertical,
+  Plus,
+  Trash2,
+} from 'lucide-react';
+
+export function CreateTemplateCard({
+  onClick,
+  title = 'Create a new template',
+  description = 'Start building a customized agreement from scratch',
+}) {
   return (
-    <div className="scrollBarStyles relative flex flex-col gap-2.5 rounded-md border border-neutral-500/10 p-4">
-      <div className="flex items-center justify-between gap-2">
-        {/* <p className="text-neutral-300 text-sm font-bold">Template Name</p> */}
-        <div className="flex text-base font-bold text-[#363940]">
-          <p className="truncate">
-            {templateName.substring(0, 10)}
-            {templateName.length > 10 && '...'}
-          </p>
+    <button
+      onClick={onClick}
+      className="group relative flex h-52 flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50/50 p-6 text-center transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:shadow-lg"
+    >
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-neutral-200 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/50 group-hover:ring-primary">
+        <Plus className="h-6 w-6 text-neutral-500 transition-colors group-hover:text-primary" />
+      </div>
+      <h3 className="mt-4 text-sm font-semibold text-neutral-800 group-hover:text-primary">
+        {title}
+      </h3>
+      <p className="mt-1 text-xs text-neutral-500">{description}</p>
+    </button>
+  );
+}
+
+export default function TemplateCard({
+  template,
+  onClick,
+  onEdit,
+  onDelete,
+  activeMenu,
+  setActiveMenu,
+  editLabel = 'Edit Template',
+  deleteLabel = 'Delete Template',
+}) {
+  const isDraft = template.status?.toLowerCase() === 'draft';
+  const isMenuOpen = activeMenu === template.id;
+
+  const titleText =
+    template.name || template.title || template.formName || 'Untitled Form';
+  const dateText = template.lastSaved || template.modified || 'Recently';
+
+  return (
+    <div
+      onClick={onClick}
+      className="group relative flex h-52 cursor-pointer flex-col justify-between rounded-xl border border-neutral-200 bg-white p-3.5 shadow-sm transition-all duration-300 hover:border-primary hover:shadow-md"
+    >
+      {/* Top Action / Title Row */}
+      <div>
+        <div className="flex items-start justify-between">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <FileText className="h-5 w-5" />
+          </div>
+
+          {/* Context Menu Toggle */}
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveMenu(isMenuOpen ? null : template.id);
+              }}
+              className="rounded-full p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
+            >
+              <MoreVertical size={16} />
+            </button>
+
+            {isMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-20"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveMenu(null);
+                  }}
+                />
+                <div className="absolute right-0 top-6 z-30 w-36 rounded-lg border border-neutral-100 bg-white p-1 shadow-lg">
+                  {onEdit && (
+                    <button
+                      onClick={(e) => onEdit(template.id, e)}
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-neutral-700 hover:bg-neutral-50"
+                    >
+                      <Edit size={12} /> {editLabel}
+                    </button>
+                  )}
+                  {onDelete && (
+                    <button
+                      onClick={(e) => onDelete(template, e)}
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 size={12} /> {deleteLabel}
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Title & Version */}
+        <div className="mt-3">
+          <h4 className="line-clamp-1 text-sm font-bold text-neutral-900 group-hover:text-primary">
+            {titleText}
+          </h4>
+          {template.description && (
+            <p className="mt-0.5 line-clamp-1 text-[11px] text-neutral-500">
+              {template.description}
+            </p>
+          )}
+          <span className="mt-1 inline-block font-mono text-[11px] text-neutral-400">
+            Version {template.version || 'v1.0'}
+          </span>
         </div>
       </div>
-      <div className="flex items-center justify-between gap-3">
-        {/* {getfileExtension === "pdf" ? (
-          <Image src={"/pdf_png.png"} alt="Template" height={55} width={60} />
-        ) : (
-          <Image src={"/xlsx_png.png"} alt="Template" height={55} width={60} />
-        )} */}
-        <Image src={'/pdf_png.png'} alt="Template" height={55} width={60} />
-        <Button
-          variant="grey"
-          onClick={() => viewResponseClick()}
-          className="border"
-        >
-          <MessageSquareText size={14} />
-          <p>0 Contracts</p>
-        </Button>
-      </div>
 
-      <div
-        // className="grid gap-1.5 grid-cols-[1fr,_1fr,_40px]"
-        className="flex items-center justify-between"
-      >
-        {/* <Button
-          asChild
-          variant={"blue_outline"}
-          size="sm"
-          className="text-xs gap-1 p-1.5"
+      {/* Footer Details */}
+      <div className="flex items-center justify-between border-t border-neutral-100 pt-3">
+        <div className="flex items-center gap-1 text-[11px] text-neutral-400">
+          <Clock size={11} />
+          <span className="max-w-[90px] truncate">{dateText}</span>
+        </div>
+
+        {/* Status Badges */}
+        <span
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+            isDraft
+              ? 'border border-amber-200 bg-amber-50 text-amber-700'
+              : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
+          }`}
         >
-          <Link href={`/template/${id}?url=${templateUrl}`}>
-            <Eye size={16} />
-            View
-          </Link>
-        </Button> */}
-        <ViewTemplate
-          name={templateName}
-          url={templateUrl}
-          id={id}
-          signatureBoxPlacement={signatureBoxPlacement}
-        />
-        <CreateTemplateForm url={templateUrl} id={id} />
-        <Button
-          // onClick={mutate}
-          disabled={true}
-          variant="ghost"
-          size="icon"
-          className="text-neutral-500 hover:text-black"
-        >
-          {/* {isPending ? <Loading /> : <Trash2 size={12} />} */}
-        </Button>
+          {isDraft ? (
+            <>
+              <span className="h-1 w-1 animate-pulse rounded-full bg-amber-500" />
+              Draft
+            </>
+          ) : (
+            <>
+              <span className="h-1 w-1 rounded-full bg-emerald-500" />
+              Published
+            </>
+          )}
+        </span>
       </div>
     </div>
   );
-};
-
-export default TemplateCard;
+}

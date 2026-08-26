@@ -1,8 +1,7 @@
 'use client';
 
 import { ruleEngineAPI } from '@/api/rule-engine-apis/ruleEngineAPI';
-import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
-import { Button } from '@/components/ui/button';
+import RulesEngineHeader from '@/components/admin/rules-engine/RulesEngineHeader';
 import { Card } from '@/components/ui/card';
 import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
 import Wrapper from '@/components/wrappers/Wrapper';
@@ -17,41 +16,21 @@ const JdmEditor = dynamic(() => import('@/components/jdm/JdmEditorClient'), {
   ssr: false,
 });
 
-export default function RulesEngine() {
+export default function RulesEnginePage() {
   const queryClient = useQueryClient();
+
+  // Mode & Navigation State
   const [isJDMEditorOpen, setIsJDMEditorOpen] = useState(false);
   const [existingRuleData, setExistingRuleData] = useState(null);
 
-  const { data: rules = [], isLoading } = useQuery({
+  // Queries & Side Effects
+  const { data: rules = [], isLoading: isRulesLoading } = useQuery({
     queryKey: [ruleEngineAPI.getRulesEngine.endpointKey],
     queryFn: getRulesEngine,
     select: (response) => response.data.data,
   });
 
-  const rulesEngineBreadCrumbs = [
-    {
-      id: 1,
-      name: 'Rules Engine',
-      path: '/dashboard/admin/rules-engine/',
-      show: true, // Always show
-    },
-    {
-      id: 2,
-      name: 'Create Rule Engine',
-      path: '/dashboard/admin/rules-engine/create',
-      show: isJDMEditorOpen, // Always show
-    },
-  ];
-
-  const skeletonCards = [
-    'skeleton-1',
-    'skeleton-2',
-    'skeleton-3',
-    'skeleton-4',
-    'skeleton-5',
-    'skeleton-6',
-  ];
-
+  // Handlers for Rules Engine
   const handleClickRule = (rule) => {
     setExistingRuleData(rule);
     setIsJDMEditorOpen(true);
@@ -59,18 +38,12 @@ export default function RulesEngine() {
 
   return (
     <Wrapper>
-      <div className="sticky top-0 z-10 flex items-center justify-between bg-white pb-2 pt-4">
-        <OrderBreadCrumbs possiblePagesBreadcrumbs={rulesEngineBreadCrumbs} />
+      <RulesEngineHeader
+        isEditorOpen={isJDMEditorOpen}
+        onCreateRule={() => setIsJDMEditorOpen(true)}
+      />
 
-        <div className="flex items-center gap-2">
-          {!isJDMEditorOpen && (
-            <Button size="sm" onClick={() => setIsJDMEditorOpen(true)}>
-              <GitGraph size={16} />
-              Create Rule Engine
-            </Button>
-          )}
-        </div>
-      </div>
+      {/* Rules Engine - JDM Editor Mode */}
       {isJDMEditorOpen && (
         <JdmEditor
           queryClient={queryClient}
@@ -81,37 +54,42 @@ export default function RulesEngine() {
           existingRuleData={existingRuleData}
         />
       )}
+
+      {/* Rules Engine - BRE Decision Rules List */}
       {!isJDMEditorOpen && (
         <div className="pb-6" style={{ minHeight: 'calc(100vh - 80px)' }}>
-          {isLoading && (
+          {isRulesLoading && (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {skeletonCards.map((key) => (
-                <Card key={key} className="p-4">
+              {[1, 2, 3, 4, 5, 6].map((key) => (
+                <Card key={key} className="space-y-3 p-4">
                   <div className="h-10 w-10 animate-pulse rounded-lg bg-gray-200" />
-                  <div className="mt-4 h-4 w-3/4 animate-pulse rounded bg-gray-200" />
-                  <div className="mt-2 h-3 w-1/2 animate-pulse rounded bg-gray-200" />
-                  <div className="mt-4 h-3 w-1/3 animate-pulse rounded bg-gray-200" />
+                  <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200" />
+                  <div className="h-3 w-1/2 animate-pulse rounded bg-gray-200" />
                 </Card>
               ))}
             </div>
           )}
 
-          {!isLoading && rules.length === 0 && (
+          {!isRulesLoading && rules.length === 0 && (
             <div style={{ height: 'calc(100vh - 80px)', width: '100%' }}>
               <EmptyStageComponent
                 heading="No Rules Engine"
                 subHeading="Click the button below to create a new Rule Engine"
                 actionBtn={
-                  <Button size="sm" onClick={() => setIsJDMEditorOpen(true)}>
+                  <button
+                    type="button"
+                    onClick={() => setIsJDMEditorOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-xs font-semibold text-white shadow-sm"
+                  >
                     <GitGraph size={16} />
                     Create Rule Engine
-                  </Button>
+                  </button>
                 }
               />
             </div>
           )}
 
-          {!isLoading && rules.length > 0 && (
+          {!isRulesLoading && rules.length > 0 && (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               {rules.map((rule) => {
                 const ruleName = rule?.ruleName || 'Rule';
@@ -122,7 +100,6 @@ export default function RulesEngine() {
                 return (
                   <Card
                     key={rule?.id}
-                    title="Click to view"
                     className="flex h-full cursor-pointer flex-col gap-4 p-4 hover:border-primary"
                     onClick={() => handleClickRule(rule)}
                   >

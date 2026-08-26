@@ -3,7 +3,7 @@
 import { paymentApi } from '@/api/payments/payment_api';
 import { readTrackerApi } from '@/api/readTracker/readTrackerApi';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
-import DirectPayment from '@/components/payments/DirectPayment';
+import DynamicDirectPayment from '@/components/payments/direct/DynamicDirectPayment';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import RestrictedComponent from '@/components/ui/RestrictedComponent';
@@ -305,7 +305,9 @@ const PurchasePayments = () => {
           )}
 
           {isPaymentAdvicing && (
-            <DirectPayment setIsPaymentRecording={setIsPaymentAdvicing} />
+            <DynamicDirectPayment
+              setIsPaymentRecording={setIsPaymentAdvicing}
+            />
           )}
         </Wrapper>
       )}

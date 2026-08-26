@@ -1,82 +1,97 @@
+import React from 'react';
 import { cn } from '@/lib/utils';
-import { Check } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ChevronRight, Home, Eye, FileText } from 'lucide-react';
+
+const getStepIcon = (step) => {
+  if (step?.icon) return step.icon;
+
+  const key = (step?.key || '').toLowerCase();
+  const iconClass = 'h-4 w-4 flex-shrink-0';
+
+  if (key.includes('details') || key.includes('home')) {
+    return <Home className={iconClass} />;
+  }
+  if (key.includes('preview')) {
+    return <Eye className={iconClass} />;
+  }
+
+  return <FileText className={iconClass} />;
+};
 
 export default function StepIndicator({ steps, currentStep, onStepClick }) {
+  const currentStepKey = steps[currentStep]?.key;
+
+  // Dynamically set max-width based on step count to keep it looking compact
+  const getMaxWidthClass = (numSteps) => {
+    if (numSteps <= 2) return 'max-w-sm sm:max-w-xl';
+    if (numSteps === 3) return 'max-w-sm sm:max-w-3xl';
+    if (numSteps === 4) return 'max-w-md sm:max-w-4xl';
+    return 'max-w-lg sm:max-w-5xl';
+  };
+
+  const maxWidthClass = getMaxWidthClass(steps.length);
+
   return (
-    <div className="mt-2 flex w-full items-start justify-between px-2">
-      {steps.map((step, index) => {
-        const isCompleted = index < currentStep;
-        const isCurrent = index === currentStep;
-        const isUpcoming = index > currentStep;
+    <div
+      className={cn(
+        'mx-auto my-3 flex w-full justify-center px-4',
+        maxWidthClass,
+      )}
+    >
+      <Tabs
+        value={currentStepKey}
+        onValueChange={(val) => {
+          const index = steps.findIndex((s) => s.key === val);
+          if (index !== -1) {
+            onStepClick?.(index);
+          }
+        }}
+        className="w-full"
+      >
+        <TabsList className="flex h-auto w-full items-center justify-between gap-1 rounded-full border border-primary bg-background p-1 shadow-sm">
+          {steps.map((step, index) => {
+            const isCompleted = index < currentStep;
+            const isCurrent = index === currentStep;
 
-        // Check if this step has any active errors
-        // const hasErrors = Object.keys(errors).some(errorKey => {
-        //   // This is a bit heuristic but works for our step mapping
-        //   // In a real app we'd map fields to steps explicitly
-        //   return true; // We'll rely on the parent to pass filtered errors if needed
-        // });
-
-        return (
-          <div
-            key={step.key}
-            className={cn('group relative flex flex-1 flex-col items-center')}
-          >
-            {/* Line behind circles */}
-            {index < steps.length - 1 && (
-              <div className="absolute left-[calc(50%+20px)] top-4 h-[2px] w-[calc(100%-40px)] -translate-y-1/2 overflow-hidden">
-                <div
+            return (
+              <React.Fragment key={step.key}>
+                <TabsTrigger
+                  value={step.key}
+                  disabled={!onStepClick}
                   className={cn(
-                    'h-full w-full bg-border transition-all duration-500',
-                    isCompleted && 'bg-primary',
-                  )}
-                />
-              </div>
-            )}
-
-            {/* Circle + Text (always centered) */}
-            <div className="z-10 flex flex-col items-center gap-2.5">
-              {/* Circle */}
-              <button
-                type="button"
-                onClick={() => onStepClick?.(index)}
-                className={cn(
-                  'relative flex h-9 w-9 items-center justify-center rounded-full border-2 font-bold transition-all duration-300',
-                  isCompleted &&
-                    'border-primary bg-primary text-white shadow-md shadow-primary/20',
-                  isCurrent &&
-                    'border-primary bg-background text-primary shadow-sm ring-[6px] ring-primary/10',
-                  isUpcoming &&
-                    'border-muted-foreground/30 bg-background text-muted-foreground/50',
-                  'hover:scale-105 active:scale-95',
-                )}
-              >
-                {isCompleted ? (
-                  <Check className="h-5 w-5 stroke-[3]" />
-                ) : (
-                  <span className="text-[13px]">{index + 1}</span>
-                )}
-
-                {/* Completion Dot or Error Mark could go here */}
-              </button>
-
-              {/* Label */}
-              <div className="flex flex-col items-center gap-0.5 px-1 text-center">
-                <span
-                  className={cn(
-                    'text-[11px] font-bold uppercase tracking-tight transition-colors duration-300',
-                    isCompleted || isCurrent
-                      ? 'text-foreground'
-                      : 'text-muted-foreground/60',
-                    isCurrent && 'text-primary',
+                    'flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all duration-300',
+                    'data-[state=active]:bg-primary-foreground data-[state=active]:font-bold data-[state=active]:text-primary data-[state=active]:shadow-none',
+                    isCurrent
+                      ? 'bg-primary-foreground/50 text-primary'
+                      : isCompleted
+                        ? 'text-slate-700 hover:text-primary'
+                        : 'pointer-events-none text-slate-400',
                   )}
                 >
-                  {step.label}
-                </span>
-              </div>
-            </div>
-          </div>
-        );
-      })}
+                  {getStepIcon(step)}
+                  <span
+                    className={cn(
+                      'max-w-[140px] truncate sm:max-w-[200px]',
+                      steps.length > 4 && !isCurrent
+                        ? 'hidden'
+                        : steps.length > 3 && !isCurrent
+                          ? 'hidden md:inline-block'
+                          : '',
+                    )}
+                  >
+                    {step.label}
+                  </span>
+                </TabsTrigger>
+
+                {index < steps.length - 1 && (
+                  <ChevronRight className="h-4 w-4 flex-shrink-0 text-slate-300" />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </TabsList>
+      </Tabs>
     </div>
   );
 }

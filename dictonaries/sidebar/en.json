@@ -19,8 +19,10 @@
         "goods-master": "Goods Masters",
         "services-master": "Services Masters",
         "statutory": "Statutory filings",
+        "studio": "Studio (Workflows)",
+        "workflowEngine":"Workflow Engine",
         "subTabs": {
-            "drafts": "Drafts",
+            "agreements": "Agreements",
             "forms": "Forms",
             "contracts": "Contracts",
             "goods-master": "Goods Master",

@@ -44,9 +44,12 @@ import { usePurchaseColumns } from './usePurchaseColumns';
 
 // dynamic imports
 // GOODS
-const CreateOrder = dynamic(() => import('@/components/orders/CreateOrderS'), {
-  loading: () => <Loading />,
-});
+const CreateOrder = dynamic(
+  () => import('@/components/orders/DynamicCreateOrderS'),
+  {
+    loading: () => <Loading />,
+  },
+);
 const EditOrder = dynamic(() => import('@/components/orders/EditOrderS'), {
   loading: () => <Loading />,
 });

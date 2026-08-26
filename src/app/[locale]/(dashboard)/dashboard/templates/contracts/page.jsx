@@ -11,12 +11,20 @@ import SubHeader from '@/components/ui/Sub-header';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Wrapper from '@/components/wrappers/Wrapper';
 import { getUserAgreements } from '@/services/template-builder/TemplateBuilderServices';
+import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
+import { FeatureFlagWrapper } from '@/components/wrappers/FeatureFlagWrapper';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
+import { usePermission } from '@/hooks/usePermissions';
 import { useContractsColumns } from './useContractsColumns';
 
 const PAGE_LIMIT = 10;
 
 export default function ContractsPage() {
   const queryClient = useQueryClient();
+
+  const isFeatureEnabled = useFeatureFlag('BUILDER_CONTRACTS');
+  const { hasPermission } = usePermission();
+  const hasConfigPermission = hasPermission('permission:form-config-manage');
 
   // States
   const [statusFilter, setStatusFilter] = useState('not_signed'); // 'not_signed' or 'signed'
@@ -51,6 +59,7 @@ export default function ContractsPage() {
       }
       return items.length === PAGE_LIMIT ? nextPage : undefined;
     },
+    enabled: isFeatureEnabled && hasConfigPermission,
     refetchOnWindowFocus: false,
   });
 
@@ -92,97 +101,102 @@ export default function ContractsPage() {
   const columns = useContractsColumns({ statusFilter, handleRowClick });
 
   return (
-    <Wrapper className="scrollBarStyles flex h-screen flex-col">
-      {/* Header Section */}
-      <div className="space-y-1">
-        <SubHeader name="Contracts" />
-        <p className="text-xs text-gray-500">
-          Review, sign, and manage legal agreements offered by your enterprises.
-        </p>
-      </div>
-
-      {/* Tabs Filter */}
-      <Tabs
-        value={statusFilter}
-        onValueChange={setStatusFilter}
-        className="w-fit"
-      >
-        <TabsList className="border border-gray-200 bg-gray-50 p-1">
-          <TabsTrigger value="not_signed">To Be Signed</TabsTrigger>
-          <TabsTrigger value="signed">Already Signed</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      {/* Main Table Area */}
-      <div className="flex min-h-[calc(100vh-130px)] flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-        {isLoading ? (
-          <div className="flex flex-grow items-center justify-center py-20">
-            <Loading />
-          </div>
-        ) : agreements.length === 0 ? (
-          <div className="flex flex-grow flex-col items-center justify-center p-12 text-center">
-            <div className="mb-4 rounded-full bg-blue-50 p-6 text-[#288AF9]">
-              {statusFilter === 'not_signed' ? (
-                <Check size={48} />
-              ) : (
-                <FileText size={48} />
-              )}
-            </div>
-            <h3 className="text-base font-bold text-gray-900">
-              {statusFilter === 'not_signed'
-                ? 'All Caught Up!'
-                : 'No Agreements Found'}
-            </h3>
-            <p className="my-2 max-w-sm text-sm leading-relaxed text-gray-500">
-              {statusFilter === 'not_signed'
-                ? 'You have signed all required agreements. Great job!'
-                : "You don't have any signed agreements recorded in your account yet."}
+    <FeatureFlagWrapper flag="BUILDER_CONTRACTS" redirectTo="/dashboard">
+      <ProtectedWrapper permissionCode="permission:form-config-manage">
+        <Wrapper className="scrollBarStyles flex h-screen flex-col">
+          {/* Header Section */}
+          <div className="space-y-1">
+            <SubHeader name="Contracts" />
+            <p className="text-xs text-gray-500">
+              Review, sign, and manage legal agreements offered by your
+              enterprises.
             </p>
           </div>
-        ) : (
-          <InfiniteDataTable
-            id="user-contracts-table"
-            columns={columns}
-            data={agreements}
-            fetchNextPage={fetchNextPage}
-            isFetching={isFetching}
-            totalPages={paginationData?.totalPages}
-            currFetchedPage={paginationData?.currFetchedPage}
-            onRowClick={handleRowClick}
-          />
-        )}
-      </div>
 
-      {/* Agreement Signature Modal */}
-      {selectedAgreement && (
-        <AgreementSignModal
-          isOpen={isSignModalOpen}
-          onClose={() => {
-            setIsSignModalOpen(false);
-            setSelectedAgreement(null);
-          }}
-          agreementDocUrl={
-            selectedAgreement?.signedDocument?.documentSlug ||
-            selectedAgreement?.generatedDocument?.documentSlug ||
-            selectedAgreement?.signedDocument ||
-            selectedAgreement?.generatedDocument
-          }
-          agreementId={selectedAgreement?.id}
-          isReadOnly={
-            statusFilter === 'signed' || !!selectedAgreement?.signedDocument
-          }
-          enterpriseName={
-            selectedAgreement?.enterprise?.name ||
-            selectedAgreement?.enterpriseId?.name ||
-            'Company'
-          }
-          onSignComplete={() => {
-            queryClient.invalidateQueries({
-              queryKey: ['get_user_agreements'],
-            });
-          }}
-        />
-      )}
-    </Wrapper>
+          {/* Tabs Filter */}
+          <Tabs
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+            className="w-fit"
+          >
+            <TabsList className="border border-gray-200 bg-gray-50 p-1">
+              <TabsTrigger value="not_signed">To Be Signed</TabsTrigger>
+              <TabsTrigger value="signed">Already Signed</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {/* Main Table Area */}
+          <div className="flex min-h-[calc(100vh-130px)] flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+            {isLoading ? (
+              <div className="flex flex-grow items-center justify-center py-20">
+                <Loading />
+              </div>
+            ) : agreements.length === 0 ? (
+              <div className="flex flex-grow flex-col items-center justify-center p-12 text-center">
+                <div className="mb-4 rounded-full bg-blue-50 p-6 text-[#288AF9]">
+                  {statusFilter === 'not_signed' ? (
+                    <Check size={48} />
+                  ) : (
+                    <FileText size={48} />
+                  )}
+                </div>
+                <h3 className="text-base font-bold text-gray-900">
+                  {statusFilter === 'not_signed'
+                    ? 'All Caught Up!'
+                    : 'No Agreements Found'}
+                </h3>
+                <p className="my-2 max-w-sm text-sm leading-relaxed text-gray-500">
+                  {statusFilter === 'not_signed'
+                    ? 'You have signed all required agreements. Great job!'
+                    : "You don't have any signed agreements recorded in your account yet."}
+                </p>
+              </div>
+            ) : (
+              <InfiniteDataTable
+                id="user-contracts-table"
+                columns={columns}
+                data={agreements}
+                fetchNextPage={fetchNextPage}
+                isFetching={isFetching}
+                totalPages={paginationData?.totalPages}
+                currFetchedPage={paginationData?.currFetchedPage}
+                onRowClick={handleRowClick}
+              />
+            )}
+          </div>
+
+          {/* Agreement Signature Modal */}
+          {selectedAgreement && (
+            <AgreementSignModal
+              isOpen={isSignModalOpen}
+              onClose={() => {
+                setIsSignModalOpen(false);
+                setSelectedAgreement(null);
+              }}
+              agreementDocUrl={
+                selectedAgreement?.signedDocument?.documentSlug ||
+                selectedAgreement?.generatedDocument?.documentSlug ||
+                selectedAgreement?.signedDocument ||
+                selectedAgreement?.generatedDocument
+              }
+              agreementId={selectedAgreement?.id}
+              isReadOnly={
+                statusFilter === 'signed' || !!selectedAgreement?.signedDocument
+              }
+              enterpriseName={
+                selectedAgreement?.enterprise?.name ||
+                selectedAgreement?.enterpriseId?.name ||
+                'Company'
+              }
+              onSignComplete={() => {
+                queryClient.invalidateQueries({
+                  queryKey: ['get_user_agreements'],
+                });
+              }}
+            />
+          )}
+        </Wrapper>
+      </ProtectedWrapper>
+    </FeatureFlagWrapper>
   );
 }

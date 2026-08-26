@@ -25,7 +25,7 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import DirectPayment from '@/components/payments/DirectPayment';
+import DynamicDirectPayment from '@/components/payments/direct/DynamicDirectPayment';
 import { Plus } from 'lucide-react';
 import { usePaymentsColumn } from './usePaymentsColumn';
 import { SalesTable } from '../salestable/SalesTable';
@@ -295,7 +295,7 @@ const SalesPayments = () => {
           )}
 
           {isPaymentRecording && (
-            <DirectPayment
+            <DynamicDirectPayment
               setIsPaymentRecording={setIsPaymentRecording}
               enterpriseId={enterpriseId}
             />

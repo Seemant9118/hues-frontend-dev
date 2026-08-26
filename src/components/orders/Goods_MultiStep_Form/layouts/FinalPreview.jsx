@@ -6,46 +6,50 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { previewOrderDocument } from '@/services/Orders_Services/Orders_Services';
+import { buildEnhancedOrderPayload } from '@/components/orders/utils/orderPayloadHelper';
+import { useActiveWorkflowRuntime } from '@/hooks/workflows/useWorkflowRuntime';
 import { useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
 
 const FinalPreview = ({ formData, setFormData }) => {
-  const [appliedPayload, setAppliedPayload] = useState(() => {
+  const moduleName = 'ORDER';
+  const { data: activeWorkflowData } = useActiveWorkflowRuntime(moduleName);
+
+  const getCleanPayload = (currentData) => {
     const parsedAmount =
-      formData.orderItems?.reduce(
+      currentData.orderItems?.reduce(
         (acc, curr) => acc + (Number(curr.totalAmount) || 0),
         0,
       ) || 0;
     const parsedGst =
-      formData.orderItems?.reduce(
+      currentData.orderItems?.reduce(
         (acc, curr) => acc + (Number(curr.totalGstAmount) || 0),
         0,
       ) || 0;
 
-    return {
-      ...formData,
+    const rawPayload = {
+      ...currentData,
       amount: Number(parsedAmount.toFixed(2)),
       gstAmount: Number(parsedGst.toFixed(2)),
     };
+    return buildEnhancedOrderPayload(
+      rawPayload,
+      activeWorkflowData,
+      currentData._formFields || [],
+    );
+  };
+
+  const [appliedPayload, setAppliedPayload] = useState(() => {
+    return getCleanPayload(formData);
   });
 
-  const handleApplyChanges = () => {
-    const parsedAmount =
-      formData.orderItems?.reduce(
-        (acc, curr) => acc + (Number(curr.totalAmount) || 0),
-        0,
-      ) || 0;
-    const parsedGst =
-      formData.orderItems?.reduce(
-        (acc, curr) => acc + (Number(curr.totalGstAmount) || 0),
-        0,
-      ) || 0;
+  // Keep appliedPayload updated when activeWorkflowData loads or changes
+  React.useEffect(() => {
+    setAppliedPayload(getCleanPayload(formData));
+  }, [activeWorkflowData]);
 
-    setAppliedPayload({
-      ...formData,
-      amount: Number(parsedAmount.toFixed(2)),
-      gstAmount: Number(parsedGst.toFixed(2)),
-    });
+  const handleApplyChanges = () => {
+    setAppliedPayload(getCleanPayload(formData));
   };
 
   const { data, isLoading, isFetching } = useQuery({

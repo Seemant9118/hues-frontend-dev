@@ -58,14 +58,14 @@ import { SalesTable } from '../salestable/SalesTable';
 import { useSalesInvoicesColumns } from './useSalesInvoicesColumns';
 
 const CreateB2CInvoice = dynamic(
-  () => import('@/components/invoices/CreateB2CInvoice'),
+  () => import('@/components/invoices/b2c/DynamicCreateB2CInvoice'),
   {
     loading: () => <Loading />,
   },
 );
 
 const CreateB2BInvoice = dynamic(
-  () => import('@/components/invoices/CreateB2BInvoice'),
+  () => import('@/components/invoices/b2b/DynamicCreateB2BInvoice'),
   {
     loading: () => <Loading />,
   },

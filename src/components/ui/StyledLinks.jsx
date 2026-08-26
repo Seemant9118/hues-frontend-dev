@@ -41,7 +41,12 @@ const StyledLinks = ({ link, collapsed = false }) => {
 
   const isSubTabActive = useMemo(() => {
     return (
-      link.subTab?.some((subtab) => pathname.startsWith(subtab.path)) ?? false
+      link.subTab?.some(
+        (subtab) =>
+          pathname.startsWith(subtab.path) ||
+          (subtab.path === '/dashboard/templates/agreements' &&
+            pathname.startsWith('/dashboard/template-builder')),
+      ) ?? false
     );
   }, [link.subTab, pathname]);
 
@@ -126,7 +131,10 @@ const StyledLinks = ({ link, collapsed = false }) => {
       {!collapsed && isSubTabShow && isActive && hasSubTabs && (
         <ul className="flex w-full flex-col gap-2 pl-10">
           {link.subTab.map((subtab) => {
-            const isSubTabPathActive = pathname.startsWith(subtab.path);
+            const isSubTabPathActive =
+              pathname.startsWith(subtab.path) ||
+              (subtab.path === '/dashboard/templates/agreements' &&
+                pathname.startsWith('/dashboard/template-builder'));
             return (
               <li key={subtab.path}>
                 <Link

@@ -1,6 +1,6 @@
 'use client';
 
-import { LocalStorageService } from '@/lib/utils';
+import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -42,6 +42,7 @@ export const UserProvider = ({ children }) => {
 
   const logout = () => {
     LocalStorageService.clear();
+    SessionStorageService.clear();
     router.push('/login');
   };
 

@@ -1,25 +1,42 @@
 'use client';
 
 import { orderApi } from '@/api/order_api/order_api';
+import { buildEnhancedOrderPayload } from '@/components/orders/utils/orderPayloadHelper';
 import ViewPdf from '@/components/pdf/ViewPdf';
+import { Button } from '@/components/ui/button';
+import ErrorBox from '@/components/ui/ErrorBox';
+import { Label } from '@/components/ui/label';
 import Loading from '@/components/ui/Loading';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { useActiveWorkflowRuntime } from '@/hooks/workflows/useWorkflowRuntime';
 import { previewOrderDocument } from '@/services/Orders_Services/Orders_Services';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import ErrorBox from '@/components/ui/ErrorBox';
+import React, { useState, useEffect } from 'react';
 
 const PreviewFinalPage = ({ formData = {}, setFormData, errors = {} }) => {
   const [tabs, setTabs] = useState('key-commercial-terms');
+  const moduleName = 'ORDER';
+  const { data: activeWorkflowData } = useActiveWorkflowRuntime(moduleName);
+
+  const getCleanPayload = (currentData, workflowData) => {
+    return buildEnhancedOrderPayload(
+      currentData,
+      workflowData,
+      currentData._formFields || [],
+    );
+  };
 
   // Use appliedPayload to prevent API calls on every keystroke
   const [appliedPayload, setAppliedPayload] = useState(() => {
-    return { ...formData };
+    return getCleanPayload(formData, activeWorkflowData);
   });
+
+  useEffect(() => {
+    if (activeWorkflowData) {
+      setAppliedPayload(getCleanPayload(formData, activeWorkflowData));
+    }
+  }, [activeWorkflowData]);
 
   const onTabChange = (value) => {
     setTabs(value);
@@ -33,7 +50,7 @@ const PreviewFinalPage = ({ formData = {}, setFormData, errors = {} }) => {
   };
 
   const handleApplyChanges = () => {
-    setAppliedPayload({ ...formData });
+    setAppliedPayload(getCleanPayload(formData, activeWorkflowData));
   };
 
   const { data, isLoading, isError, error, isFetching } = useQuery({
