@@ -21,4 +21,8 @@ export const workflowRuntimeAPI = {
       `/workflow-runtime/instances/${instanceId}/steps/${stepInstanceId}/actions`,
     endpointKey: 'submit_workflow_step_action',
   },
+  previewNextStep: {
+    endpoint: '/workflow-runtime/next-step-preview',
+    endpointKey: 'preview_next_workflow_step',
+  },
 };

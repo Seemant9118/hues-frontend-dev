@@ -10,8 +10,8 @@ import { useDeveloperMode } from '@/context/DeveloperModeContext';
 import useOrderTotals from '@/hooks/useOrderTotals';
 import { LocalStorageService, SessionStorageService } from '@/lib/utils';
 
-import EmptyStageComponent from '../../../ui/EmptyStageComponent';
-import { Button } from '../../../ui/button';
+import EmptyStageComponent from '@/components/ui/EmptyStageComponent';
+import { Button } from '@/components/ui/button';
 
 import { AdditionalInfoSection } from './components/AdditionalInfoSection';
 import { AddItemSection } from './components/AddItemSection';

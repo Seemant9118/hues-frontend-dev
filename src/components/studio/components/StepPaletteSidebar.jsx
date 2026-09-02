@@ -9,6 +9,7 @@ import {
   GripVertical,
   Network,
   Plus,
+  SlidersHorizontal,
   UploadCloud,
   Zap,
 } from 'lucide-react';
@@ -22,6 +23,8 @@ export function getStepIcon(type) {
       return <CheckSquare className="h-4 w-4 text-blue-500" />;
     case 'FORM':
       return <FileText className="h-4 w-4 text-emerald-500" />;
+    case 'DATA_UPDATE':
+      return <SlidersHorizontal className="h-4 w-4 text-purple-600" />;
     case 'DOCUMENT_UPLOAD':
       return <UploadCloud className="h-4 w-4 text-purple-500" />;
     case 'STATUS_UPDATE':

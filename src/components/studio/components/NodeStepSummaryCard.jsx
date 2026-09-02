@@ -1,10 +1,11 @@
 'use client';
 
 import React from 'react';
-import { FileText, Sparkles } from 'lucide-react';
+import { FileText, SlidersHorizontal, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -23,6 +24,7 @@ export default function NodeStepSummaryCard({
   selectedFormName,
   nodeId,
   onUpdateNodeForm,
+  onUpdateNodeDataConfig,
 }) {
   return (
     <>
@@ -57,8 +59,133 @@ export default function NodeStepSummaryCard({
               </strong>
             </div>
           )}
+          {nodeType === 'DATA_UPDATE' && (
+            <div>
+              <span className="text-muted-foreground">Operation: </span>
+              <strong className="font-mono text-purple-600">
+                {nodeContent.config?.operation || 'PERCENTAGE'}
+              </strong>
+            </div>
+          )}
         </div>
       </Card>
+
+      {/* Configuration Card for DATA_UPDATE nodes */}
+      {nodeType === 'DATA_UPDATE' && (
+        <div className="space-y-3 rounded-xl border border-purple-200 bg-purple-50/40 p-4 shadow-sm">
+          <div className="flex items-center justify-between border-b border-purple-200 pb-2">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4 text-purple-600" />
+              <span className="font-bold text-purple-900">
+                Data Update Internal Logic Config
+              </span>
+            </div>
+            <Badge className="bg-purple-600 font-mono text-xs text-white">
+              {nodeContent.config?.operation || 'PERCENTAGE'}
+            </Badge>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs font-bold text-gray-800">
+                Target Field Path
+              </Label>
+              <Input
+                className="bg-white font-mono text-xs"
+                value={nodeContent.config?.target || ''}
+                onChange={(e) =>
+                  onUpdateNodeDataConfig?.(nodeId, {
+                    ...nodeContent.config,
+                    target: e.target.value,
+                  })
+                }
+                placeholder="e.g. extraInfo.workflowRules.tdsAmount"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs font-bold text-gray-800">
+                Source Field Path
+              </Label>
+              <Input
+                className="bg-white font-mono text-xs"
+                value={nodeContent.config?.source || ''}
+                onChange={(e) =>
+                  onUpdateNodeDataConfig?.(nodeId, {
+                    ...nodeContent.config,
+                    source: e.target.value,
+                  })
+                }
+                placeholder="e.g. amount"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs font-bold text-gray-800">
+                Operation
+              </Label>
+              <Select
+                value={nodeContent.config?.operation || 'PERCENTAGE'}
+                onValueChange={(val) =>
+                  onUpdateNodeDataConfig?.(nodeId, {
+                    ...nodeContent.config,
+                    operation: val,
+                  })
+                }
+              >
+                <SelectTrigger className="bg-white text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PERCENTAGE">PERCENTAGE</SelectItem>
+                  <SelectItem value="FIXED_VALUE">FIXED_VALUE</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {(nodeContent.config?.operation || 'PERCENTAGE') ===
+            'PERCENTAGE' ? (
+              <div className="space-y-1">
+                <Label className="text-xs font-bold text-gray-800">
+                  Percentage (%)
+                </Label>
+                <Input
+                  type="number"
+                  className="bg-white font-mono text-xs"
+                  value={nodeContent.config?.percentage ?? 10}
+                  onChange={(e) =>
+                    onUpdateNodeDataConfig?.(nodeId, {
+                      ...nodeContent.config,
+                      percentage: Number(e.target.value),
+                    })
+                  }
+                  placeholder="10"
+                />
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <Label className="text-xs font-bold text-gray-800">
+                  Fixed Value
+                </Label>
+                <Input
+                  type="number"
+                  className="bg-white font-mono text-xs"
+                  value={nodeContent.config?.fixedValue ?? 0}
+                  onChange={(e) =>
+                    onUpdateNodeDataConfig?.(nodeId, {
+                      ...nodeContent.config,
+                      fixedValue: Number(e.target.value),
+                    })
+                  }
+                  placeholder="100"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Associated Form Selection Card for FORM nodes */}
       {nodeType === 'FORM' && (

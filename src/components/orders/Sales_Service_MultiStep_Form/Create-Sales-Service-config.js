@@ -36,6 +36,7 @@ export const getWorkflowEnhancedServiceStepsConfig = ({
   cta,
   activeWorkflow = null,
   moduleName = 'ORDER',
+  evaluatedStepsMap = null,
 }) => {
   const baseSteps = getSalesServiceFormSteps({ cta });
 
@@ -47,6 +48,12 @@ export const getWorkflowEnhancedServiceStepsConfig = ({
   }
 
   const runtimeSteps = activeWorkflow.runtime?.steps || [];
+  const runtimeTransitions = activeWorkflow.runtime?.transitions || [];
+
+  // Check if any transition in the graph has execution conditions
+  const hasTransitionsWithCondition = runtimeTransitions.some((tr) =>
+    Boolean(tr.condition && tr.condition.path),
+  );
 
   // Find system start node index in runtime steps
   const systemStepIndex = runtimeSteps.findIndex(
@@ -54,11 +61,23 @@ export const getWorkflowEnhancedServiceStepsConfig = ({
   );
 
   // Extract interactive workflow steps (e.g. APPROVAL, FORM, DOCUMENT_UPLOAD, STATUS_UPDATE, NOTIFICATION)
-  const interactiveSteps = runtimeSteps.filter(
-    (st) => !st.start && st.type !== 'SYSTEM' && st.type !== 'END',
-  );
+  const interactiveSteps = runtimeSteps.filter((st) => {
+    if (st.start || st.type === 'SYSTEM' || st.type === 'END') return false;
 
-  if (interactiveSteps.length === 0) {
+    // If transitions have conditions, only include interactive step if dynamically validated/unlocked
+    if (hasTransitionsWithCondition) {
+      if (!evaluatedStepsMap) return false;
+      return Boolean(
+        evaluatedStepsMap[st.key] ||
+        evaluatedStepsMap[`workflow-${st.key}`] ||
+        evaluatedStepsMap[st.type],
+      );
+    }
+
+    return true;
+  });
+
+  if (interactiveSteps.length === 0 && !hasTransitionsWithCondition) {
     return baseSteps;
   }
 
@@ -70,6 +89,8 @@ export const getWorkflowEnhancedServiceStepsConfig = ({
 
     return {
       key: `workflow-${st.key}`,
+      rawKey: st.key,
+      stepType: st.type,
       label: displayLabel,
       component: function WorkflowStepWrapper(props) {
         if (st.type === 'DOCUMENT_UPLOAD') {

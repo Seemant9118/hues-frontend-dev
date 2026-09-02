@@ -1,7 +1,14 @@
 'use client';
 
 import React from 'react';
-import { Eye, Link as LinkIcon, Trash2, Unlink } from 'lucide-react';
+import {
+  Eye,
+  Filter,
+  GitFork,
+  Link as LinkIcon,
+  Trash2,
+  Unlink,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,6 +31,7 @@ export default function FlowchartNodeCard({
   onInspectNode,
   onDeleteNode,
   onDeleteEdge,
+  onEditEdgeCondition,
   onSetLinkingSourceId,
 }) {
   const isSystemStart = node.type === 'SYSTEM' || node.content?.start;
@@ -134,29 +142,83 @@ export default function FlowchartNodeCard({
           <span className="text-[9px] font-bold uppercase text-muted-foreground">
             Outgoing Connections:
           </span>
-          {outgoingEdges.map((eg) => (
-            <div
-              key={eg.id}
-              className="flex items-center justify-between rounded bg-indigo-50/70 px-1.5 py-0.5 font-mono text-indigo-900"
-            >
-              <span className="truncate">
-                ➔ {eg.targetId} ({eg.type || 'DEFAULT'})
-              </span>
-              {isEditMode && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDeleteEdge(eg.id);
-                  }}
-                  className="ml-1 text-red-500 hover:text-red-700"
-                  title="Disconnect connection"
+          {outgoingEdges.map((eg) => {
+            const hasCond = Boolean(eg.condition && eg.condition.path);
+            const hasSiblingWithCondition = outgoingEdges.some(
+              (other) =>
+                other.id !== eg.id &&
+                (other.type || other.on) === (eg.type || eg.on) &&
+                Boolean(other.condition && other.condition.path),
+            );
+            const isElse = eg.isElse || (!hasCond && hasSiblingWithCondition);
+
+            return (
+              <div
+                key={eg.id}
+                className={`flex items-center justify-between rounded px-1.5 py-0.5 font-mono text-[9px] ${
+                  hasCond
+                    ? 'bg-amber-100/80 font-bold text-amber-950'
+                    : isElse
+                      ? 'bg-slate-200 font-bold text-slate-950'
+                      : 'bg-indigo-50/70 text-indigo-900'
+                }`}
+              >
+                <span
+                  className="truncate"
+                  title={`➔ ${eg.targetId} (${eg.type || 'DEFAULT'}) ${
+                    hasCond ? '[IF]' : isElse ? '[ELSE]' : ''
+                  }`}
                 >
-                  <Unlink className="h-2.5 w-2.5" />
-                </button>
-              )}
-            </div>
-          ))}
+                  {hasCond ? '[IF] ' : isElse ? '[ELSE] ' : ''}➔ {eg.targetId} (
+                  {eg.type || 'DEFAULT'})
+                </span>
+                <div className="flex items-center gap-1">
+                  {isEditMode && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditEdgeCondition?.(eg);
+                      }}
+                      className={
+                        hasCond
+                          ? 'text-amber-800 hover:text-amber-950'
+                          : isElse
+                            ? 'text-slate-800 hover:text-slate-950'
+                            : 'text-indigo-600 hover:text-indigo-800'
+                      }
+                      title={
+                        hasCond
+                          ? `IF: ${eg.condition.path} ${eg.condition.operator} ${eg.condition.value ?? ''}`
+                          : isElse
+                            ? 'ELSE (Fallback branch)'
+                            : 'Add Condition / Branch'
+                      }
+                    >
+                      {isElse ? (
+                        <GitFork className="h-2.5 w-2.5" />
+                      ) : (
+                        <Filter className="h-2.5 w-2.5" />
+                      )}
+                    </button>
+                  )}
+                  {isEditMode && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteEdge(eg.id);
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                      title="Disconnect connection"
+                    >
+                      <Unlink className="h-2.5 w-2.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 

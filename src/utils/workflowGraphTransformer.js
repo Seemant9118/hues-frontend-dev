@@ -17,6 +17,12 @@ export const STEP_TYPES = [
   // { type: 'APPROVAL', label: 'Approval', isStart: false, manualAction: true },
   { type: 'FORM', label: 'Custom Form', isStart: false, manualAction: true },
   {
+    type: 'DATA_UPDATE',
+    label: 'Data Update',
+    isStart: false,
+    manualAction: false,
+  },
+  {
     type: 'DOCUMENT_UPLOAD',
     label: 'Document Upload',
     isStart: false,
@@ -41,6 +47,7 @@ export const ACTION_EVENTS = {
   SYSTEM: ['COMPLETED'],
   APPROVAL: ['APPROVED', 'REJECTED'],
   FORM: ['SUBMITTED'],
+  DATA_UPDATE: ['COMPLETED'],
   DOCUMENT_UPLOAD: ['UPLOADED'],
   STATUS_UPDATE: ['STATUS_UPDATED'],
   NOTIFICATION: ['NOTIFIED'],
@@ -159,6 +166,10 @@ export function transformCanvasToBackendGraph({
       }
     }
 
+    if (step.type === 'DATA_UPDATE' && content.config) {
+      step.config = content.config;
+    }
+
     if (step.type === 'STATUS_UPDATE' && content.statusConfig) {
       step.statusConfig = content.statusConfig;
     }
@@ -191,6 +202,18 @@ export function transformCanvasToBackendGraph({
         transition.on = edge.type;
       } else if (edge.on) {
         transition.on = edge.on;
+      } else {
+        const sourceNode = orderedNodes.find(
+          (n) => (n.id || n.content?.key) === fromKey,
+        );
+        const sourceType =
+          sourceNode?.type || sourceNode?.content?.type || 'SYSTEM';
+        const available = ACTION_EVENTS[sourceType] || ['COMPLETED'];
+        transition.on = available[0] || 'COMPLETED';
+      }
+
+      if (edge.condition) {
+        transition.condition = edge.condition;
       }
 
       return transition;
@@ -235,17 +258,31 @@ export function transformBackendGraphToCanvas(graphPayload = {}) {
         required: step.required,
         statusConfig: step.statusConfig || null,
         documentConfig: step.documentConfig || null,
+        config: step.config || null,
       },
     };
   });
 
-  const edges = transitions.map((trans, idx) => ({
-    id: `edge_${trans.from}_${trans.to}_${idx}`,
-    sourceId: trans.from,
-    targetId: trans.to,
-    type: trans.on || 'DEFAULT',
-    label: trans.on || '',
-  }));
+  const edges = transitions.map((trans, idx) => {
+    const hasSiblingWithCondition = transitions.some(
+      (other) =>
+        other.from === trans.from &&
+        other.on === trans.on &&
+        Boolean(other.condition),
+    );
+    const isElse = !trans.condition && hasSiblingWithCondition;
+
+    return {
+      id: `edge_${trans.from}_${trans.to}_${idx}`,
+      sourceId: trans.from,
+      targetId: trans.to,
+      type: trans.on || 'DEFAULT',
+      on: trans.on || 'DEFAULT',
+      label: trans.on || '',
+      condition: trans.condition || null,
+      isElse,
+    };
+  });
 
   return {
     nodes,

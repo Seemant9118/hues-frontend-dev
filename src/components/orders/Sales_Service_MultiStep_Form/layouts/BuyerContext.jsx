@@ -1,256 +1,175 @@
 'use client';
 
-import { clientEnterprise } from '@/api/enterprises_user/client_enterprise/client_enterprise';
-import { vendorEnterprise } from '@/api/enterprises_user/vendor_enterprise/vendor_enterprise';
+import React from 'react';
+import Select from 'react-select';
+import { Plus } from 'lucide-react';
 import { getStylesForSelectComponent } from '@/appUtils/helperFunctions';
 import AddModal from '@/components/Modals/AddModal';
 import ErrorBox from '@/components/ui/ErrorBox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { LocalStorageService } from '@/lib/utils';
-import {
-  createClient,
-  getClients,
-} from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
-import {
-  createVendor,
-  getVendors,
-} from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
-import { useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
-import { useState } from 'react';
-import Select from 'react-select';
+import { useBuyerContextEntities } from '../hooks/useBuyerContextEntities';
 
 export default function BuyerContext({
   formData = {},
   setFormData,
   errors = {},
 }) {
-  const enterpriseId = LocalStorageService.get('enterprise_Id');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const isOffer = formData.cta === 'offer';
-
-  /* ---------------- FETCH ENTITIES ---------------- */
-
-  const { data: entities = [] } = useQuery({
-    queryKey: isOffer
-      ? [clientEnterprise.getClients.endpointKey]
-      : [vendorEnterprise.getVendors.endpointKey],
-    queryFn: () =>
-      isOffer
-        ? getClients({ id: enterpriseId, context: 'ORDER' })
-        : getVendors({ id: enterpriseId, context: 'ORDER' }),
-    select: (res) => res.data.data.users,
-  });
-
-  /* ---------------- OPTIONS ---------------- */
-
-  const selectionOptions = [
-    ...entities.map((entity) => {
-      const data = isOffer
-        ? entity.client || entity.invitation?.userDetails
-        : entity.vendor || entity.invitation?.userDetails;
-
-      return {
-        value: (isOffer ? entity.client?.id : entity.vendor?.id) || entity.id,
-        id: entity.id, // Relation ID
-        label: data?.name,
-        data,
-        isAccepted: entity.invitation?.status ?? 'ACCEPTED',
-        isEnterpriseActive: !!(isOffer ? entity.client?.id : entity.vendor?.id),
-      };
-    }),
-    {
-      value: isOffer ? 'add-new-client' : 'add-new-vendor',
-      id: isOffer ? 'add-new-client' : 'add-new-vendor',
-      label: (
-        <span className="flex items-center gap-2 text-xs font-semibold">
-          <Plus size={14} /> {isOffer ? 'Add New Client' : 'Add New Vendor'}
-        </span>
-      ),
-    },
-  ];
-
-  /* ---------------- HELPERS ---------------- */
-
-  const updateFormData = (updates) => {
-    setFormData((prev) => ({
-      ...prev,
-      ...updates,
-    }));
-  };
-
-  const handleSelect = (selected) => {
-    if (!selected) return;
-
-    if (
-      selected.value === 'add-new-client' ||
-      selected.value === 'add-new-vendor'
-    ) {
-      setIsModalOpen(true);
-      return;
-    }
-
-    const data = selected.data || {};
-
-    if (isOffer) {
-      updateFormData({
-        clientId: selected.id,
-        buyerId: selected.value,
-        contactPerson: data.contactPerson || '',
-        email: data.email || '',
-        mobile: data.mobileNumber || '',
-        billingAddressText: data.address || '',
-        serviceLocation: data.serviceLocation || '',
-        orderItems: [], // Reset items when client changes
-        amount: 0,
-        gstAmount: 0,
-      });
-    } else {
-      updateFormData({
-        vendorId: selected.id,
-        sellerEnterpriseId: selected.value,
-        contactPerson: data.contactPerson || '',
-        email: data.email || '',
-        mobile: data.mobileNumber || '',
-        billingAddressText: data.address || '',
-        serviceLocation: data.serviceLocation || '',
-        orderItems: [], // Reset items when vendor changes
-        amount: 0,
-        gstAmount: 0,
-      });
-    }
-  };
-
-  /* ---------------- UI ---------------- */
+  const {
+    isOffer,
+    isModalOpen,
+    setIsModalOpen,
+    entityOptions,
+    selectedEntityValue,
+    handleEntitySelect,
+    createClient,
+    createVendor,
+  } = useBuyerContextEntities({ formData, setFormData });
 
   return (
-    <section className="space-y-6">
-      {/* Client Selector */}
-      <div className="space-y-2 text-sm">
-        <Label className="flex gap-1">
-          {isOffer ? 'Client' : 'Vendor'}{' '}
-          <span className="text-red-600">*</span>
-        </Label>
-
-        <Select
-          options={selectionOptions}
-          styles={getStylesForSelectComponent()}
-          placeholder={isOffer ? 'Select Client' : 'Select Vendor'}
-          getOptionValue={(option) => option.id}
-          getOptionLabel={(option) => option.label}
-          isDisabled={formData.isEditing}
-          value={
-            selectionOptions.find(
-              (opt) =>
-                (isOffer &&
-                  (opt.id === formData.clientId ||
-                    opt.value === formData.buyerId)) ||
-                (!isOffer &&
-                  (opt.id === formData.vendorId ||
-                    opt.value === formData.sellerEnterpriseId)),
-            ) || null
-          }
-          onChange={handleSelect}
-        />
-
-        {isOffer
-          ? errors.buyerId && <ErrorBox msg={errors.buyerId} />
-          : errors.sellerEnterpriseId && (
-              <ErrorBox msg={errors.sellerEnterpriseId} />
-            )}
+    <div className="flex h-full flex-col space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-neutral-900">
+          {isOffer ? 'Client Context' : 'Vendor Context'}
+        </h3>
+        <p className="text-xs text-neutral-500">
+          Provide basic details regarding the {isOffer ? 'client' : 'vendor'}{' '}
+          for this service order.
+        </p>
       </div>
 
-      {/* Add Client Modal */}
-      {isModalOpen && (
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* Client / Vendor Selector */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-semibold">
+              {isOffer ? 'Client / Customer' : 'Vendor / Supplier'}{' '}
+              <span className="text-red-500">*</span>
+            </Label>
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+            >
+              <Plus size={14} /> Add New {isOffer ? 'Client' : 'Vendor'}
+            </button>
+          </div>
+
+          <Select
+            options={entityOptions}
+            value={selectedEntityValue}
+            onChange={handleEntitySelect}
+            placeholder={`Select ${isOffer ? 'Client' : 'Vendor'}...`}
+            styles={getStylesForSelectComponent()}
+            isClearable
+          />
+
+          <ErrorBox
+            msg={isOffer ? errors.buyerId : errors.sellerEnterpriseId}
+          />
+        </div>
+
+        {/* Contact Person */}
+        <div className="flex flex-col gap-2">
+          <Label className="text-xs font-semibold">Contact Person</Label>
+          <Input
+            value={formData.contactPerson || ''}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                contactPerson: e.target.value,
+              }))
+            }
+            placeholder="e.g. John Doe"
+          />
+        </div>
+
+        {/* Contact Email */}
+        <div className="flex flex-col gap-2">
+          <Label className="text-xs font-semibold">Email Address</Label>
+          <Input
+            type="email"
+            value={formData.email || ''}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                email: e.target.value,
+              }))
+            }
+            placeholder="e.g. john@example.com"
+          />
+        </div>
+
+        {/* Mobile Number */}
+        <div className="flex flex-col gap-2">
+          <Label className="text-xs font-semibold">Mobile Number</Label>
+          <Input
+            value={formData.mobile || ''}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                mobile: e.target.value,
+              }))
+            }
+            placeholder="e.g. +91 9876543210"
+          />
+        </div>
+
+        {/* Billing Address Text */}
+        <div className="flex flex-col gap-2 md:col-span-2">
+          <Label className="text-xs font-semibold">Billing Address</Label>
+          <Textarea
+            value={formData.billingAddressText || ''}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                billingAddressText: e.target.value,
+              }))
+            }
+            placeholder="Enter complete billing address..."
+            rows={2}
+          />
+        </div>
+
+        {/* Service Location */}
+        <div className="flex flex-col gap-2 md:col-span-2">
+          <Label className="text-xs font-semibold">Service Location</Label>
+          <Textarea
+            value={formData.serviceLocation || ''}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                serviceLocation: e.target.value,
+              }))
+            }
+            placeholder="Enter service execution location / site address..."
+            rows={2}
+          />
+        </div>
+      </div>
+
+      {/* Add Client / Vendor Modal */}
+      {isModalOpen && isOffer && (
         <AddModal
           type="Add"
-          cta={isOffer ? 'client' : 'vendor'}
-          btnName={isOffer ? 'Add a new Client' : 'Add a new Vendor'}
-          mutationFunc={isOffer ? createClient : createVendor}
+          cta="client"
+          btnName="Add a new Client"
+          mutationFunc={createClient}
           isOpen={isModalOpen}
           setIsOpen={setIsModalOpen}
         />
       )}
-
-      {/* Contact Info */}
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        <div>
-          <Label>
-            Contact Person <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            placeholder="Enter Contact Person"
-            value={formData.contactPerson || ''}
-            onChange={(e) => updateFormData({ contactPerson: e.target.value })}
-          />
-          {errors.contactPerson && <ErrorBox msg={errors.contactPerson} />}
-        </div>
-
-        <div>
-          <Label>
-            Email <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            type="email"
-            placeholder="Enter Email"
-            value={formData.email || ''}
-            onChange={(e) => updateFormData({ email: e.target.value })}
-          />
-          {errors.email && <ErrorBox msg={errors.email} />}
-        </div>
-
-        <div>
-          <Label>
-            Mobile <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            placeholder="Enter Mobile"
-            value={formData.mobile || ''}
-            onChange={(e) => updateFormData({ mobile: e.target.value })}
-          />
-          {errors.mobile && <ErrorBox msg={errors.mobile} />}
-        </div>
-      </div>
-
-      {/* Addresses */}
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <div>
-          <Label>
-            Billing Address <span className="text-red-500">*</span>
-          </Label>
-          <Textarea
-            placeholder="Enter Billing Address"
-            rows={3}
-            value={formData.billingAddressText || ''}
-            onChange={(e) =>
-              updateFormData({
-                billingAddressText: e.target.value,
-              })
-            }
-          />
-          {errors.billingAddress && <ErrorBox msg={errors.billingAddress} />}
-        </div>
-
-        <div>
-          <Label>
-            Service Location <span className="text-red-500">*</span>
-          </Label>
-          <Textarea
-            placeholder="Enter Service Location"
-            rows={3}
-            value={formData.serviceLocation || ''}
-            onChange={(e) =>
-              updateFormData({
-                serviceLocation: e.target.value,
-              })
-            }
-          />
-          {errors.serviceLocation && <ErrorBox msg={errors.serviceLocation} />}
-        </div>
-      </div>
-    </section>
+      {isModalOpen && !isOffer && (
+        <AddModal
+          type="Add"
+          cta="vendor"
+          btnName="Add a new Vendor"
+          mutationFunc={createVendor}
+          isOpen={isModalOpen}
+          setIsOpen={setIsModalOpen}
+        />
+      )}
+    </div>
   );
 }

@@ -51,4 +51,14 @@ export const workflowBuilderAPI = {
     endpoint: (id) => `/workflow-builder/definitions/${id}/unarchive`,
     endpointKey: 'unarchive_workflow_definition',
   },
+  getRuleFields: {
+    endpoint: (module, definitionId) => {
+      let url = `/workflow-builder/rule-fields?module=${module || 'ORDER'}`;
+      if (definitionId && definitionId !== 'LOCAL_TEMP_DRAFT') {
+        url += `&definitionId=${definitionId}`;
+      }
+      return url;
+    },
+    endpointKey: 'get_workflow_rule_fields',
+  },
 };

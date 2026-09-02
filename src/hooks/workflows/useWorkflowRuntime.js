@@ -2,6 +2,7 @@ import { workflowRuntimeAPI } from '@/api/workflow-runtime-apis/workflowRuntimeA
 import {
   getActiveWorkflowRuntime,
   getWorkflowRecordInstance,
+  previewNextWorkflowStep,
   startWorkflowInstance,
   submitWorkflowStepAction,
 } from '@/services/Workflow_Runtime_Services/WorkflowRuntimeServices';
@@ -81,4 +82,14 @@ export function useWorkflowRuntimeMutations({
     submitAction: submitActionMutation.mutateAsync,
     isSubmittingAction: submitActionMutation.isPending,
   };
+}
+
+export function useNextStepPreview() {
+  return useMutation({
+    mutationFn: previewNextWorkflowStep,
+    onError: (err) => {
+      // eslint-disable-next-line no-console
+      console.error('Next step preview evaluation failed:', err);
+    },
+  });
 }

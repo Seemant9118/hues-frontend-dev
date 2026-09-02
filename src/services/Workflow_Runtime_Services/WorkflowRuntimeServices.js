@@ -37,3 +37,7 @@ export const submitWorkflowStepAction = ({
     payload,
   );
 };
+
+export const previewNextWorkflowStep = (payload) => {
+  return APIinstance.post(workflowRuntimeAPI.previewNextStep.endpoint, payload);
+};

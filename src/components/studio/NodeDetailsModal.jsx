@@ -1,43 +1,31 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import {
+  ArrowRight,
+  CheckCircle,
+  CheckSquare,
+  FileText,
+  GitCommit,
+  Package,
+  PanelRightOpen,
+  SlidersHorizontal,
+  UploadCloud,
+  Zap,
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { getFormConfig } from '@/services/Form_Config_Services/FormConfigServices';
-import {
-  getCustomForm,
-  getAllCustomForms,
-} from '@/services/Custom_Form_Services/CustomFormServices';
-import { getRoles } from '@/services/Roles_Services/Roles_Services';
-import DynamicFormRenderer from '@/components/shared/DynamicFormRenderer';
-import {
-  FileText,
-  Zap,
-  CheckSquare,
-  UploadCloud,
-  GitCommit,
-  CheckCircle,
-  Package,
-  ArrowRight,
-  PanelRightOpen,
-} from 'lucide-react';
-import NodeStepSummaryCard from './components/NodeStepSummaryCard';
+import NodeFormPreviewSheet from './components/NodeFormPreviewSheet';
 import NodeFormSchemaSummaryCard from './components/NodeFormSchemaSummaryCard';
+import NodeStepSummaryCard from './components/NodeStepSummaryCard';
+import { useNodeDetailsQueries } from './hooks/useNodeDetailsQueries';
 
 export default function NodeDetailsModal({
   isOpen,
@@ -45,6 +33,7 @@ export default function NodeDetailsModal({
   node,
   moduleName = 'ORDER',
   onUpdateNodeForm,
+  onUpdateNodeDataConfig,
 }) {
   const [isSidePaneOpen, setIsSidePaneOpen] = useState(false);
 
@@ -53,32 +42,20 @@ export default function NodeDetailsModal({
   const isSystemStart = nodeType === 'SYSTEM' || nodeContent.start;
   const formConfigId = nodeContent.formConfigurationId;
 
-  // Queries
-  const { data: systemFormConfig, isLoading: isSysFormLoading } = useQuery({
-    queryKey: ['get_form_config_node_modal', moduleName],
-    queryFn: () => getFormConfig(moduleName),
-    enabled: Boolean(isOpen && node && (isSystemStart || !formConfigId)),
-    select: (res) => res?.data?.data || res || null,
-  });
-
-  const { data: customFormDetails, isLoading: isCustomFormLoading } = useQuery({
-    queryKey: ['get_custom_form_node_modal', formConfigId],
-    queryFn: () => getCustomForm(formConfigId),
-    enabled: Boolean(isOpen && node && nodeType === 'FORM' && formConfigId),
-    select: (res) => res?.data?.data || res || null,
-  });
-
-  const { data: availableCustomForms = [] } = useQuery({
-    queryKey: ['get_all_custom_forms_node_modal'],
-    queryFn: getAllCustomForms,
-    enabled: Boolean(isOpen && node && nodeType === 'FORM'),
-  });
-
-  const { data: roles = [] } = useQuery({
-    queryKey: ['get_all_roles_node_modal'],
-    queryFn: getRoles,
-    enabled: Boolean(isOpen && node && nodeType === 'APPROVAL'),
-    select: (res) => res.data?.data || [],
+  const {
+    systemFormConfig,
+    isSysFormLoading,
+    customFormDetails,
+    isCustomFormLoading,
+    availableCustomForms,
+    roles,
+  } = useNodeDetailsQueries({
+    isOpen,
+    node,
+    moduleName,
+    nodeType,
+    isSystemStart,
+    formConfigId,
   });
 
   if (!node) return null;
@@ -91,6 +68,8 @@ export default function NodeDetailsModal({
         return <CheckSquare className="h-5 w-5 text-blue-500" />;
       case 'FORM':
         return <FileText className="h-5 w-5 text-emerald-500" />;
+      case 'DATA_UPDATE':
+        return <SlidersHorizontal className="h-5 w-5 text-purple-600" />;
       case 'DOCUMENT_UPLOAD':
         return <UploadCloud className="h-5 w-5 text-purple-500" />;
       case 'STATUS_UPDATE':
@@ -166,6 +145,7 @@ export default function NodeDetailsModal({
               selectedFormName={selectedFormName}
               nodeId={node.id}
               onUpdateNodeForm={onUpdateNodeForm}
+              onUpdateNodeDataConfig={onUpdateNodeDataConfig}
             />
 
             {/* Schema Summary Card */}
@@ -201,79 +181,15 @@ export default function NodeDetailsModal({
       </Dialog>
 
       {/* Right Slide-Over Side Pane for Read-Only Form Preview */}
-      <Sheet open={isSidePaneOpen} onOpenChange={setIsSidePaneOpen}>
-        <SheetContent
-          side="right"
-          className="flex h-full w-full flex-col gap-0 bg-white p-6 shadow-2xl sm:max-w-3xl"
-        >
-          {/* Fixed Sheet Header */}
-          <SheetHeader className="shrink-0 border-b pb-3">
-            <div className="flex items-center gap-2">
-              {getIcon()}
-              <SheetTitle className="truncate text-base font-bold text-gray-900">
-                Read-Only Form Preview: {selectedFormName}
-              </SheetTitle>
-            </div>
-            <SheetDescription className="text-xs">
-              View-only form layout preview for step node{' '}
-              <strong>{node.name || node.id}</strong>.
-            </SheetDescription>
-          </SheetHeader>
-
-          {/* Scrollable Preview Body */}
-          <div className="scrollBarStyles min-h-0 flex-1 space-y-4 overflow-y-auto py-3 pr-1">
-            <div className="space-y-3 rounded-lg border bg-white p-4 shadow-sm">
-              <div className="flex items-center justify-between border-b pb-2">
-                <h4 className="text-xs font-bold text-gray-800">
-                  Form Fields View ({activeFields.length} Fields)
-                </h4>
-                <Badge variant="outline" className="font-mono text-[10px]">
-                  {formConfigId
-                    ? `Custom Form #${formConfigId}`
-                    : 'System Default Form'}
-                </Badge>
-              </div>
-
-              {/* View-Only Container Disables Input Events and renders all fields disabled */}
-              {activeFields.length > 0 ? (
-                <fieldset
-                  disabled
-                  className="pointer-events-none select-none space-y-4 opacity-90"
-                >
-                  <DynamicFormRenderer
-                    fields={activeFields}
-                    formData={{}}
-                    setFormData={() => {}}
-                    onChange={() => {}}
-                    disabled={true}
-                    allowAddField={false}
-                    showSaveControls={false}
-                    isConfigurable={false}
-                  />
-                </fieldset>
-              ) : (
-                <div className="py-8 text-center text-xs text-muted-foreground">
-                  <p className="font-medium">
-                    No form fields configured for this step.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Fixed Sheet Footer */}
-          <div className="mt-auto flex shrink-0 items-center justify-end border-t bg-white pt-3">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsSidePaneOpen(false)}
-              className="text-xs"
-            >
-              Close Side Pane
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
+      <NodeFormPreviewSheet
+        isOpen={isSidePaneOpen}
+        onClose={() => setIsSidePaneOpen(false)}
+        getIcon={getIcon}
+        selectedFormName={selectedFormName}
+        nodeName={node.name || node.id}
+        activeFields={activeFields}
+        formConfigId={formConfigId}
+      />
     </>
   );
 }

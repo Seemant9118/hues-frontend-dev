@@ -8,9 +8,9 @@ import {
 import DynamicFormRenderer from '@/components/shared/DynamicFormRenderer';
 import { Input } from '@/components/ui/input';
 
-import ErrorBox from '../../../../ui/ErrorBox';
-import InputWithSelect from '../../../../ui/InputWithSelect';
-import { Button } from '../../../../ui/button';
+import ErrorBox from '@/components/ui/ErrorBox';
+import InputWithSelect from '@/components/ui/InputWithSelect';
+import { Button } from '@/components/ui/button';
 
 export const AddItemSection = ({
   isOffer,

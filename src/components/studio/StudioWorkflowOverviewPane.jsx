@@ -1,20 +1,17 @@
 'use client';
 
+import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { ArrowRight, Link as LinkIcon, Sparkles } from 'lucide-react';
-import React from 'react';
-
+import { Link as LinkIcon, Sparkles } from 'lucide-react';
+import { transformCanvasToBackendGraph } from '@/utils/workflowGraphTransformer';
 import CanvasOverlayCards from './components/CanvasOverlayCards';
 import CanvasToolbarHeader from './components/CanvasToolbarHeader';
+import EdgeConditionModal from './components/EdgeConditionModal';
+import EventSelectionModal from './components/EventSelectionModal';
 import FlowchartCanvasGrid from './components/FlowchartCanvasGrid';
 import StepPaletteSidebar from './components/StepPaletteSidebar';
+import WorkflowJsonViewModal from './components/WorkflowJsonViewModal';
 import { useWorkflowCanvasGraph } from './hooks/useWorkflowCanvasGraph';
 import NodeDetailsModal from './NodeDetailsModal';
 
@@ -32,9 +29,14 @@ export default function StudioWorkflowOverviewPane({
   newWorkflowName,
   onCancelNewWorkflow,
 }) {
+  const [selectedEdgeForConditionModal, setSelectedEdgeForConditionModal] =
+    React.useState(null);
+  const [isJsonViewModalOpen, setIsJsonViewModalOpen] = React.useState(false);
+
   const {
     targetModule,
     selectedWorkflowDef,
+    detailData,
     nodes,
     edges,
     selectedNodeId,
@@ -60,6 +62,8 @@ export default function StudioWorkflowOverviewPane({
     workflowMutations,
     handleAddStep,
     handleUpdateNodeForm,
+    handleUpdateNodeDataConfig,
+    handleUpdateEdgeCondition,
     handleAutoConnectUnconnected,
     handleDeleteNode,
     handleConnectNodes,
@@ -82,6 +86,27 @@ export default function StudioWorkflowOverviewPane({
     newWorkflowName,
     onCancelNewWorkflow,
   });
+
+  const workflowJson = React.useMemo(() => {
+    if (detailData?.activeVersion) {
+      return detailData.activeVersion;
+    }
+    if (detailData?.draft) {
+      return detailData.draft;
+    }
+    if (detailData && (detailData.graph || detailData.id)) {
+      return detailData;
+    }
+
+    const currentGraph = transformCanvasToBackendGraph(nodes, edges);
+    return {
+      id: selectedWorkflowDef?.id || 'DRAFT',
+      workflowDefinitionId: selectedWorkflowDef?.id || 'DRAFT',
+      version: selectedWorkflowDef?.version || 1,
+      status: selectedWorkflowDef?.status || 'DRAFT',
+      graph: currentGraph,
+    };
+  }, [detailData, selectedWorkflowDef, targetModule, nodes, edges]);
 
   return (
     <div className="space-y-4">
@@ -159,6 +184,7 @@ export default function StudioWorkflowOverviewPane({
           nodesCount={nodes.length}
           edgesCount={edges.length}
           selectedDefinitionId={selectedDefinitionId}
+          onOpenJsonViewModal={() => setIsJsonViewModalOpen(true)}
           isArchiving={workflowMutations.isArchiving}
           onArchiveWorkflow={handleArchiveWorkflow}
           isValidating={workflowMutations.isValidating}
@@ -198,6 +224,9 @@ export default function StudioWorkflowOverviewPane({
             onInspectNode={setSelectedNodeForModal}
             onDeleteNode={handleDeleteNode}
             onDeleteEdge={handleDeleteEdge}
+            onEditEdgeCondition={(edge) =>
+              setSelectedEdgeForConditionModal(edge)
+            }
             onSetLinkingSourceId={setLinkingSourceId}
           />
         </div>
@@ -210,56 +239,32 @@ export default function StudioWorkflowOverviewPane({
         node={selectedNodeForModal}
         moduleName={moduleName}
         onUpdateNodeForm={handleUpdateNodeForm}
+        onUpdateNodeDataConfig={handleUpdateNodeDataConfig}
+      />
+
+      {/* Edge Transition Condition Configuration Modal */}
+      <EdgeConditionModal
+        isOpen={Boolean(selectedEdgeForConditionModal)}
+        onClose={() => setSelectedEdgeForConditionModal(null)}
+        edge={selectedEdgeForConditionModal}
+        moduleName={moduleName}
+        definitionId={selectedDefinitionId}
+        onSaveCondition={handleUpdateEdgeCondition}
       />
 
       {/* Event Selection Dialog for Multi-Event Steps (APPROVAL -> APPROVED/REJECTED) */}
-      <Dialog
-        open={Boolean(pendingEventTarget)}
-        onOpenChange={(open) => !open && setPendingEventTarget(null)}
-      >
-        <DialogContent className="max-w-xs">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base font-bold">
-              <LinkIcon className="h-4 w-4 text-indigo-600" />
-              Select Transition Event
-            </DialogTitle>
-          </DialogHeader>
+      <EventSelectionModal
+        pendingEventTarget={pendingEventTarget}
+        onClose={() => setPendingEventTarget(null)}
+        onConnectNodes={handleConnectNodes}
+      />
 
-          <div className="space-y-3 py-2 text-xs">
-            <p className="text-muted-foreground">
-              Select transition condition from{' '}
-              <strong className="font-mono text-gray-900">
-                {pendingEventTarget?.sourceId}
-              </strong>{' '}
-              to{' '}
-              <strong className="font-mono text-gray-900">
-                {pendingEventTarget?.targetId}
-              </strong>
-              :
-            </p>
-
-            <div className="flex flex-col gap-2">
-              {pendingEventTarget?.availableEvents?.map((eventOn) => (
-                <Button
-                  key={eventOn}
-                  variant="outline"
-                  className="justify-start font-mono text-xs hover:bg-indigo-50 hover:text-indigo-700"
-                  onClick={() =>
-                    handleConnectNodes(
-                      pendingEventTarget.sourceId,
-                      pendingEventTarget.targetId,
-                      eventOn,
-                    )
-                  }
-                >
-                  <ArrowRight className="mr-2 h-3.5 w-3.5 text-indigo-600" />
-                  On Event: <strong>{eventOn}</strong>
-                </Button>
-              ))}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Workflow JSON View Architecture Modal */}
+      <WorkflowJsonViewModal
+        isOpen={isJsonViewModalOpen}
+        onClose={() => setIsJsonViewModalOpen(false)}
+        workflowJson={workflowJson}
+      />
     </div>
   );
 }

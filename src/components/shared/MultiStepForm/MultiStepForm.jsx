@@ -31,6 +31,7 @@ export default function MultiStepForm({
   finalStepActions,
   headerExtra,
   onBack,
+  onBeforeNext,
   initialStep = 0,
 }) {
   const [currentStep, setCurrentStep] = useState(initialStep);
@@ -95,8 +96,12 @@ export default function MultiStepForm({
     return true;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!validateCurrentStep()) return;
+    if (onBeforeNext) {
+      const canProceed = await onBeforeNext(currentStep, steps[currentStep]);
+      if (canProceed === false) return;
+    }
     if (!isLastStep) setCurrentStep((prev) => prev + 1);
   };
 

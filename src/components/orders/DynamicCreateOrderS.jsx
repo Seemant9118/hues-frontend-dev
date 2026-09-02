@@ -8,7 +8,15 @@ import { SessionStorageService } from '@/lib/utils';
 import { getFormConfig } from '@/services/Form_Config_Services/FormConfigServices';
 import { CreateOrderService } from '@/services/Orders_Services/Orders_Services';
 
-import { useActiveWorkflowRuntime } from '@/hooks/workflows/useWorkflowRuntime';
+import {
+  useActiveWorkflowRuntime,
+  useNextStepPreview,
+} from '@/hooks/workflows/useWorkflowRuntime';
+import {
+  extractConditionFormData,
+  extractConditionRecordData,
+  getConditionPathsFromTransitions,
+} from '@/utils/workflowConditionHelper';
 
 import MultiStepForm from '../shared/MultiStepForm/MultiStepForm';
 import { Button } from '../ui/button';
@@ -185,6 +193,8 @@ const DynamicCreateOrderS = ({
   });
 
   const { data: activeWorkflowData } = useActiveWorkflowRuntime(coreModuleName);
+  const [evaluatedStepsMap, setEvaluatedStepsMap] = useState({});
+  const nextStepPreviewMutation = useNextStepPreview();
 
   const handleSubmit = () => {
     const { amount, gstAmount } = calculateTotals(formData.orderItems);
@@ -222,8 +232,121 @@ const DynamicCreateOrderS = ({
       DynamicGoodsOrderStepsConfig,
       activeWorkflowData,
       coreModuleName,
+      evaluatedStepsMap,
     );
-  }, [activeWorkflowData, coreModuleName]);
+  }, [activeWorkflowData, coreModuleName, evaluatedStepsMap]);
+
+  const handleBeforeNext = async (currentStepIndex, stepConfig) => {
+    const runtimeTransitions = activeWorkflowData?.runtime?.transitions || [];
+    const hasTransitionsWithCondition = runtimeTransitions.some((tr) =>
+      Boolean(tr.condition && tr.condition.path),
+    );
+
+    if (!hasTransitionsWithCondition) return true;
+
+    const isSystemStep =
+      stepConfig.key === 'goods-details' || stepConfig.stepType === 'SYSTEM';
+
+    let payload;
+    if (isSystemStep) {
+      const conditionPaths = getConditionPathsFromTransitions(
+        runtimeTransitions,
+        'SYSTEM_ORDER_START',
+      );
+      const recordData = extractConditionRecordData(formData, conditionPaths);
+
+      payload = {
+        module: coreModuleName,
+        stepKey: 'SYSTEM_ORDER_START',
+        event: 'COMPLETED',
+        record: recordData,
+      };
+    } else {
+      const rawKey =
+        stepConfig.rawKey || stepConfig.key.replace('workflow-', '');
+      const conditionPaths = getConditionPathsFromTransitions(
+        runtimeTransitions,
+        rawKey,
+      );
+      const formValues = extractConditionFormData(
+        formData,
+        rawKey,
+        conditionPaths,
+      );
+
+      payload = {
+        module: coreModuleName,
+        stepKey: rawKey,
+        event: 'SUBMITTED',
+        forms: {
+          [rawKey]: formValues,
+        },
+      };
+    }
+
+    try {
+      const res = await nextStepPreviewMutation.mutateAsync(payload);
+      const nextStepData = res?.data?.data || res?.data;
+      const nextKey =
+        nextStepData?.nextStepKey ||
+        nextStepData?.nextStep?.key ||
+        nextStepData?.key;
+
+      const runtimeSteps = activeWorkflowData?.runtime?.steps || [];
+      const currentRawKey = isSystemStep
+        ? 'SYSTEM_ORDER_START'
+        : stepConfig.rawKey || stepConfig.key?.replace('workflow-', '');
+
+      const currentRuntimeIndex = runtimeSteps.findIndex((st) => {
+        if (isSystemStep) {
+          return (
+            st.start || st.type === 'SYSTEM' || st.key === 'SYSTEM_ORDER_START'
+          );
+        }
+        return (
+          st.key === currentRawKey || `workflow-${st.key}` === stepConfig.key
+        );
+      });
+
+      const downstreamKeys = new Set();
+      if (currentRuntimeIndex !== -1) {
+        runtimeSteps.slice(currentRuntimeIndex + 1).forEach((st) => {
+          if (st.key) {
+            downstreamKeys.add(st.key);
+            downstreamKeys.add(`workflow-${st.key}`);
+          }
+        });
+      } else if (isSystemStep) {
+        runtimeSteps.forEach((st) => {
+          if (!st.start && st.type !== 'SYSTEM') {
+            if (st.key) {
+              downstreamKeys.add(st.key);
+              downstreamKeys.add(`workflow-${st.key}`);
+            }
+          }
+        });
+      }
+
+      setEvaluatedStepsMap((prev) => {
+        const nextMap = { ...prev };
+        downstreamKeys.forEach((key) => {
+          delete nextMap[key];
+        });
+
+        if (nextKey && nextKey !== 'END' && !nextKey.startsWith('END_')) {
+          nextMap[nextKey] = true;
+          nextMap[`workflow-${nextKey}`] = true;
+        }
+
+        return nextMap;
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to preview next step condition:', err);
+    }
+
+    return true;
+  };
 
   const handleBackNavigation = () => {
     onCancel();
@@ -240,6 +363,7 @@ const DynamicCreateOrderS = ({
         setErrors={setErrors}
         onSubmit={handleSubmit}
         onCancel={onCancel}
+        onBeforeNext={handleBeforeNext}
         isSubmitting={orderMutation.isPending}
         onBack={handleBackNavigation}
         breadcrumbs={config.breadcrumbs}

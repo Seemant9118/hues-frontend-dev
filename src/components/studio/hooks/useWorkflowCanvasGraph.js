@@ -361,6 +361,15 @@ export function useWorkflowCanvasGraph({
               ? { type: 'ROLE', roleCode: 'MANAGER' }
               : null,
           formConfigurationId: stepTypeObj.type === 'FORM' ? null : null,
+          config:
+            stepTypeObj.type === 'DATA_UPDATE'
+              ? {
+                  target: 'extraInfo.workflowRules.tdsAmount',
+                  operation: 'PERCENTAGE',
+                  source: 'amount',
+                  percentage: 10,
+                }
+              : null,
         },
       };
 
@@ -494,6 +503,63 @@ export function useWorkflowCanvasGraph({
     toast.success(
       `Associated form updated to "${customFormName || 'System Default'}"`,
     );
+  };
+
+  // Update Data Update Node Configuration (Target, Source, Operation, Percentage/FixedValue)
+  const handleUpdateNodeDataConfig = (nodeId, dataConfig) => {
+    setNodes((prev) =>
+      prev.map((n) => {
+        if (n.id !== nodeId) return n;
+        return {
+          ...n,
+          content: {
+            ...n.content,
+            config: dataConfig,
+          },
+        };
+      }),
+    );
+
+    setSelectedNodeForModal((prev) => {
+      if (!prev || prev.id !== nodeId) return prev;
+      return {
+        ...prev,
+        content: {
+          ...prev.content,
+          config: dataConfig,
+        },
+      };
+    });
+
+    setHasUnsavedChanges(true);
+    setIsDraftSaved(false);
+    setIsValidated(false);
+    toast.success('Data update step configuration saved.');
+  };
+
+  // Update Edge Transition Condition (IF condition or ELSE fallback)
+  const handleUpdateEdgeCondition = (edgeId, condition, isElse = false) => {
+    setEdges((prev) =>
+      prev.map((e) => {
+        if (e.id !== edgeId) return e;
+        return {
+          ...e,
+          condition: condition || null,
+          isElse: Boolean(isElse),
+        };
+      }),
+    );
+
+    setHasUnsavedChanges(true);
+    setIsDraftSaved(false);
+    setIsValidated(false);
+    if (condition) {
+      toast.success('IF condition updated successfully.');
+    } else if (isElse) {
+      toast.success('Transition configured as ELSE (Fallback) path.');
+    } else {
+      toast.info('Transition condition cleared.');
+    }
   };
 
   // Helper: Auto-connect disconnected nodes to the nearest available open step
@@ -790,11 +856,20 @@ export function useWorkflowCanvasGraph({
         const x2 = targetNode.position.x;
         const y2 = targetNode.position.y + 40;
 
-        const dx = Math.abs(x2 - x1) / 2;
-        const pathD = `M ${x1} ${y1} C ${x1 + Math.max(dx, 30)} ${y1}, ${x2 - Math.max(dx, 30)} ${y2}, ${x2} ${y2}`;
-
+        const slotDistance = Math.round((x2 - x1) / 300);
+        let pathD = '';
         const midX = (x1 + x2) / 2;
-        const midY = (y1 + y2) / 2 - 20;
+        let midY = (y1 + y2) / 2 - 20;
+
+        if (slotDistance > 1) {
+          const arcHeight = Math.min(100, 30 + (slotDistance - 1) * 35);
+          const controlY = y1 - arcHeight;
+          pathD = `M ${x1} ${y1} Q ${midX} ${controlY}, ${x2} ${y2}`;
+          midY = controlY + 15;
+        } else {
+          const dx = Math.abs(x2 - x1) / 2;
+          pathD = `M ${x1} ${y1} C ${x1 + Math.max(dx, 30)} ${y1}, ${x2 - Math.max(dx, 30)} ${y2}, ${x2} ${y2}`;
+        }
 
         return {
           ...edge,
@@ -822,6 +897,7 @@ export function useWorkflowCanvasGraph({
   return {
     targetModule,
     definitions,
+    detailData,
     isDefinitionsLoading,
     selectedDefinitionId,
     setSelectedDefinitionId,
@@ -856,6 +932,8 @@ export function useWorkflowCanvasGraph({
     workflowMutations,
     handleAddStep,
     handleUpdateNodeForm,
+    handleUpdateNodeDataConfig,
+    handleUpdateEdgeCondition,
     handleAutoConnectUnconnected,
     handleDeleteNode,
     handleConnectNodes,

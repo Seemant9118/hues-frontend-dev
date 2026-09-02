@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
-import { Asterisk, Check, Code, Copy, Table } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, Code, Copy, Table } from 'lucide-react';
 import { toast } from 'sonner';
-
 import { convertSnakeToTitleCase } from '@/appUtils/helperFunctions';
 import { DataTable } from '@/components/table/data-table';
-import Loading from '@/components/ui/Loading';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -15,9 +14,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import Loading from '@/components/ui/Loading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DataTableColumnHeader } from '../table/DataTableColumnHeader';
-import { Button } from '../ui/button';
+import { useVersionDetailsColumns } from './hooks/useVersionDetailsColumns';
 
 export default function VersionDetails({
   selectedVersion,
@@ -30,6 +29,8 @@ export default function VersionDetails({
   const isOpen = open !== undefined ? open : !!selectedVersion;
   const [viewMode, setViewMode] = useState('table');
   const [copiedJson, setCopiedJson] = useState(false);
+
+  const columns = useVersionDetailsColumns();
 
   const handleClose = () => {
     if (onClose) {
@@ -50,92 +51,6 @@ export default function VersionDetails({
       setTimeout(() => setCopiedJson(false), 2500);
     }
   };
-
-  // Columns definition
-  const columns = useMemo(
-    () => [
-      {
-        accessorKey: 'label',
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Field Label" />
-        ),
-        cell: ({ row }) => (
-          <span className="font-semibold text-neutral-800">
-            {row.original.label}
-          </span>
-        ),
-      },
-      {
-        accessorKey: 'key',
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Key" />
-        ),
-        cell: ({ row }) => (
-          <span className="font-mono text-[11px] text-neutral-500">
-            {row.original.key}
-          </span>
-        ),
-      },
-      {
-        accessorKey: 'type',
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Type" />
-        ),
-        cell: ({ row }) => (
-          <span className="text-[11px] font-semibold text-primary">
-            {row.original.type}
-          </span>
-        ),
-      },
-      {
-        accessorKey: 'kind',
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Kind" />
-        ),
-        cell: ({ row }) => {
-          const kind = row.original.kind || 'SYSTEM';
-          return (
-            <span
-              className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
-                kind === 'CUSTOM'
-                  ? 'bg-purple-100 text-purple-700'
-                  : 'bg-neutral-100 text-neutral-600'
-              }`}
-            >
-              {kind}
-            </span>
-          );
-        },
-      },
-      {
-        accessorKey: 'required',
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Required" />
-        ),
-        cell: ({ row }) =>
-          row.original.required ? (
-            <span className="flex items-center gap-0.5 font-bold text-red-500">
-              <Asterisk className="h-3 w-3" /> Yes
-            </span>
-          ) : (
-            <span className="text-neutral-400">No</span>
-          ),
-      },
-      {
-        accessorKey: 'visible',
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Visible" />
-        ),
-        cell: ({ row }) =>
-          row.original.visible !== false ? (
-            <span className="font-semibold text-primary">Visible</span>
-          ) : (
-            <span className="text-neutral-400">Hidden</span>
-          ),
-      },
-    ],
-    [],
-  );
 
   return (
     <Dialog
@@ -212,7 +127,7 @@ export default function VersionDetails({
                 </div>
               </div>
 
-              {/* View Mode Switcher Tabs (Table View & JSON View) */}
+              {/* View Mode Switcher Tabs */}
               <Tabs
                 value={viewMode}
                 onValueChange={setViewMode}

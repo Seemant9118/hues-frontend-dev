@@ -58,3 +58,9 @@ export const archiveWorkflowDefinition = ({ id }) => {
 export const unarchiveWorkflowDefinition = ({ id }) => {
   return APIinstance.post(workflowBuilderAPI.unarchiveDefinition.endpoint(id));
 };
+
+export const getWorkflowRuleFields = (moduleName, definitionId) => {
+  return APIinstance.get(
+    workflowBuilderAPI.getRuleFields.endpoint(moduleName, definitionId),
+  );
+};

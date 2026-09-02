@@ -1,7 +1,15 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Archive, GitBranch, Save, Send, ShieldCheck, X } from 'lucide-react';
+import {
+  Archive,
+  FileJson,
+  GitBranch,
+  Save,
+  Send,
+  ShieldCheck,
+  X,
+} from 'lucide-react';
 import React from 'react';
 import { getWorkflowStatusBadge } from '../utils/workflowBadges';
 
@@ -16,6 +24,7 @@ export default function CanvasToolbarHeader({
   nodesCount,
   edgesCount,
   selectedDefinitionId,
+  onOpenJsonViewModal,
   isArchiving,
   onArchiveWorkflow,
   isValidating,
@@ -73,6 +82,18 @@ export default function CanvasToolbarHeader({
             Cancel Building
           </Button>
         )}
+
+        {/* Workflow JSON-View CTA Button */}
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onOpenJsonViewModal}
+          className="border-slate-300 bg-slate-50 text-xs font-semibold text-slate-800 hover:bg-slate-100"
+          title="View workflow in JSON view architecture"
+        >
+          <FileJson className="mr-1.5 h-3.5 w-3.5 text-indigo-600" />
+          Workflow JSON-View
+        </Button>
 
         {/* Archive Workflow Button */}
         {selectedDefinitionId && !isCreatingNewFlow && (

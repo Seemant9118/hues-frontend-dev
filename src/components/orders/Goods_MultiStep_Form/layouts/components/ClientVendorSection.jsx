@@ -8,7 +8,7 @@ import {
 import DynamicFormRenderer from '@/components/shared/DynamicFormRenderer';
 import { createClient } from '@/services/Enterprises_Users_Service/Client_Enterprise_Services/Client_Enterprise_Service';
 import { createVendor } from '@/services/Enterprises_Users_Service/Vendor_Enterprise_Services/Vendor_Eneterprise_Service';
-import AddModal from '../../../../Modals/AddModal';
+import AddModal from '@/components/Modals/AddModal';
 
 export const ClientVendorSection = ({
   isOffer,

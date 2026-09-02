@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { workflowBuilderAPI } from '@/api/workflow-builder-apis/workflowBuilderAPI';
 import {
   activateWorkflowVersion,
@@ -12,9 +13,49 @@ import {
   publishWorkflowDefinition,
   saveWorkflowDraft,
   validateWorkflowDraft,
+  getWorkflowRuleFields,
 } from '@/services/Workflow_Builder_Services/WorkflowBuilderServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+
+/**
+ * Utility function to map studio module names to workflow backend module enum:
+ * - SALES_ORDER / PURCHASE_ORDER -> ORDER
+ * - SALES_B2BINVOICE / PURCHASE_B2BINVOICE / B2CINVOICE -> INVOICE
+ * - PAYMENT -> PAYMENT
+ */
+export function mapStudioModuleToWorkflowModule(moduleName = '') {
+  const upper = String(moduleName || '').toUpperCase();
+  if (
+    upper === 'SALES_ORDER' ||
+    upper === 'PURCHASE_ORDER' ||
+    upper.includes('ORDER')
+  ) {
+    return 'ORDER';
+  }
+  if (
+    upper === 'SALES_B2BINVOICE' ||
+    upper === 'PURCHASE_B2BINVOICE' ||
+    upper === 'B2CINVOICE' ||
+    upper.includes('INVOICE')
+  ) {
+    return 'INVOICE';
+  }
+  if (upper === 'PAYMENT' || upper.includes('PAYMENT')) {
+    return 'PAYMENT';
+  }
+  return upper || 'ORDER';
+}
+
+/**
+ * Reusable Custom Hook: Get mapped workflow module name for APIs
+ */
+export function useWorkflowModuleMap(moduleName) {
+  return useMemo(
+    () => mapStudioModuleToWorkflowModule(moduleName),
+    [moduleName],
+  );
+}
 
 /**
  * Custom Hook: Fetch Supported Modules
@@ -71,6 +112,31 @@ export function useWorkflowVersionsList(definitionId) {
     queryFn: () => getWorkflowVersions(definitionId),
     enabled: Boolean(definitionId),
     select: (res) => res.data?.data || [],
+  });
+}
+
+/**
+ * Custom Hook: Fetch Rule Fields for conditions by module and definitionId
+ */
+export function useWorkflowRuleFields(selectedModule, definitionId) {
+  const mappedModule = mapStudioModuleToWorkflowModule(selectedModule);
+  return useQuery({
+    queryKey: [
+      workflowBuilderAPI.getRuleFields.endpointKey,
+      mappedModule,
+      definitionId,
+    ],
+    queryFn: () => getWorkflowRuleFields(mappedModule, definitionId),
+    enabled: Boolean(mappedModule),
+    select: (res) => {
+      const rawData = res?.data?.data ?? res?.data;
+      if (Array.isArray(rawData)) return rawData;
+      if (rawData && Array.isArray(rawData.fields)) return rawData.fields;
+      if (rawData && Array.isArray(rawData.ruleFields)) {
+        return rawData.ruleFields;
+      }
+      return [];
+    },
   });
 }
 
