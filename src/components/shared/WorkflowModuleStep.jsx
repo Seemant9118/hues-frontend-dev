@@ -1,15 +1,8 @@
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import WorkflowFormFieldsRenderer from '@/components/shared/components/WorkflowFormFieldsRenderer';
 import { useActiveWorkflowRuntime } from '@/hooks/workflows/useWorkflowRuntime';
 import {
   AlertCircle,
@@ -168,144 +161,13 @@ export default function WorkflowModuleStep({
 
           {/* FORM Step UI - Dynamic Field Renderer */}
           {targetStep.type === 'FORM' && (
-            <div className="space-y-4">
-              {/* Dynamic Fields List */}
-              {formFields.length > 0 ? (
-                <div className="grid grid-cols-1 gap-4 pt-2 md:grid-cols-2">
-                  {formFields
-                    .filter(
-                      (f) => f.visible !== false && f.state !== 'ARCHIVED',
-                    )
-                    .map((field) => {
-                      const value =
-                        currentStepValues[field.key] ??
-                        formData?.[field.key] ??
-                        formData?.customFields?.[field.key] ??
-                        '';
-
-                      return (
-                        <div
-                          key={field.id || field.key}
-                          className={
-                            field.type === 'TEXTAREA' ? 'md:col-span-2' : ''
-                          }
-                        >
-                          <Label className="text-xs font-medium">
-                            <span>{field.label || field.key}</span>
-                            {field.required && (
-                              <span className="text-red-500">*</span>
-                            )}
-                          </Label>
-
-                          {field.type === 'SELECT' ? (
-                            <Select
-                              value={value ? String(value) : ''}
-                              onValueChange={(val) =>
-                                handleStepValueChange(
-                                  targetStep.key,
-                                  field.key,
-                                  val,
-                                )
-                              }
-                            >
-                              <SelectTrigger className="mt-1 bg-white text-sm">
-                                <SelectValue
-                                  placeholder={
-                                    field.placeholder || `Select ${field.label}`
-                                  }
-                                />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {field.options?.map((opt) => (
-                                  <SelectItem
-                                    key={opt.value || opt.label}
-                                    value={String(opt.value)}
-                                  >
-                                    {opt.label || opt.value}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          ) : field.type === 'TEXTAREA' ? (
-                            <Textarea
-                              rows={3}
-                              className="mt-1 bg-white text-sm"
-                              placeholder={
-                                field.placeholder || `Enter ${field.label}`
-                              }
-                              value={value}
-                              onChange={(e) =>
-                                handleStepValueChange(
-                                  targetStep.key,
-                                  field.key,
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          ) : field.type === 'NUMBER' ? (
-                            <Input
-                              type="number"
-                              className="mt-1 bg-white text-sm"
-                              placeholder={
-                                field.placeholder || `Enter ${field.label}`
-                              }
-                              value={value}
-                              onChange={(e) =>
-                                handleStepValueChange(
-                                  targetStep.key,
-                                  field.key,
-                                  e.target.value === ''
-                                    ? ''
-                                    : Number(e.target.value),
-                                )
-                              }
-                            />
-                          ) : (
-                            <Input
-                              type="text"
-                              className="mt-1 bg-white text-sm"
-                              placeholder={
-                                field.placeholder || `Enter ${field.label}`
-                              }
-                              value={value}
-                              onChange={(e) =>
-                                handleStepValueChange(
-                                  targetStep.key,
-                                  field.key,
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          )}
-
-                          {field.helpText && (
-                            <p className="mt-1 text-sm text-muted-foreground">
-                              {field.helpText}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    })}
-                </div>
-              ) : (
-                <div>
-                  <Label>Form Submission Values / Notes</Label>
-                  <Textarea
-                    rows={3}
-                    className="mt-1"
-                    placeholder={`Enter form input values for ${targetStep.label || targetStep.key}...`}
-                    value={currentStepValues.formNotes || ''}
-                    onChange={(e) =>
-                      handleStepValueChange(
-                        targetStep.key,
-                        'formNotes',
-                        e.target.value,
-                      )
-                    }
-                  />
-                </div>
-              )}
-            </div>
+            <WorkflowFormFieldsRenderer
+              formFields={formFields}
+              currentStepValues={currentStepValues}
+              formData={formData}
+              targetStepKey={targetStep.key}
+              onStepValueChange={handleStepValueChange}
+            />
           )}
 
           {/* DOCUMENT_UPLOAD Step UI */}

@@ -237,6 +237,8 @@ export default function StudioWorkflowOverviewPane({
         isOpen={Boolean(selectedNodeForModal)}
         onClose={() => setSelectedNodeForModal(null)}
         node={selectedNodeForModal}
+        nodes={nodes}
+        edges={edges}
         moduleName={moduleName}
         onUpdateNodeForm={handleUpdateNodeForm}
         onUpdateNodeDataConfig={handleUpdateNodeDataConfig}

@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import NodeFormPreviewSheet from './components/NodeFormPreviewSheet';
 import NodeFormSchemaSummaryCard from './components/NodeFormSchemaSummaryCard';
+import NodePrefillMappingCard from './components/NodePrefillMappingCard';
 import NodeStepSummaryCard from './components/NodeStepSummaryCard';
 import { useNodeDetailsQueries } from './hooks/useNodeDetailsQueries';
 
@@ -31,6 +32,8 @@ export default function NodeDetailsModal({
   isOpen,
   onClose,
   node,
+  nodes = [],
+  edges = [],
   moduleName = 'ORDER',
   onUpdateNodeForm,
   onUpdateNodeDataConfig,
@@ -145,6 +148,16 @@ export default function NodeDetailsModal({
               selectedFormName={selectedFormName}
               nodeId={node.id}
               onUpdateNodeForm={onUpdateNodeForm}
+              onUpdateNodeDataConfig={onUpdateNodeDataConfig}
+            />
+
+            {/* Prefill Key Mapping Configuration Card */}
+            <NodePrefillMappingCard
+              node={node}
+              nodes={nodes}
+              edges={edges}
+              moduleName={moduleName}
+              activeFields={activeFields}
               onUpdateNodeDataConfig={onUpdateNodeDataConfig}
             />
 

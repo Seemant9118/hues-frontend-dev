@@ -1,9 +1,10 @@
 /**
- * Helper to extract condition paths from workflow graph transitions
+ * Helper to extract condition paths from workflow graph transitions & prefillMappings
  */
 export function getConditionPathsFromTransitions(
   transitions = [],
   stepKey = null,
+  runtimeSteps = [],
 ) {
   const paths = new Set();
   (transitions || []).forEach((tr) => {
@@ -13,11 +14,22 @@ export function getConditionPathsFromTransitions(
       }
     }
   });
+
+  (runtimeSteps || []).forEach((st) => {
+    const mappings = st.config?.prefillMappings || st.prefillMappings || [];
+    mappings.forEach((m) => {
+      if (m.sourcePath) {
+        const key = m.sourcePath.split('.').pop();
+        if (key) paths.add(key);
+      }
+    });
+  });
+
   return Array.from(paths);
 }
 
 /**
- * Extract only condition-referenced fields from form state for record payload (System Form)
+ * Extract record data for system start form payload
  */
 export function extractConditionRecordData(formData = {}, conditionPaths = []) {
   const record = {};
@@ -27,8 +39,24 @@ export function extractConditionRecordData(formData = {}, conditionPaths = []) {
     0,
   );
 
-  (conditionPaths || []).forEach((path) => {
-    const key = path.includes('.') ? path.split('.').pop() : path;
+  const standardSystemKeys = [
+    'amount',
+    'gstAmount',
+    'buyerId',
+    'sellerEnterpriseId',
+    'orderType',
+    'invoiceType',
+    'clientType',
+    'paymentTerms',
+    'offerValidity',
+    'billingAddressId',
+    'shippingAddressId',
+    'orderItems',
+    'notesToCustomer',
+    'buyerType',
+  ];
+
+  standardSystemKeys.forEach((key) => {
     let val;
     if (key === 'amount') {
       val =
@@ -37,30 +65,64 @@ export function extractConditionRecordData(formData = {}, conditionPaths = []) {
           ? Number(calculatedAmount.toFixed(2))
           : undefined);
     } else {
-      val =
-        formData?.[key] ??
-        formData?.[path] ??
-        formData?.customFields?.[key] ??
-        formData?.extraInfo?.[key];
+      val = formData?.[key];
     }
+    if (val !== undefined && val !== null && val !== '') {
+      record[key] = val;
+    }
+  });
+
+  (conditionPaths || []).forEach((path) => {
+    const key = path.includes('.') ? path.split('.').pop() : path;
+    if (key === 'selectedValue') return;
+    if (record[key] !== undefined) return;
+
+    const val =
+      formData?.[key] ??
+      formData?.[path] ??
+      formData?.customFields?.[key] ??
+      formData?.extraInfo?.[key];
 
     if (val !== undefined && val !== null && val !== '') {
       record[key] = val;
     }
   });
 
-  // Fallback: if no specific condition path matched, include amount if available
-  if (Object.keys(record).length === 0 && calculatedAmount > 0) {
+  // Always include all system form fields present in formData (except selectedValue and internal flags)
+  Object.keys(formData || {}).forEach((k) => {
+    if (
+      !k.startsWith('_') &&
+      ![
+        'workflowStepValues',
+        'isEditing',
+        'isCreatingSales',
+        'isCreatingPurchase',
+        'isPurchasePage',
+        'selectedValue',
+      ].includes(k)
+    ) {
+      if (
+        record[k] === undefined &&
+        formData[k] !== undefined &&
+        formData[k] !== null &&
+        formData[k] !== ''
+      ) {
+        record[k] = formData[k];
+      }
+    }
+  });
+
+  if (record.amount === undefined && calculatedAmount > 0) {
     record.amount = Number(calculatedAmount.toFixed(2));
-  } else if (Object.keys(record).length === 0 && formData?.amount) {
-    record.amount = Number(formData.amount);
   }
+
+  delete record.selectedValue;
 
   return record;
 }
 
 /**
- * Extract only condition-referenced fields from form state for forms payload (Custom Form)
+ * Extract condition-referenced fields from form state for custom forms payload
  */
 export function extractConditionFormData(
   formData = {},

@@ -506,7 +506,11 @@ export function useWorkflowCanvasGraph({
   };
 
   // Update Data Update Node Configuration (Target, Source, Operation, Percentage/FixedValue)
-  const handleUpdateNodeDataConfig = (nodeId, dataConfig) => {
+  const handleUpdateNodeDataConfig = (
+    nodeId,
+    dataConfig,
+    showToast = false,
+  ) => {
     setNodes((prev) =>
       prev.map((n) => {
         if (n.id !== nodeId) return n;
@@ -534,7 +538,9 @@ export function useWorkflowCanvasGraph({
     setHasUnsavedChanges(true);
     setIsDraftSaved(false);
     setIsValidated(false);
-    toast.success('Data update step configuration saved.');
+    if (showToast) {
+      toast.success('Configuration saved.');
+    }
   };
 
   // Update Edge Transition Condition (IF condition or ELSE fallback)

@@ -217,61 +217,137 @@ export function useCreateOrderServices({
 
   const handleBeforeNext = async (currentStepIndex, stepConfig) => {
     const runtimeTransitions = activeWorkflowData?.runtime?.transitions || [];
+    const runtimeSteps = activeWorkflowData?.runtime?.steps || [];
+
     const hasTransitionsWithCondition = runtimeTransitions.some((tr) =>
       Boolean(tr.condition && tr.condition.path),
     );
+    const hasPrefillMappings = runtimeSteps.some((st) =>
+      Boolean(st.config?.prefillMappings?.length || st.prefillMappings?.length),
+    );
 
-    if (!hasTransitionsWithCondition) return true;
+    if (!hasTransitionsWithCondition && !hasPrefillMappings) return true;
 
     const isSystemStep =
       stepConfig.key === 'buyer-context' ||
       stepConfig.key === 'services-line-items' ||
       stepConfig.stepType === 'SYSTEM';
 
+    const currentStepKey = isSystemStep
+      ? 'SYSTEM_ORDER_START'
+      : stepConfig.rawKey || stepConfig.key.replace('workflow-', '');
+
+    const conditionPaths = getConditionPathsFromTransitions(
+      runtimeTransitions,
+      currentStepKey,
+      runtimeSteps,
+    );
+
+    const systemRecordData = extractConditionRecordData(
+      formData,
+      conditionPaths,
+    );
+
     let payload;
     if (isSystemStep) {
-      const conditionPaths = getConditionPathsFromTransitions(
-        runtimeTransitions,
-        'SYSTEM_ORDER_START',
-      );
-      const recordData = extractConditionRecordData(formData, conditionPaths);
-
       payload = {
         module: moduleName,
         stepKey: 'SYSTEM_ORDER_START',
         event: 'COMPLETED',
-        record: recordData,
+        forms: {
+          SYSTEM_ORDER_START: systemRecordData,
+          ...(formData?.workflowStepValues || {}),
+        },
       };
     } else {
       const rawKey =
         stepConfig.rawKey || stepConfig.key.replace('workflow-', '');
-      const conditionPaths = getConditionPathsFromTransitions(
-        runtimeTransitions,
-        rawKey,
-      );
+
       const formValues = extractConditionFormData(
         formData,
         rawKey,
         conditionPaths,
       );
 
+      const allForms = {
+        SYSTEM_ORDER_START: systemRecordData,
+        ...(formData?.workflowStepValues || {}),
+        [rawKey]: formValues,
+      };
+
       payload = {
         module: moduleName,
         stepKey: rawKey,
         event: 'SUBMITTED',
-        forms: {
-          [rawKey]: formValues,
-        },
+        forms: allForms,
       };
     }
 
     try {
       const res = await nextStepPreviewMutation.mutateAsync(payload);
-      const nextStepData = res?.data?.data || res?.data;
+      const nextStepData = res?.data?.data || res?.data || {};
       const nextKey =
         nextStepData?.nextStepKey ||
         nextStepData?.nextStep?.key ||
         nextStepData?.key;
+
+      // Extract prefill values from response
+      const prefillValues =
+        nextStepData?.prefillValues ||
+        nextStepData?.prefill ||
+        nextStepData?.values ||
+        {};
+
+      const metadataKeys = new Set([
+        'nextStepKey',
+        'nextStep',
+        'key',
+        'stepKey',
+        'status',
+        'valid',
+        'validationErrors',
+        'message',
+        'event',
+        'prefillValues',
+        'prefill',
+        'values',
+        'transitions',
+        'steps',
+      ]);
+
+      const extractedPrefills = { ...prefillValues };
+      Object.keys(nextStepData).forEach((k) => {
+        if (!metadataKeys.has(k) && !k.startsWith('_')) {
+          extractedPrefills[k] = nextStepData[k];
+        }
+      });
+
+      if (Object.keys(extractedPrefills).length > 0) {
+        setFormData((prev) => {
+          const updatedCustomFields = { ...(prev?.customFields || {}) };
+          const updatedStepValues = { ...(prev?.workflowStepValues || {}) };
+
+          const targetStepKey = nextKey || 'SYSTEM_ORDER_START';
+          const targetStepMap = { ...(updatedStepValues[targetStepKey] || {}) };
+
+          Object.entries(extractedPrefills).forEach(([fieldKey, val]) => {
+            if (val !== undefined && val !== null && val !== '') {
+              updatedCustomFields[fieldKey] = val;
+              targetStepMap[fieldKey] = val;
+            }
+          });
+
+          return {
+            ...prev,
+            ...extractedPrefills,
+            customFields: updatedCustomFields,
+            workflowStepValues: {
+              ...updatedStepValues,
+              [targetStepKey]: targetStepMap,
+            },
+          };
+        });
+      }
 
       const runtimeSteps = activeWorkflowData?.runtime?.steps || [];
       const currentRawKey = isSystemStep

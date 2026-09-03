@@ -166,7 +166,7 @@ export function transformCanvasToBackendGraph({
       }
     }
 
-    if (step.type === 'DATA_UPDATE' && content.config) {
+    if (content.config) {
       step.config = content.config;
     }
 
