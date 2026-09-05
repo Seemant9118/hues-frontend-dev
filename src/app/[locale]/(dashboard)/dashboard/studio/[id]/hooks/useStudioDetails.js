@@ -1,16 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { convertSnakeToTitleCase } from '@/appUtils/helperFunctions';
 import { mapStudioModuleToWorkflowModule } from '@/components/studio/StudioWorkflowOverviewPane';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { usePermission } from '@/hooks/usePermissions';
 import { useWorkflowDefinitions } from '@/hooks/workflows/useWorkflowBuilder';
-import { getCustomForm } from '@/services/Custom_Form_Services/CustomFormServices';
 import { getFormConfig } from '@/services/Form_Config_Services/FormConfigServices';
+import { useQuery } from '@tanstack/react-query';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 
 export function useStudioDetails() {
   const params = useParams();
@@ -19,54 +17,72 @@ export function useStudioDetails() {
 
   const moduleId = params?.id;
   const formType = searchParams.get('type');
-  const isCustomForm = formType === 'CUSTOM';
+  const definitionIdFromQuery = searchParams.get('definitionId');
+  const isCreateRequested = searchParams.get('create') === 'true';
+  const requestedNameFromQuery = searchParams.get('name');
+  const tabFromQuery = searchParams.get('tab');
+
+  const isCustomWorkflow =
+    formType === 'CUSTOM' ||
+    formType === 'CUSTOM_WORKFLOW' ||
+    moduleId === 'CUSTOM' ||
+    moduleId === 'CUSTOM_WORKFLOW' ||
+    Boolean(definitionIdFromQuery) ||
+    !Number.isNaN(Number(moduleId));
+
+  const returnTab = tabFromQuery || (isCustomWorkflow ? 'custom' : 'system');
 
   const isFeatureEnabled = useFeatureFlag('BUILDER_STUDIO');
   const { hasPermission } = usePermission();
   const hasConfigPermission = hasPermission('permission:form-config-manage');
-
-  const [activeTab, setActiveTab] = useState('overview');
 
   // Workflow Overview Header Control States
   const [selectedDefinitionId, setSelectedDefinitionId] = useState(null);
   const [hasUserManuallySelected, setHasUserManuallySelected] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isCreatingNewFlow, setIsCreatingNewFlow] = useState(false);
-
-  // Build New Workflow Modal State
-  const [isNewWorkflowModalOpen, setIsNewWorkflowModalOpen] = useState(false);
   const [newWorkflowName, setNewWorkflowName] = useState('');
 
   // Load form configuration for specific module
   const { data: config, isLoading } = useQuery({
-    queryKey: ['get_form_config', moduleId, isCustomForm],
+    queryKey: ['get_form_config', moduleId, isCustomWorkflow],
     queryFn: async () => {
-      if (isCustomForm) {
-        const customData = await getCustomForm(moduleId);
-        if (customData) {
-          return {
-            ...customData,
-            id: customData.id || moduleId,
-            module: customData.name,
-            isCustom: true,
-          };
-        }
+      if (isCustomWorkflow) {
         return {
-          id: moduleId,
-          module: moduleId,
+          id: 'CUSTOM_WORKFLOW',
+          module: 'CUSTOM_WORKFLOW',
+          name: 'Custom Workflow',
           isCustom: true,
         };
       }
       return getFormConfig(moduleId);
     },
-    enabled: isFeatureEnabled && hasConfigPermission && !moduleId,
+    enabled: isFeatureEnabled && hasConfigPermission && Boolean(moduleId),
   });
 
-  const targetModule = mapStudioModuleToWorkflowModule(
-    config?.module || moduleId,
-  );
+  const targetModule = isCustomWorkflow
+    ? 'CUSTOM_WORKFLOW'
+    : mapStudioModuleToWorkflowModule(config?.module || moduleId);
+
   const { data: definitions = [], isLoading: isDefinitionsLoading } =
     useWorkflowDefinitions(targetModule);
+
+  const selectedDef = useMemo(
+    () => definitions.find((d) => d.id === selectedDefinitionId),
+    [definitions, selectedDefinitionId],
+  );
+
+  const titleName = isCustomWorkflow
+    ? requestedNameFromQuery ||
+      newWorkflowName ||
+      selectedDef?.name ||
+      (config?.name && config.name !== 'Custom Workflow'
+        ? config.name
+        : null) ||
+      'Custom Workflow'
+    : convertSnakeToTitleCase(
+        config?.module || moduleId || 'Studio (Workflow)',
+      );
 
   // Combine definitions with local temporary draft entry when creating new workflow
   const combinedDefinitions = useMemo(() => {
@@ -86,12 +102,44 @@ export function useStudioDetails() {
   const hasNoDefinitions =
     !isDefinitionsLoading && definitions.length === 0 && !isCreatingNewFlow;
 
-  // Auto-select ACTIVE workflow definition by default on initial load
+  // Auto-initialize local draft canvas if create=true parameter is present
+  useEffect(() => {
+    if (
+      isCreateRequested &&
+      requestedNameFromQuery &&
+      !isCreatingNewFlow &&
+      !hasUserManuallySelected
+    ) {
+      setNewWorkflowName(requestedNameFromQuery);
+      setIsCreatingNewFlow(true);
+      setIsEditMode(true);
+      setSelectedDefinitionId('LOCAL_TEMP_DRAFT');
+    }
+  }, [
+    isCreateRequested,
+    requestedNameFromQuery,
+    isCreatingNewFlow,
+    hasUserManuallySelected,
+  ]);
+
+  // Auto-select ACTIVE workflow definition by default on initial load or requested definitionId
   useEffect(() => {
     if (isCreatingNewFlow) {
       setSelectedDefinitionId('LOCAL_TEMP_DRAFT');
       return;
     }
+
+    const requestedDefId = definitionIdFromQuery
+      ? Number(definitionIdFromQuery)
+      : !Number.isNaN(Number(moduleId))
+        ? Number(moduleId)
+        : null;
+
+    if (requestedDefId && !hasUserManuallySelected) {
+      setSelectedDefinitionId(requestedDefId);
+      return;
+    }
+
     if (definitions.length > 0 && !hasUserManuallySelected) {
       const activeDef =
         definitions.find(
@@ -104,53 +152,40 @@ export function useStudioDetails() {
       if (activeDef) {
         setSelectedDefinitionId(activeDef.id);
       }
+    } else if (
+      !isDefinitionsLoading &&
+      definitions.length === 0 &&
+      !hasUserManuallySelected
+    ) {
+      setIsCreatingNewFlow(true);
+      setIsEditMode(true);
+      setSelectedDefinitionId('LOCAL_TEMP_DRAFT');
     }
-  }, [definitions, isCreatingNewFlow, hasUserManuallySelected]);
+  }, [
+    definitions,
+    isDefinitionsLoading,
+    isCreatingNewFlow,
+    hasUserManuallySelected,
+    definitionIdFromQuery,
+    moduleId,
+  ]);
 
-  // Open Build New Workflow Modal
-  const handleOpenNewWorkflowModal = () => {
-    setNewWorkflowName('');
-    setIsNewWorkflowModalOpen(true);
+  // Confirm Leave Modal State
+  const [isConfirmLeaveModalOpen, setIsConfirmLeaveModalOpen] = useState(false);
+
+  // Back Button Navigation & Unsaved Confirmation Handlers
+  const handleBackClick = () => {
+    if (isCreatingNewFlow || selectedDefinitionId === 'LOCAL_TEMP_DRAFT') {
+      setIsConfirmLeaveModalOpen(true);
+    } else {
+      router.push(`/dashboard/studio?tab=${returnTab}`);
+    }
   };
 
-  // Submit Build New Workflow Modal
-  const handleCreateWorkflowSubmit = (e) => {
-    e?.preventDefault();
-    if (!newWorkflowName.trim()) {
-      toast.error('Please enter a name for the new workflow.');
-      return;
-    }
-    setIsCreatingNewFlow(true);
-    setSelectedDefinitionId('LOCAL_TEMP_DRAFT');
-    setIsEditMode(true);
-    setIsNewWorkflowModalOpen(false);
-    toast.success(
-      `Started building new workflow "${newWorkflowName}" for ${targetModule}.`,
-    );
+  const handleConfirmLeave = () => {
+    setIsConfirmLeaveModalOpen(false);
+    router.push(`/dashboard/studio?tab=${returnTab}`);
   };
-
-  // Cancel Building New Workflow Handler
-  const handleCancelNewWorkflow = () => {
-    setIsCreatingNewFlow(false);
-    setNewWorkflowName('');
-    setHasUserManuallySelected(false);
-    const activeDef =
-      definitions.find(
-        (d) =>
-          d.active === true ||
-          String(d.status || '').toUpperCase() === 'ACTIVE' ||
-          String(d.status || '').toUpperCase() === 'PUBLISHED',
-      ) || definitions[0];
-
-    if (activeDef) {
-      setSelectedDefinitionId(activeDef.id);
-    }
-    toast.info('Cancelled building new workflow.');
-  };
-
-  const titleName = convertSnakeToTitleCase(
-    config?.module || 'Studio (Workflow)',
-  );
 
   return {
     router,
@@ -159,8 +194,7 @@ export function useStudioDetails() {
     isLoading,
     titleName,
     targetModule,
-    activeTab,
-    setActiveTab,
+    isCustomWorkflow,
     definitions,
     combinedDefinitions,
     isDefinitionsLoading,
@@ -172,12 +206,12 @@ export function useStudioDetails() {
     setIsEditMode,
     isCreatingNewFlow,
     setIsCreatingNewFlow,
-    isNewWorkflowModalOpen,
-    setIsNewWorkflowModalOpen,
     newWorkflowName,
     setNewWorkflowName,
-    handleOpenNewWorkflowModal,
-    handleCreateWorkflowSubmit,
-    handleCancelNewWorkflow,
+    isConfirmLeaveModalOpen,
+    setIsConfirmLeaveModalOpen,
+    handleBackClick,
+    handleCancelNewWorkflow: handleBackClick,
+    handleConfirmLeave,
   };
 }

@@ -27,6 +27,15 @@ import { toast } from 'sonner';
 export function mapStudioModuleToWorkflowModule(moduleName = '') {
   const upper = String(moduleName || '').toUpperCase();
   if (
+    !moduleName ||
+    upper === 'CUSTOM' ||
+    upper === 'CUSTOM_WORKFLOW' ||
+    upper.includes('CUSTOM') ||
+    !Number.isNaN(Number(moduleName))
+  ) {
+    return 'CUSTOM_WORKFLOW';
+  }
+  if (
     upper === 'SALES_ORDER' ||
     upper === 'PURCHASE_ORDER' ||
     upper.includes('ORDER')
@@ -44,7 +53,7 @@ export function mapStudioModuleToWorkflowModule(moduleName = '') {
   if (upper === 'PAYMENT' || upper.includes('PAYMENT')) {
     return 'PAYMENT';
   }
-  return upper || 'ORDER';
+  return upper || 'CUSTOM_WORKFLOW';
 }
 
 /**
@@ -253,10 +262,18 @@ export function useWorkflowMutations({
 
   const archiveMutation = useMutation({
     mutationFn: ({ id }) => archiveWorkflowDefinition({ id }),
-    onSuccess: (res) => {
+    onSuccess: (res, variables) => {
       toast.success(res?.data?.message || 'Workflow archived');
+      if (variables?.id) {
+        queryClient.invalidateQueries({
+          queryKey: [
+            workflowBuilderAPI.getDefinitionById.endpointKey,
+            variables.id,
+          ],
+        });
+      }
       invalidateDefinitions();
-      onArchived?.();
+      onArchived?.(res?.data?.data);
     },
     onError: (err) => {
       toast.error(err?.response?.data?.message || 'Failed to archive workflow');
@@ -265,8 +282,16 @@ export function useWorkflowMutations({
 
   const unarchiveMutation = useMutation({
     mutationFn: ({ id }) => unarchiveWorkflowDefinition({ id }),
-    onSuccess: (res) => {
+    onSuccess: (res, variables) => {
       toast.success(res?.data?.message || 'Workflow unarchived successfully');
+      if (variables?.id) {
+        queryClient.invalidateQueries({
+          queryKey: [
+            workflowBuilderAPI.getDefinitionById.endpointKey,
+            variables.id,
+          ],
+        });
+      }
       invalidateDefinitions();
     },
     onError: (err) => {

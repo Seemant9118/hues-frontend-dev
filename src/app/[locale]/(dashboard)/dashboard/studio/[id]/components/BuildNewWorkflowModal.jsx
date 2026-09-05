@@ -19,6 +19,7 @@ export default function BuildNewWorkflowModal({
   setNewWorkflowName,
   targetModule,
   onSubmit,
+  isSubmitting = false,
 }) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -32,7 +33,7 @@ export default function BuildNewWorkflowModal({
 
         <form onSubmit={onSubmit} className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label htmlFor="wf-name-input" className="text-xs font-bold">
+            <Label htmlFor="wf-name-input" className="text-sm font-bold">
               Workflow Name <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -40,39 +41,48 @@ export default function BuildNewWorkflowModal({
               placeholder="e.g. Purchase Order Approval Flow"
               value={newWorkflowName}
               onChange={(e) => setNewWorkflowName(e.target.value)}
-              className="text-xs"
+              className="text-sm"
+              disabled={isSubmitting}
               autoFocus
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="wf-module-input" className="text-xs font-bold">
-              System Form Module (Disabled)
-            </Label>
-            <Input
-              id="wf-module-input"
-              value={targetModule}
-              disabled
-              className="cursor-not-allowed bg-neutral-100 font-mono text-xs font-bold text-neutral-700"
-            />
-            <p className="text-[11px] text-muted-foreground">
-              System module is locked to <strong>{targetModule}</strong> based
-              on current form context (Sales/Purchase Order ➔ ORDER, Invoice ➔
-              INVOICE, Payment ➔ PAYMENT).
-            </p>
-          </div>
+          {targetModule !== 'CUSTOM_WORKFLOW' && targetModule !== 'CUSTOM' && (
+            <div className="space-y-1.5">
+              <Label htmlFor="wf-module-input" className="text-sm font-bold">
+                System Form Module (Disabled)
+              </Label>
+              <Input
+                id="wf-module-input"
+                value={targetModule}
+                disabled
+                className="cursor-not-allowed bg-neutral-100 font-mono text-sm font-bold text-neutral-700"
+              />
+              <p className="text-xs text-muted-foreground">
+                System module is locked to <strong>{targetModule}</strong> based
+                on current form context (Sales/Purchase Order ➔ ORDER, Invoice ➔
+                INVOICE, Payment ➔ PAYMENT).
+              </p>
+            </div>
+          )}
 
           <div className="flex items-center justify-end gap-2 border-t pt-2">
             <Button
               type="button"
               variant="outline"
               size="sm"
+              disabled={isSubmitting}
               onClick={() => onOpenChange(false)}
             >
               Cancel
             </Button>
-            <Button type="submit" size="sm" className="font-bold">
-              Create & Open Canvas
+            <Button
+              type="submit"
+              size="sm"
+              className="font-bold"
+              disabled={isSubmitting || !newWorkflowName.trim()}
+            >
+              {isSubmitting ? 'Creating...' : 'Create & Open Canvas'}
             </Button>
           </div>
         </form>

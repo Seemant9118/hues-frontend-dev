@@ -37,13 +37,18 @@ export function getStepIcon(type) {
 }
 
 export default function StepPaletteSidebar({ onAddStep }) {
+  const allowedTypes = ['FORM', 'DATA_UPDATE', 'DOCUMENT_UPLOAD', 'END'];
+  const availableStepTypes = STEP_TYPES.filter((st) =>
+    allowedTypes.includes(st.type),
+  );
+
   return (
     <div className="z-20 col-span-3 max-h-[440px] space-y-3 overflow-y-auto rounded-lg border bg-white p-3 shadow-sm">
       <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
         Step Palette
       </h4>
       <div className="space-y-2">
-        {STEP_TYPES.map((st) => (
+        {availableStepTypes.map((st) => (
           <button
             key={st.type}
             type="button"

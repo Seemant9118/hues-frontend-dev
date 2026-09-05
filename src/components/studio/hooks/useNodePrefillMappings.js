@@ -59,8 +59,19 @@ export function useNodePrefillMappings({
     isOpen: true,
   });
 
+  const isEndNode =
+    nodeType === 'END' ||
+    String(nodeType).toUpperCase() === 'END' ||
+    String(nodeId).toUpperCase().includes('END') ||
+    String(node?.name || '')
+      .toUpperCase()
+      .includes('END');
+
   const shouldHideCard =
-    isSystemStart || (!isLoading && precedingNodes.length === 0);
+    isSystemStart ||
+    isEndNode ||
+    nodeType !== 'FORM' ||
+    (!isLoading && precedingNodes.length === 0);
 
   const handleUpdateMappings = (newMappings) => {
     onUpdateNodeDataConfig?.(nodeId, {

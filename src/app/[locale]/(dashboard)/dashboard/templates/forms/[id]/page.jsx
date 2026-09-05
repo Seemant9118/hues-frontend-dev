@@ -30,7 +30,6 @@ import Wrapper from '@/components/wrappers/Wrapper';
 import { useDeveloperMode } from '@/context/DeveloperModeContext';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { usePermission } from '@/hooks/usePermissions';
-import { LocalStorageService } from '@/lib/utils';
 import {
   getCustomForm,
   resetCustomForm,
@@ -222,11 +221,6 @@ export default function FormDetailsPage() {
     try {
       const isCustomFormVal = isCustomForm || !!config?.isCustom;
       const targetId = config?.id || config?.formId || moduleId;
-
-      LocalStorageService.remove(`form_config_${moduleId}`);
-      LocalStorageService.remove(`form_config_${targetId}`);
-      LocalStorageService.remove(`custom_form_${moduleId}`);
-      LocalStorageService.remove(`custom_form_${targetId}`);
 
       const res = isCustomFormVal
         ? await resetCustomForm(targetId, config?.etag || '')

@@ -105,6 +105,9 @@ export default function CreateWorkflowModal({
                     <SelectItem value="ORDER">Order (ORDER)</SelectItem>
                     <SelectItem value="INVOICE">Invoice (INVOICE)</SelectItem>
                     <SelectItem value="PAYMENT">Payment (PAYMENT)</SelectItem>
+                    <SelectItem value="CUSTOM_WORKFLOW">
+                      Custom Workflow (CUSTOM_WORKFLOW)
+                    </SelectItem>
                   </>
                 )}
               </SelectContent>

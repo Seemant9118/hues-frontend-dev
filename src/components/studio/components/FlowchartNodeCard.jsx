@@ -35,6 +35,8 @@ export default function FlowchartNodeCard({
   onSetLinkingSourceId,
 }) {
   const isSystemStart = node.type === 'SYSTEM' || node.content?.start;
+  const isFormMissing =
+    node.type === 'FORM' && !node.content?.formConfigurationId;
 
   return (
     <div
@@ -59,11 +61,13 @@ export default function FlowchartNodeCard({
           ? 'scale-105 border-indigo-600 ring-4 ring-indigo-500/30'
           : isLinkingTargetCandidate
             ? 'border-dashed border-indigo-400 bg-indigo-50/20 ring-2 ring-indigo-400/40 hover:bg-indigo-50'
-            : isUnconnected
-              ? 'border-red-500 ring-2 ring-red-400/30'
-              : isSelected
-                ? 'border-primary ring-2 ring-primary/30'
-                : 'border-neutral-200 hover:border-neutral-400'
+            : isFormMissing
+              ? 'border-amber-500 bg-amber-50/20 ring-2 ring-amber-400/40'
+              : isUnconnected
+                ? 'border-red-500 ring-2 ring-red-400/30'
+                : isSelected
+                  ? 'border-primary ring-2 ring-primary/30'
+                  : 'border-neutral-200 hover:border-neutral-400'
       }`}
     >
       {/* Left Input Port Handle */}
@@ -122,12 +126,17 @@ export default function FlowchartNodeCard({
       </div>
 
       {/* Node Type & Connection Badges */}
-      <div className="mt-1 flex items-center gap-1">
+      <div className="mt-1 flex flex-wrap items-center gap-1">
         <Badge variant="outline" className="font-mono text-[9px] uppercase">
           {node.type}
         </Badge>
         {isSystemStart && (
           <Badge className="bg-amber-500 text-[9px] text-white">Start</Badge>
+        )}
+        {isFormMissing && (
+          <Badge className="bg-amber-500 text-[9px] font-semibold text-white">
+            Form Required
+          </Badge>
         )}
         {isUnconnected && (
           <Badge variant="destructive" className="text-[9px]">

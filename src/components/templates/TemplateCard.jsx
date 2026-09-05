@@ -1,14 +1,15 @@
 'use client';
 
-import React from 'react';
 import {
   Clock,
   Edit,
+  Eye,
   FileText,
   MoreVertical,
   Plus,
   Trash2,
 } from 'lucide-react';
+import React from 'react';
 
 export function CreateTemplateCard({
   onClick,
@@ -36,10 +37,12 @@ export default function TemplateCard({
   onClick,
   onEdit,
   onDelete,
+  onView,
   activeMenu,
   setActiveMenu,
   editLabel = 'Edit Template',
   deleteLabel = 'Delete Template',
+  viewLabel = 'Open Template',
 }) {
   const isDraft = template.status?.toLowerCase() === 'draft';
   const isMenuOpen = activeMenu === template.id;
@@ -96,6 +99,14 @@ export default function TemplateCard({
                       className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-red-600 hover:bg-red-50"
                     >
                       <Trash2 size={12} /> {deleteLabel}
+                    </button>
+                  )}
+                  {onView && (
+                    <button
+                      onClick={(e) => onView(template.id, e)}
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-neutral-700 hover:bg-neutral-50"
+                    >
+                      <Eye size={12} /> {viewLabel}
                     </button>
                   )}
                 </div>

@@ -42,7 +42,10 @@ export default function NodeDetailsModal({
 
   const nodeContent = node?.content || {};
   const nodeType = node?.type || nodeContent.type || 'SYSTEM';
-  const isSystemStart = nodeType === 'SYSTEM' || nodeContent.start;
+  const isSystemStart =
+    nodeType === 'SYSTEM' &&
+    moduleName !== 'CUSTOM_WORKFLOW' &&
+    moduleName !== 'CUSTOM';
   const formConfigId = nodeContent.formConfigurationId;
 
   const {
@@ -85,7 +88,8 @@ export default function NodeDetailsModal({
   };
 
   const sysFields = systemFormConfig?.fields || [];
-  const customFields = customFormDetails?.fields || [];
+  const customFields =
+    customFormDetails?.fields || customFormDetails?.customFields || [];
   const activeFields = isSystemStart
     ? sysFields
     : formConfigId

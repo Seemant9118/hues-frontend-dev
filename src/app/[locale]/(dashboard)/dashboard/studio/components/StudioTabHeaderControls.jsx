@@ -9,6 +9,7 @@ export default function StudioTabHeaderControls() {
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 pb-3">
       <TabsList className="border border-neutral-200 bg-neutral-50 p-1">
         <TabsTrigger value="system">System Workflows</TabsTrigger>
+        <TabsTrigger value="custom">Custom Workflows</TabsTrigger>
       </TabsList>
 
       <div className="flex items-center gap-3 text-xs text-neutral-500">

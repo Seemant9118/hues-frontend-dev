@@ -47,7 +47,12 @@ export function usePreviousNodesFields({
   const { data: systemFormConfig, isLoading: isSysLoading } = useQuery({
     queryKey: ['get_form_config_preceding', moduleName],
     queryFn: () => getFormConfig(moduleName),
-    enabled: Boolean(isOpen && hasSystemStartInPreceding),
+    enabled: Boolean(
+      isOpen &&
+      hasSystemStartInPreceding &&
+      moduleName !== 'CUSTOM' &&
+      moduleName !== 'CUSTOM_WORKFLOW',
+    ),
     select: (res) => res?.data?.data || res || null,
   });
 

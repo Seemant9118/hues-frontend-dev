@@ -222,8 +222,8 @@ export default function NodePrefillMappingRow({
             className="h-7 border-amber-300 bg-amber-50 text-[11px] font-medium text-amber-900 hover:bg-amber-100 hover:text-amber-950"
             onClick={() => onEnableCondition(index)}
           >
-            <Calculator className="mr-1 h-3.5 w-3.5 text-amber-600" />+ Value
-            Mapping Condition
+            <Calculator className="mr-1 h-3.5 w-3.5 text-amber-600" />+
+            Percentage Calculation (%)
           </Button>
         </div>
       )}
@@ -234,7 +234,7 @@ export default function NodePrefillMappingRow({
           <div className="flex items-center justify-between">
             <Label className="flex items-center gap-1.5 text-[11px] font-bold text-amber-900">
               <Calculator className="h-3.5 w-3.5 text-amber-700" />
-              Value Calculation Condition:
+              Percentage Calculation (% of source value):
             </Label>
 
             <Button

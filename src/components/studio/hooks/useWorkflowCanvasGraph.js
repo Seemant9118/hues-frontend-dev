@@ -13,100 +13,15 @@ import {
   transformBackendGraphToCanvas,
   transformCanvasToBackendGraph,
 } from '@/utils/workflowGraphTransformer';
+import {
+  computeCanvasWidth,
+  computeSvgEdges,
+  mapStudioModuleToWorkflowModule,
+  sortAndPositionNodes,
+} from '../utils/workflowGraphLayout';
+import { findUnconnectedNodes } from '../utils/workflowGraphValidation';
 
-export function mapStudioModuleToWorkflowModule(moduleName = '') {
-  const upper = String(moduleName || '').toUpperCase();
-  if (
-    upper.includes('INVOICE') ||
-    upper.includes('B2C') ||
-    upper.includes('B2B')
-  ) {
-    return 'INVOICE';
-  }
-  if (upper.includes('PAYMENT')) {
-    return 'PAYMENT';
-  }
-  if (
-    upper.includes('PURCHASE') ||
-    upper.includes('SALES') ||
-    upper.includes('ORDER')
-  ) {
-    return 'ORDER';
-  }
-  return 'ORDER';
-}
-
-const NODE_WIDTH = 220;
-
-function sortAndPositionNodes(nodes = [], edges = []) {
-  if (nodes.length === 0) return [];
-
-  // Check if nodes already have preserved visual coordinates
-  const hasSavedPositions = nodes.some(
-    (n) => n.position && typeof n.position.x === 'number' && n.position.x > 0,
-  );
-
-  if (hasSavedPositions) {
-    // Preserve existing visual position coordinates and sort by x position ascending
-    return [...nodes].sort(
-      (a, b) => (a.position?.x || 0) - (b.position?.x || 0),
-    );
-  }
-
-  // Topological sorting when no visual coordinates exist
-  const inDegree = {};
-  nodes.forEach((n) => {
-    inDegree[n.id] = 0;
-  });
-
-  edges.forEach((e) => {
-    if (inDegree[e.targetId] !== undefined) {
-      inDegree[e.targetId] += 1;
-    }
-  });
-
-  const queue = nodes.filter((n) => inDegree[n.id] === 0).map((n) => n.id);
-  const orderedIds = [];
-  const visited = new Set();
-
-  while (queue.length > 0) {
-    const currId = queue.shift();
-    if (!visited.has(currId)) {
-      visited.add(currId);
-      orderedIds.push(currId);
-
-      const outgoing = edges.filter((e) => e.sourceId === currId);
-      outgoing.forEach((e) => {
-        if (inDegree[e.targetId] !== undefined) {
-          inDegree[e.targetId] -= 1;
-          if (inDegree[e.targetId] <= 0 && !visited.has(e.targetId)) {
-            queue.push(e.targetId);
-          }
-        }
-      });
-    }
-  }
-
-  nodes.forEach((n) => {
-    if (!visited.has(n.id)) {
-      orderedIds.push(n.id);
-    }
-  });
-
-  return orderedIds
-    .map((id, idx) => {
-      const node = nodes.find((n) => n.id === id);
-      if (!node) return null;
-      return {
-        ...node,
-        position: {
-          x: 60 + idx * 300,
-          y: node.position?.y || 80,
-        },
-      };
-    })
-    .filter(Boolean);
-}
+export { mapStudioModuleToWorkflowModule } from '../utils/workflowGraphLayout';
 
 export function useWorkflowCanvasGraph({
   moduleName,
@@ -119,6 +34,12 @@ export function useWorkflowCanvasGraph({
   newWorkflowName,
 }) {
   const targetModule = mapStudioModuleToWorkflowModule(moduleName);
+  const isCustomWorkflow =
+    targetModule === 'CUSTOM_WORKFLOW' ||
+    targetModule === 'CUSTOM' ||
+    String(moduleName || '')
+      .toUpperCase()
+      .includes('CUSTOM');
 
   // Definitions Query
   const { data: definitions = [], isLoading: isDefinitionsLoading } =
@@ -189,11 +110,75 @@ export function useWorkflowCanvasGraph({
 
   const draftData = detailData?.draft;
 
+  // Versions List from detailData (GET /definitions/:id)
+  const versionsList = useMemo(() => {
+    if (Array.isArray(detailData?.versions) && detailData.versions.length > 0) {
+      return detailData.versions;
+    }
+    const list = [];
+    if (detailData?.activeVersion) {
+      list.push(detailData.activeVersion);
+    }
+    if (detailData?.draft) {
+      list.push(detailData.draft);
+    }
+    return list;
+  }, [detailData]);
+
+  // Backend Active Version ID
+  const activeVersionIdFromBackend = useMemo(() => {
+    if (!detailData) return null;
+    return (
+      detailData.activeVersionId ||
+      detailData.definition?.activeVersionId ||
+      detailData.activeVersion?.id ||
+      detailData.versions?.[0]?.id ||
+      detailData.draft?.id ||
+      null
+    );
+  }, [detailData]);
+
+  // Track explicit manual user selection in versions dropdown
+  const [manualSelectedVersionId, setManualSelectedVersionId] = useState(null);
+
+  // Selected Version Record ID: Use manual selection if valid, otherwise fallback to active version from backend
+  const selectedVersionRecordId = useMemo(() => {
+    if (manualSelectedVersionId && versionsList.length > 0) {
+      const exists = versionsList.some(
+        (v) => String(v.id) === String(manualSelectedVersionId),
+      );
+      if (exists) return String(manualSelectedVersionId);
+    }
+    return activeVersionIdFromBackend
+      ? String(activeVersionIdFromBackend)
+      : versionsList[0]?.id
+        ? String(versionsList[0].id)
+        : null;
+  }, [manualSelectedVersionId, versionsList, activeVersionIdFromBackend]);
+
+  const setSelectedVersionRecordId = (versionId) => {
+    setManualSelectedVersionId(versionId ? String(versionId) : null);
+  };
+
+  const activeVersionObj = useMemo(() => {
+    if (selectedVersionRecordId && versionsList.length > 0) {
+      const match = versionsList.find(
+        (v) => String(v.id) === String(selectedVersionRecordId),
+      );
+      if (match) return match;
+    }
+    return detailData?.draft || detailData?.activeVersion || null;
+  }, [selectedVersionRecordId, versionsList, detailData]);
+
+  const currentGraphToRender =
+    activeVersionObj?.graph || draftData?.graph || detailData?.graph;
+
   // Workflow Mutations
   const workflowMutations = useWorkflowMutations({
     onDraftSaved: (data) => {
       setIsDraftSaved(true);
       setHasUnsavedChanges(false);
+      setManualSelectedVersionId(null);
       if (data?.valid === false) {
         setValidationErrors(data.validationErrors || ['Graph has warnings']);
       } else {
@@ -207,67 +192,94 @@ export function useWorkflowCanvasGraph({
       setIsCreatingNewFlow(false);
       setIsDraftSaved(true);
       setHasUnsavedChanges(false);
+      setManualSelectedVersionId(null);
       toast.success('Workflow published and activated successfully!');
+    },
+    onActivated: () => {
+      setManualSelectedVersionId(null);
     },
   });
 
-  // Explicitly clear canvas to System Start ONLY when building new workflow
+  // Activate Version Handler
+  const handleActivateVersion = async (versionId) => {
+    if (!selectedDefinitionId || selectedDefinitionId === 'LOCAL_TEMP_DRAFT')
+      return;
+    try {
+      await workflowMutations.activateVersion({
+        id: selectedDefinitionId,
+        versionId,
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to activate version:', err);
+    }
+  };
+
+  // Explicitly clear canvas or initialize default template for new workflow creation
   useEffect(() => {
     if (isCreatingNewFlow) {
-      const defaultStartKey = `SYSTEM_${targetModule}_START`;
-      setNodes([
-        {
-          id: defaultStartKey,
-          name: `System Start (${targetModule})`,
-          type: 'SYSTEM',
-          position: { x: 60, y: 80 },
-          content: {
-            key: defaultStartKey,
-            label: `System Start (${targetModule})`,
+      if (isCustomWorkflow) {
+        setNodes([]);
+        setEdges([]);
+        setSelectedNodeId(null);
+      } else {
+        const defaultStartKey = `SYSTEM_${targetModule}_START`;
+        setNodes([
+          {
+            id: defaultStartKey,
+            name: `System Start (${targetModule})`,
             type: 'SYSTEM',
-            start: true,
+            position: { x: 60, y: 80 },
+            content: {
+              key: defaultStartKey,
+              label: `System Start (${targetModule})`,
+              type: 'SYSTEM',
+              start: true,
+            },
           },
-        },
-      ]);
-      setEdges([]);
-      setSelectedNodeId(defaultStartKey);
+        ]);
+        setEdges([]);
+        setSelectedNodeId(defaultStartKey);
+      }
       setIsValidated(false);
       setIsDraftSaved(false);
       setHasUnsavedChanges(false);
       setIsWarningDismissed(false);
       setIsSuccessDismissed(false);
     }
-  }, [isCreatingNewFlow, targetModule]);
+  }, [isCreatingNewFlow, targetModule, isCustomWorkflow]);
 
   // Load backend graph into visual flowchart nodes & edges STRICTLY according to backend graph schema
   useEffect(() => {
     if (isCreatingNewFlow) return;
 
-    if (draftData?.graph) {
-      const parsed = transformBackendGraphToCanvas(draftData.graph);
+    if (currentGraphToRender) {
+      const parsed = transformBackendGraphToCanvas(currentGraphToRender);
       let initialNodes = parsed.nodes || [];
       const initialEdges = parsed.edges || [];
 
-      // Ensure System Start node presence
-      const hasStartNode = initialNodes.some(
-        (n) => n.type === 'SYSTEM' || n.content?.start,
-      );
+      // Ensure System Start node presence ONLY for system workflows
+      if (!isCustomWorkflow) {
+        const hasStartNode = initialNodes.some(
+          (n) => n.type === 'SYSTEM' || n.content?.start,
+        );
 
-      if (!hasStartNode) {
-        const defaultStartKey = `SYSTEM_${targetModule}_START`;
-        const startNode = {
-          id: defaultStartKey,
-          name: `System Start (${targetModule})`,
-          type: 'SYSTEM',
-          position: { x: 60, y: 80 },
-          content: {
-            key: defaultStartKey,
-            label: `System Start (${targetModule})`,
+        if (!hasStartNode) {
+          const defaultStartKey = `SYSTEM_${targetModule}_START`;
+          const startNode = {
+            id: defaultStartKey,
+            name: `System Start (${targetModule})`,
             type: 'SYSTEM',
-            start: true,
-          },
-        };
-        initialNodes = [startNode, ...initialNodes];
+            position: { x: 60, y: 80 },
+            content: {
+              key: defaultStartKey,
+              label: `System Start (${targetModule})`,
+              type: 'SYSTEM',
+              start: true,
+            },
+          };
+          initialNodes = [startNode, ...initialNodes];
+        }
       }
 
       // Preserve saved visual positions or perform topological sorting for clean layout
@@ -276,10 +288,10 @@ export function useWorkflowCanvasGraph({
       // Render strictly according to backend graph payload edges (no synthetic duplicate connections)
       setNodes(initialNodes);
       setEdges(initialEdges);
-      setIsValidated(draftData.valid !== false);
+      setIsValidated(activeVersionObj?.valid !== false);
       setIsDraftSaved(true);
       setHasUnsavedChanges(false);
-      setValidationErrors(draftData.validationErrors || []);
+      setValidationErrors(activeVersionObj?.validationErrors || []);
       setIsWarningDismissed(false);
       setIsSuccessDismissed(false);
     } else if (
@@ -288,46 +300,51 @@ export function useWorkflowCanvasGraph({
       selectedDefinitionId !== 'LOCAL_TEMP_DRAFT' &&
       nodes.length === 0
     ) {
-      const defaultStartKey = `SYSTEM_${targetModule}_START`;
-      setNodes([
-        {
-          id: defaultStartKey,
-          name: `System Start (${targetModule})`,
-          type: 'SYSTEM',
-          position: { x: 60, y: 80 },
-          content: {
-            key: defaultStartKey,
-            label: `System Start (${targetModule})`,
+      if (isCustomWorkflow) {
+        setNodes([]);
+      } else {
+        const defaultStartKey = `SYSTEM_${targetModule}_START`;
+        setNodes([
+          {
+            id: defaultStartKey,
+            name: `System Start (${targetModule})`,
             type: 'SYSTEM',
-            start: true,
+            position: { x: 60, y: 80 },
+            content: {
+              key: defaultStartKey,
+              label: `System Start (${targetModule})`,
+              type: 'SYSTEM',
+              start: true,
+            },
           },
-        },
-      ]);
+        ]);
+      }
     }
   }, [
-    draftData,
+    currentGraphToRender,
+    activeVersionObj,
     isDetailLoading,
     selectedDefinitionId,
     isCreatingNewFlow,
     targetModule,
+    isCustomWorkflow,
   ]);
 
-  // Topological disconnection check (END node requires incoming connection; non-END nodes require outgoing connection)
-  const unconnectedNodes = useMemo(() => {
-    if (nodes.length <= 1) return [];
-
-    return nodes.filter((node) => {
-      const isEnd = node.type === 'END';
-
-      const hasOutgoing = edges.some((e) => e.sourceId === node.id);
-      const hasIncoming = edges.some((e) => e.targetId === node.id);
-
-      if (isEnd) return !hasIncoming;
-      return !hasOutgoing;
-    });
-  }, [nodes, edges]);
+  // Topological disconnection check (END node requires incoming connection; non-END nodes require outgoing connection; intermediate nodes require both)
+  const unconnectedNodes = useMemo(
+    () => findUnconnectedNodes(nodes, edges),
+    [nodes, edges],
+  );
 
   const hasUnconnectedNodes = unconnectedNodes.length > 0;
+
+  // Check if any FORM step node lacks an associated custom form
+  const formNodesWithoutSelection = useMemo(
+    () =>
+      nodes.filter((n) => n.type === 'FORM' && !n.content?.formConfigurationId),
+    [nodes],
+  );
+  const hasUnselectedFormNodes = formNodesWithoutSelection.length > 0;
 
   // Add Step Node aligned horizontally on same line (y = 80)
   const handleAddStep = (stepTypeObj) => {
@@ -344,6 +361,11 @@ export function useWorkflowCanvasGraph({
       const endNodeIndex = prevNodes.findIndex((n) => n.type === 'END');
       const hasEndNode = endNodeIndex !== -1;
 
+      const hasStartNode = prevNodes.some(
+        (n) => n.content?.start || n.type === 'SYSTEM' || n.type === 'START',
+      );
+      const isFirstNonEndNode = !hasStartNode && stepTypeObj.type !== 'END';
+
       const newStepKey = `${stepTypeObj.type}_${prevNodes.length + 1}`;
 
       const newNode = {
@@ -355,7 +377,7 @@ export function useWorkflowCanvasGraph({
           key: newStepKey,
           label: `${stepTypeObj.label} ${prevNodes.length + 1}`,
           type: stepTypeObj.type,
-          start: stepTypeObj.isStart || false,
+          start: stepTypeObj.isStart || isFirstNonEndNode,
           assignee:
             stepTypeObj.type === 'APPROVAL'
               ? { type: 'ROLE', roleCode: 'MANAGER' }
@@ -613,6 +635,7 @@ export function useWorkflowCanvasGraph({
   const handleDeleteNode = (nodeId) => {
     const nodeToDelete = nodes.find((n) => n.id === nodeId);
     if (
+      !isCustomWorkflow &&
       nodeToDelete &&
       (nodeToDelete.type === 'SYSTEM' || nodeToDelete.content?.start)
     ) {
@@ -705,9 +728,21 @@ export function useWorkflowCanvasGraph({
       return;
     try {
       await workflowMutations.archiveDefinition({ id: selectedDefinitionId });
-      toast.success(`Workflow "${selectedWorkflowDef?.name || ''}" archived.`);
     } catch (err) {
-      toast.error('Failed to archive workflow.');
+      // eslint-disable-next-line no-console
+      console.error('Archive workflow failed:', err);
+    }
+  };
+
+  // Unarchive Workflow Handler
+  const handleUnarchiveWorkflow = async () => {
+    if (!selectedDefinitionId || selectedDefinitionId === 'LOCAL_TEMP_DRAFT')
+      return;
+    try {
+      await workflowMutations.unarchiveDefinition({ id: selectedDefinitionId });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Unarchive workflow failed:', err);
     }
   };
 
@@ -750,16 +785,32 @@ export function useWorkflowCanvasGraph({
   // Validate Flow Graph (Step 1 CTA)
   const handleValidateGraph = async () => {
     const hasEndNode = nodes.some((n) => n.type === 'END');
-    if (!hasEndNode && nodes.length > 1) {
+    if (!hasEndNode) {
       toast.error(
-        'Workflow topology must terminate with a "Workflow End" step!',
+        'Workflow topology must include and terminate with a "Workflow End" step!',
       );
       setIsValidated(false);
       return;
     }
 
-    if (hasUnconnectedNodes) {
-      toast.error('Cannot validate graph with disconnected nodes!');
+    if (hasUnconnectedNodes || nodes.length < 2) {
+      const unconnectedNames = unconnectedNodes.map((n) => n.name).join(', ');
+      toast.error(
+        unconnectedNames
+          ? `Cannot validate graph! Disconnected nodes found: ${unconnectedNames}`
+          : 'Cannot validate graph! All steps must be connected to a "Workflow End" step.',
+      );
+      setIsValidated(false);
+      return;
+    }
+
+    if (hasUnselectedFormNodes) {
+      const names = formNodesWithoutSelection
+        .map((n) => n.name || n.id)
+        .join(', ');
+      toast.error(
+        `Form selection required! Please select a custom form for step(s): ${names}`,
+      );
       setIsValidated(false);
       return;
     }
@@ -804,7 +855,7 @@ export function useWorkflowCanvasGraph({
       nodes,
       edges,
       moduleName: targetModule,
-      triggerType: 'RECORD_CREATED',
+      triggerType: isCustomWorkflow ? 'MANUAL_START' : 'RECORD_CREATED',
     });
 
     if (isCreatingNewFlow || selectedDefinitionId === 'LOCAL_TEMP_DRAFT') {
@@ -816,13 +867,23 @@ export function useWorkflowCanvasGraph({
           module: targetModule,
         },
       });
-      if (newDefRes?.data?.data?.id) {
-        const newId = newDefRes.data.data.id;
+      const newId = newDefRes?.data?.data?.id;
+      if (newId) {
+        setManualSelectedVersionId(null);
+        await workflowMutations.saveDraft({ id: newId, graph: graphPayload });
         setIsCreatingNewFlow(false);
         setSelectedDefinitionId(newId);
-        await workflowMutations.saveDraft({ id: newId, graph: graphPayload });
+
+        if (typeof window !== 'undefined') {
+          const url = new URL(window.location.href);
+          url.searchParams.set('definitionId', String(newId));
+          url.searchParams.delete('create');
+          url.searchParams.delete('name');
+          window.history.replaceState({}, '', url.toString());
+        }
       }
     } else if (selectedDefinitionId) {
+      setManualSelectedVersionId(null);
       await workflowMutations.saveDraft({
         id: selectedDefinitionId,
         graph: graphPayload,
@@ -849,62 +910,18 @@ export function useWorkflowCanvasGraph({
   };
 
   // SVG Bezier paths for edge transitions
-  const svgEdges = useMemo(() => {
-    return edges
-      .map((edge) => {
-        const sourceNode = nodes.find((n) => n.id === edge.sourceId);
-        const targetNode = nodes.find((n) => n.id === edge.targetId);
-
-        if (!sourceNode || !targetNode) return null;
-
-        const x1 = sourceNode.position.x + NODE_WIDTH;
-        const y1 = sourceNode.position.y + 40;
-        const x2 = targetNode.position.x;
-        const y2 = targetNode.position.y + 40;
-
-        const slotDistance = Math.round((x2 - x1) / 300);
-        let pathD = '';
-        const midX = (x1 + x2) / 2;
-        let midY = (y1 + y2) / 2 - 20;
-
-        if (slotDistance > 1) {
-          const arcHeight = Math.min(100, 30 + (slotDistance - 1) * 35);
-          const controlY = y1 - arcHeight;
-          pathD = `M ${x1} ${y1} Q ${midX} ${controlY}, ${x2} ${y2}`;
-          midY = controlY + 15;
-        } else {
-          const dx = Math.abs(x2 - x1) / 2;
-          pathD = `M ${x1} ${y1} C ${x1 + Math.max(dx, 30)} ${y1}, ${x2 - Math.max(dx, 30)} ${y2}, ${x2} ${y2}`;
-        }
-
-        return {
-          ...edge,
-          pathD,
-          midX,
-          midY,
-          x1,
-          y1,
-          x2,
-          y2,
-          sourceName: sourceNode.name,
-          targetName: targetNode.name,
-        };
-      })
-      .filter(Boolean);
-  }, [nodes, edges]);
+  const svgEdges = useMemo(() => computeSvgEdges(nodes, edges), [nodes, edges]);
 
   // Dynamic canvas width
-  const canvasWidth = useMemo(() => {
-    if (nodes.length === 0) return '100%';
-    const maxX = Math.max(...nodes.map((n) => n.position.x + NODE_WIDTH + 100));
-    return `${Math.max(1000, maxX)}px`;
-  }, [nodes]);
+  const canvasWidth = useMemo(() => computeCanvasWidth(nodes), [nodes]);
 
   return {
     targetModule,
+    isCustomWorkflow,
     definitions,
     detailData,
     isDefinitionsLoading,
+    isDetailLoading,
     selectedDefinitionId,
     setSelectedDefinitionId,
     selectedWorkflowDef,
@@ -945,6 +962,17 @@ export function useWorkflowCanvasGraph({
     handleConnectNodes,
     handleDeleteEdge,
     handleArchiveWorkflow,
+    handleUnarchiveWorkflow,
+    formNodesWithoutSelection,
+    hasUnselectedFormNodes,
+    versionsList,
+    selectedVersionRecordId,
+    setSelectedVersionRecordId,
+    activeVersionId: activeVersionIdFromBackend,
+    activeVersionObj,
+    handleActivateVersion,
+    isActivatingVersion: workflowMutations.isActivating,
+    isUnarchiving: workflowMutations.isUnarchiving,
     handleNodeMouseDown,
     handleCanvasMouseMove,
     handleCanvasMouseUp,

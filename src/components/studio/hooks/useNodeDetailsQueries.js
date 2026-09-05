@@ -19,7 +19,13 @@ export function useNodeDetailsQueries({
   const { data: systemFormConfig, isLoading: isSysFormLoading } = useQuery({
     queryKey: ['get_form_config_node_modal', moduleName],
     queryFn: () => getFormConfig(moduleName),
-    enabled: Boolean(isOpen && node && (isSystemStart || !formConfigId)),
+    enabled: Boolean(
+      isOpen &&
+      node &&
+      (isSystemStart || !formConfigId) &&
+      moduleName !== 'CUSTOM' &&
+      moduleName !== 'CUSTOM_WORKFLOW',
+    ),
     select: (res) => res?.data?.data || res || null,
   });
 

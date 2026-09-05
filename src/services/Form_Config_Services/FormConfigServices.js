@@ -1,5 +1,4 @@
 import { formConfigApi } from '@/api/form-config/formConfigApi';
-import { LocalStorageService } from '@/lib/utils';
 import { APIinstance } from '@/services';
 import { toast } from 'sonner';
 
@@ -25,35 +24,9 @@ export const getFormConfig = async (moduleName) => {
         },
       );
       if (response.data && response.data.status && response.data.data) {
-        LocalStorageService.set(
-          `form_config_${moduleName}`,
-          response.data.data,
-        );
         return response.data.data;
       }
     } catch (error) {
-      // Fallback to localStorage if API request fails
-      try {
-        const cachedConfig = LocalStorageService.get(
-          `form_config_${moduleName}`,
-        );
-        if (cachedConfig) {
-          const parsed =
-            typeof cachedConfig === 'string'
-              ? JSON.parse(cachedConfig)
-              : cachedConfig;
-          if (parsed && parsed.fields) {
-            return parsed;
-          }
-        }
-      } catch (cacheError) {
-        // eslint-disable-next-line no-console
-        console.error(
-          'Failed to load form config from localStorage:',
-          cacheError,
-        );
-      }
-
       toast.info(
         `Failed to fetch form configuration for ${moduleName} from API.`,
       );
@@ -168,10 +141,6 @@ export const saveFormConfig = async (
       },
     );
 
-    if (response.data && response.data.status && response.data.data) {
-      LocalStorageService.set(`form_config_${moduleName}`, response.data.data);
-    }
-
     return {
       ...response.data,
       isFallback: false,
@@ -282,9 +251,6 @@ export const activateFormVersion = async (moduleName, version) => {
       `${formConfigApi.getFormConfig.endpoint}/${moduleName}/versions/${version}/activate`,
       {},
     );
-    if (response.data && response.data.status && response.data.data) {
-      LocalStorageService.set(`form_config_${moduleName}`, response.data.data);
-    }
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console

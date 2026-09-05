@@ -168,7 +168,7 @@ export default function EdgeConditionModal({
             </div>
             <div>
               <DialogTitle className="text-base font-bold text-gray-900">
-                Transition Branch & Condition
+                Transition Branch Routing Condition
               </DialogTitle>
               <DialogDescription className="text-xs">
                 Transition from{' '}
@@ -180,6 +180,10 @@ export default function EdgeConditionModal({
                   {edge.targetId}
                 </strong>{' '}
                 (<Badge variant="outline">{edge.type || 'COMPLETED'}</Badge>)
+                <span className="mt-0.5 block text-[10px] italic text-indigo-700">
+                  Routing rule based on process rule fields (independent from
+                  step field prefill mappings).
+                </span>
               </DialogDescription>
             </div>
           </div>

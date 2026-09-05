@@ -41,33 +41,39 @@ export default function NodePrefillMappingCard({
   }
 
   return (
-    <Card className="space-y-4 border border-emerald-200/80 bg-emerald-50/20 p-4 shadow-sm">
+    <Card className="space-y-4 border-2 border-amber-300 bg-amber-50/60 p-4 shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
+      <div className="flex items-center justify-between border-b border-amber-200 pb-2">
         <div className="flex items-center gap-2">
-          <Link2 className="h-4 w-4 text-emerald-600" />
-          <span className="font-bold text-emerald-900">
-            Prefill Data Key Mappings (
-            <code className="font-mono text-xs">prefillMappings</code>)
+          <Link2 className="h-4 w-4 text-amber-600" />
+          <span className="font-bold text-amber-950">
+            Step Field Value Mappings (
+            <code className="font-mono text-xs text-amber-800">
+              prefillMappings
+            </code>
+            )
           </span>
         </div>
-        <Badge className="bg-emerald-600 font-mono text-[11px] text-white">
+        <Badge className="bg-amber-500 font-mono text-[11px] text-white">
           {prefillMappings.length}{' '}
-          {prefillMappings.length === 1 ? 'Rule' : 'Rules'}
+          {prefillMappings.length === 1 ? 'Mapping' : 'Mappings'}
         </Badge>
       </div>
 
       {/* Description */}
-      <p className="text-xs text-neutral-600">
-        Automatically prefill field values from preceding form steps into this
-        step.
+      <p className="text-xs font-medium text-amber-900/90">
+        Map field values from preceding form steps into this step&apos;s inputs
+        when the form opens.
+        <span className="ml-1 text-[11px] italic text-amber-700">
+          (Independent from Transition Branch Routing Conditions).
+        </span>
       </p>
 
       {/* Mapping Rows */}
       <div className="space-y-3">
         {prefillMappings.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-emerald-300 bg-white/60 p-4 text-center">
-            <p className="text-xs text-neutral-500">
+          <div className="rounded-lg border border-dashed border-amber-300 bg-amber-100/40 p-4 text-center">
+            <p className="text-xs font-medium text-amber-800">
               No prefill mappings defined yet. Click below to add your first
               prefill rule.
             </p>
@@ -102,10 +108,10 @@ export default function NodePrefillMappingCard({
           type="button"
           variant="outline"
           size="sm"
-          className="h-8 border-emerald-300 bg-white text-xs font-semibold text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800"
+          className="h-8 border-amber-400 bg-amber-100 text-xs font-semibold text-amber-900 hover:bg-amber-200 hover:text-amber-950"
           onClick={handleAddRow}
         >
-          <Plus className="mr-1 h-3.5 w-3.5" />
+          <Plus className="mr-1 h-3.5 w-3.5 text-amber-700" />
           Add Prefill Mapping Rule
         </Button>
       </div>

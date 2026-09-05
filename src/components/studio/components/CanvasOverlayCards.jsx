@@ -9,6 +9,8 @@ import { Card } from '@/components/ui/card';
 export default function CanvasOverlayCards({
   hasUnconnectedNodes,
   unconnectedNodes,
+  hasUnselectedFormNodes = false,
+  formNodesWithoutSelection = [],
   isWarningDismissed,
   onDismissWarning,
   onAutoConnectUnconnected,
@@ -20,6 +22,36 @@ export default function CanvasOverlayCards({
 }) {
   return (
     <div className="absolute bottom-4 right-4 z-30 max-w-sm space-y-2">
+      {hasUnselectedFormNodes && (
+        <Card className="flex items-start justify-between gap-3 border-amber-300 bg-white/95 p-3 text-xs text-amber-950 shadow-md backdrop-blur-sm">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 shrink-0 text-amber-500" />
+            <div>
+              <h4 className="font-bold text-amber-900">
+                Form Selection Required
+              </h4>
+              <p className="mt-0.5 text-[11px] text-amber-800">
+                The following custom form step(s) require an associated form:
+              </p>
+              <div className="mt-1 flex flex-wrap gap-1">
+                {formNodesWithoutSelection.map((n) => (
+                  <Badge
+                    key={n.id}
+                    className="bg-amber-500 font-mono text-[10px] text-white"
+                  >
+                    {n.name || n.id}
+                  </Badge>
+                ))}
+              </div>
+              <p className="mt-1.5 text-[10px] font-medium text-neutral-600">
+                Click on step node &gt; Open details modal &gt; Select
+                Associated Form.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {hasUnconnectedNodes && !isWarningDismissed && (
         <Card className="flex items-start justify-between gap-3 border-red-300 bg-white/95 p-3 text-xs text-red-950 shadow-md backdrop-blur-sm">
           <div className="flex items-start gap-2">

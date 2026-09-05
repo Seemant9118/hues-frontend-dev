@@ -1,7 +1,12 @@
 'use client';
 
 import React from 'react';
-import { FileText, SlidersHorizontal, Sparkles } from 'lucide-react';
+import {
+  AlertTriangle,
+  FileText,
+  SlidersHorizontal,
+  Sparkles,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -40,7 +45,7 @@ export default function NodeStepSummaryCard({
           <div>
             <span className="text-muted-foreground">Is Start Node: </span>
             <strong className="text-gray-900">
-              {isSystemStart ? 'Yes' : 'No'}
+              {nodeContent.start || isSystemStart ? 'Yes' : 'No'}
             </strong>
           </div>
           {nodeType === 'APPROVAL' && (
@@ -198,9 +203,22 @@ export default function NodeStepSummaryCard({
               </span>
             </div>
             <Badge className="bg-emerald-600 font-mono text-xs text-white">
-              {formConfigId ? `Custom Form #${formConfigId}` : 'System Form'}
+              {formConfigId
+                ? `Custom Form #${formConfigId}`
+                : 'No Form Selected'}
             </Badge>
           </div>
+
+          {!formConfigId && (
+            <div className="flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 p-2.5 text-xs text-amber-900 shadow-sm">
+              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
+              <span>
+                <strong>Form Selection Required:</strong> Please select a custom
+                form from the dropdown below before saving or validating this
+                workflow.
+              </span>
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <Label className="flex items-center gap-1.5 text-xs font-bold text-gray-800">

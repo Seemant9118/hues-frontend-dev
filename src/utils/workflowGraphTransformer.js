@@ -14,8 +14,8 @@
 
 export const STEP_TYPES = [
   { type: 'SYSTEM', label: 'System Start', isStart: true, manualAction: false },
-  // { type: 'APPROVAL', label: 'Approval', isStart: false, manualAction: true },
   { type: 'FORM', label: 'Custom Form', isStart: false, manualAction: true },
+  { type: 'APPROVAL', label: 'Approval', isStart: false, manualAction: true },
   {
     type: 'DATA_UPDATE',
     label: 'Data Update',
@@ -28,18 +28,24 @@ export const STEP_TYPES = [
     isStart: false,
     manualAction: true,
   },
-  // {
-  //   type: 'STATUS_UPDATE',
-  //   label: 'Status Update',
-  //   isStart: false,
-  //   manualAction: false,
-  // },
-  // {
-  //   type: 'NOTIFICATION',
-  //   label: 'Notification',
-  //   isStart: false,
-  //   manualAction: false,
-  // },
+  {
+    type: 'NOTIFICATION',
+    label: 'Notification',
+    isStart: false,
+    manualAction: false,
+  },
+  {
+    type: 'DOCUMENT_GENERATION',
+    label: 'Document Generation',
+    isStart: false,
+    manualAction: false,
+  },
+  {
+    type: 'STATUS_UPDATE',
+    label: 'Status Update',
+    isStart: false,
+    manualAction: false,
+  },
   { type: 'END', label: 'Workflow End', isStart: false, manualAction: false },
 ];
 
@@ -47,10 +53,11 @@ export const ACTION_EVENTS = {
   SYSTEM: ['COMPLETED'],
   APPROVAL: ['APPROVED', 'REJECTED'],
   FORM: ['SUBMITTED'],
-  DATA_UPDATE: ['COMPLETED'],
+  DATA_UPDATE: ['COMPLETED', 'DATA_UPDATED'],
   DOCUMENT_UPLOAD: ['UPLOADED'],
   STATUS_UPDATE: ['STATUS_UPDATED'],
   NOTIFICATION: ['NOTIFIED'],
+  DOCUMENT_GENERATION: ['DOCUMENT_GENERATED'],
   END: ['COMPLETED'],
 };
 
@@ -132,8 +139,16 @@ export function transformCanvasToBackendGraph({
   nodes = [],
   edges = [],
   moduleName = 'ORDER',
-  triggerType = 'RECORD_CREATED',
+  triggerType,
 }) {
+  const isCustom =
+    moduleName === 'CUSTOM_WORKFLOW' ||
+    moduleName === 'CUSTOM' ||
+    String(moduleName).toUpperCase().includes('CUSTOM');
+
+  const resolvedTriggerType =
+    triggerType || (isCustom ? 'MANUAL_START' : 'RECORD_CREATED');
+
   const orderedNodes = sortNodesTopologically(nodes, edges);
 
   const steps = orderedNodes.map((node) => {
@@ -221,9 +236,9 @@ export function transformCanvasToBackendGraph({
     .filter(Boolean);
 
   return {
-    module: moduleName,
+    module: isCustom ? 'CUSTOM_WORKFLOW' : moduleName,
     trigger: {
-      type: triggerType,
+      type: resolvedTriggerType,
     },
     steps,
     transitions,

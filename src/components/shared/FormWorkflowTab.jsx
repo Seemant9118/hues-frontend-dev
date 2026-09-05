@@ -17,6 +17,7 @@ import {
 
 export function mapSystemModuleToWorkflowModule(moduleName = '') {
   const upper = String(moduleName || '').toUpperCase();
+  if (upper.includes('CUSTOM')) return 'CUSTOM_WORKFLOW';
   if (upper.includes('ORDER')) return 'ORDER';
   if (upper.includes('INVOICE') || upper.includes('B2C')) return 'INVOICE';
   if (upper.includes('PAYMENT')) return 'PAYMENT';

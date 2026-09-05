@@ -41,7 +41,10 @@ export class LocalStorageService {
     if (!isBrowser) return;
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i);
-      if (key && key.startsWith('form_config_')) {
+      if (
+        key &&
+        (key.startsWith('form_config_') || key.startsWith('custom_form_'))
+      ) {
         localStorage.removeItem(key);
       }
     }

@@ -5,7 +5,6 @@ import {
   getStylesForSelectComponent,
 } from '@/appUtils/helperFunctions';
 import { useDeveloperMode } from '@/context/DeveloperModeContext';
-import { LocalStorageService } from '@/lib/utils';
 import {
   getFormConfig,
   saveFormConfig,
@@ -267,8 +266,6 @@ export default function DynamicFormRenderer({
 
   // Revert layout to defaults
   const handleRevertConfiguration = async () => {
-    LocalStorageService.remove(`form_config_${module}`);
-    LocalStorageService.remove(`custom_form_${module}`);
     if (isCustom) {
       await resetCustomForm(module, etag);
       const data = await getCustomForm(module);

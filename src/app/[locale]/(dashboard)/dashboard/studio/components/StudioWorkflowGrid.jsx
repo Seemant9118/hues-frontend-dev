@@ -2,9 +2,11 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText } from 'lucide-react';
+import { FileText, Plus } from 'lucide-react';
+import CreateNewFormCard from '@/components/templates/CreateNewFormCard';
 import TemplateCard from '@/components/templates/TemplateCard';
 import Loading from '@/components/ui/Loading';
+import { Button } from '@/components/ui/button';
 
 export default function StudioWorkflowGrid({
   forms = [],
@@ -12,14 +14,18 @@ export default function StudioWorkflowGrid({
   emptyMessage = 'No system forms found',
   activeMenu,
   setActiveMenu,
+  isCustomTab = false,
+  onCreateNew,
 }) {
   const router = useRouter();
 
   const handleCardClick = (template) => {
-    if (template.isCustom) {
-      router.push(`/dashboard/studio/${template.id}?type=CUSTOM`);
+    if (template.isCustom || isCustomTab) {
+      router.push(
+        `/dashboard/studio/CUSTOM_WORKFLOW?definitionId=${template.id}&tab=custom`,
+      );
     } else {
-      router.push(`/dashboard/studio/${template.id}`);
+      router.push(`/dashboard/studio/${template.id}?tab=system`);
     }
   };
 
@@ -32,6 +38,29 @@ export default function StudioWorkflowGrid({
   }
 
   if (forms.length === 0) {
+    if (isCustomTab) {
+      return (
+        <div className="mt-6 flex flex-col items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white p-12 text-center shadow-sm">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <FileText className="h-8 w-8" />
+          </div>
+          <h3 className="mt-4 text-base font-semibold text-neutral-800">
+            {emptyMessage}
+          </h3>
+          <p className="mt-2 max-w-sm text-xs text-neutral-500">
+            Start building custom workflows with dynamic custom form nodes from
+            scratch.
+          </p>
+          {onCreateNew && (
+            <Button onClick={onCreateNew} size="sm">
+              <Plus size={14} />
+              Create a custom-workflow
+            </Button>
+          )}
+        </div>
+      );
+    }
+
     return (
       <div className="rounded-xl border border-dashed border-neutral-300 py-16 text-center text-xs text-neutral-500">
         <FileText className="mx-auto mb-2 h-8 w-8 text-neutral-400" />
@@ -42,6 +71,13 @@ export default function StudioWorkflowGrid({
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {isCustomTab && onCreateNew && (
+        <CreateNewFormCard
+          onClick={onCreateNew}
+          title="Create New Workflow"
+          description="Start building a custom workflow definition from scratch"
+        />
+      )}
       {forms.map((template) => (
         <TemplateCard
           key={template.id}
@@ -49,6 +85,8 @@ export default function StudioWorkflowGrid({
           onClick={() => handleCardClick(template)}
           activeMenu={activeMenu}
           setActiveMenu={setActiveMenu}
+          onView={() => handleCardClick(template)}
+          viewLabel="Open Workflow"
         />
       ))}
     </div>

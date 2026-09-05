@@ -1,5 +1,4 @@
 import { customFormApi } from '@/api/custom-forms/customFormApi';
-import { LocalStorageService } from '@/lib/utils';
 import { APIinstance } from '@/services';
 
 export const getAllCustomForms = async () => {
@@ -73,29 +72,10 @@ export const getCustomForm = async (formId) => {
         etag: etagVal,
       };
 
-      LocalStorageService.set(`custom_form_${formId}`, merged);
-      if (dataObj.id) {
-        LocalStorageService.set(`custom_form_${dataObj.id}`, merged);
-      }
-      if (dataObj.formKey) {
-        LocalStorageService.set(`custom_form_${dataObj.formKey}`, merged);
-      }
       return merged;
     }
     return dataObj;
   } catch (error) {
-    try {
-      const cached = LocalStorageService.get(`custom_form_${formId}`);
-      if (cached) {
-        return typeof cached === 'string' ? JSON.parse(cached) : cached;
-      }
-    } catch (cacheError) {
-      // eslint-disable-next-line no-console
-      console.error(
-        `Failed to load custom form ${formId} from cache:`,
-        cacheError,
-      );
-    }
     // eslint-disable-next-line no-console
     console.error(`Failed to fetch custom form ${formId}:`, error);
     return null;
@@ -129,14 +109,6 @@ export const updateCustomForm = async (formId, payload, etag) => {
         ...resData,
         etag: etagVal,
       };
-
-      LocalStorageService.set(`custom_form_${formId}`, updatedObj);
-      if (resData.id) {
-        LocalStorageService.set(`custom_form_${resData.id}`, updatedObj);
-      }
-      if (resData.formKey) {
-        LocalStorageService.set(`custom_form_${resData.formKey}`, updatedObj);
-      }
 
       return {
         status: true,
@@ -248,14 +220,6 @@ export const resetCustomForm = async (formId, etag) => {
         etag: etagVal,
       };
 
-      LocalStorageService.set(`custom_form_${formId}`, updatedObj);
-      if (resData.id) {
-        LocalStorageService.set(`custom_form_${resData.id}`, updatedObj);
-      }
-      if (resData.formKey) {
-        LocalStorageService.set(`custom_form_${resData.formKey}`, updatedObj);
-      }
-
       return {
         status: true,
         data: updatedObj,
@@ -333,9 +297,6 @@ export const activateCustomFormVersion = async (formId, version) => {
       `${customFormApi.activateCustomFormVersion.endpoint}/${formId}/versions/${version}/activate`,
       {},
     );
-    if (response.data && response.data.status && response.data.data) {
-      LocalStorageService.set(`custom_form_${formId}`, response.data.data);
-    }
     return response.data;
   } catch (error) {
     // eslint-disable-next-line no-console

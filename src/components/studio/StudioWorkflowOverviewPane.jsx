@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import StudioActionHeaderControls from '@/app/[locale]/(dashboard)/dashboard/studio/[id]/components/StudioActionHeaderControls';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link as LinkIcon, Sparkles } from 'lucide-react';
@@ -35,8 +36,10 @@ export default function StudioWorkflowOverviewPane({
 
   const {
     targetModule,
+    isCustomWorkflow,
     selectedWorkflowDef,
     detailData,
+    isDetailLoading,
     nodes,
     edges,
     selectedNodeId,
@@ -69,6 +72,15 @@ export default function StudioWorkflowOverviewPane({
     handleConnectNodes,
     handleDeleteEdge,
     handleArchiveWorkflow,
+    handleUnarchiveWorkflow,
+    formNodesWithoutSelection,
+    hasUnselectedFormNodes,
+    versionsList,
+    selectedVersionRecordId,
+    setSelectedVersionRecordId,
+    activeVersionId,
+    handleActivateVersion,
+    isActivatingVersion,
     handleNodeMouseDown,
     handleCanvasMouseMove,
     handleCanvasMouseUp,
@@ -108,8 +120,26 @@ export default function StudioWorkflowOverviewPane({
     };
   }, [detailData, selectedWorkflowDef, targetModule, nodes, edges]);
 
+  const isFullyConnected =
+    !hasUnconnectedNodes && !hasUnselectedFormNodes && nodes.length >= 2;
+
   return (
     <div className="space-y-4">
+      {/* Action Header Controls (Versions Dropdown, Activate, Editable Mode) */}
+      <div className="flex w-full items-center justify-end gap-2 pb-1">
+        <StudioActionHeaderControls
+          selectedVersionId={selectedVersionRecordId}
+          onSelectVersion={setSelectedVersionRecordId}
+          activeVersionId={activeVersionId}
+          isVersionsLoading={isDetailLoading}
+          versions={versionsList}
+          onActivateVersion={handleActivateVersion}
+          isActivatingVersion={isActivatingVersion}
+          isEditMode={isEditMode}
+          setIsEditMode={setIsEditMode}
+        />
+      </div>
+
       {/* Linking Active Notification Banner */}
       {linkingSourceId && (
         <div className="flex animate-pulse items-center justify-between rounded-lg border border-indigo-300 bg-indigo-50 p-3 text-xs text-indigo-900 shadow-sm">
@@ -141,8 +171,9 @@ export default function StudioWorkflowOverviewPane({
             <Sparkles className="h-4 w-4 text-blue-600" />
             <span>
               <strong>New Flow Canvas ({newWorkflowName || 'Draft'}):</strong>{' '}
-              Canvas reset to System Start node for system module{' '}
-              <strong>{targetModule}</strong>.
+              {isCustomWorkflow
+                ? 'Blank pane initialized for custom workflow. Add custom form steps to start.'
+                : `Canvas reset to System Start node for system module ${targetModule}.`}
             </span>
           </div>
           <Badge className="bg-blue-600 text-[10px] text-white">New Flow</Badge>
@@ -154,9 +185,11 @@ export default function StudioWorkflowOverviewPane({
         className={`relative flex flex-col rounded-xl transition-all duration-300 ${
           hasUnconnectedNodes
             ? 'border-2 border-red-500 bg-red-50/10 shadow-lg shadow-red-100/50 ring-2 ring-red-500/20'
-            : isValidated
-              ? 'border-2 border-emerald-500 bg-emerald-50/10 shadow-lg shadow-emerald-100/50 ring-2 ring-emerald-500/20'
-              : 'border border-neutral-200 bg-neutral-50/50'
+            : hasUnselectedFormNodes
+              ? 'border-2 border-amber-500 bg-amber-50/10 shadow-lg shadow-amber-100/50 ring-2 ring-amber-500/20'
+              : isFullyConnected || isValidated
+                ? 'border-2 border-emerald-500 bg-emerald-50/10 shadow-lg shadow-emerald-100/50 ring-2 ring-emerald-500/20'
+                : 'border border-neutral-200 bg-neutral-50/50'
         }`}
         style={{ minHeight: '480px' }}
       >
@@ -164,6 +197,8 @@ export default function StudioWorkflowOverviewPane({
         <CanvasOverlayCards
           hasUnconnectedNodes={hasUnconnectedNodes}
           unconnectedNodes={unconnectedNodes}
+          hasUnselectedFormNodes={hasUnselectedFormNodes}
+          formNodesWithoutSelection={formNodesWithoutSelection}
           isWarningDismissed={isWarningDismissed}
           onDismissWarning={() => setIsWarningDismissed(true)}
           onAutoConnectUnconnected={handleAutoConnectUnconnected}
@@ -187,6 +222,8 @@ export default function StudioWorkflowOverviewPane({
           onOpenJsonViewModal={() => setIsJsonViewModalOpen(true)}
           isArchiving={workflowMutations.isArchiving}
           onArchiveWorkflow={handleArchiveWorkflow}
+          isUnarchiving={workflowMutations.isUnarchiving}
+          onUnarchiveWorkflow={handleUnarchiveWorkflow}
           isValidating={workflowMutations.isValidating}
           hasUnconnectedNodes={hasUnconnectedNodes}
           onValidateGraph={handleValidateGraph}
@@ -203,7 +240,12 @@ export default function StudioWorkflowOverviewPane({
         {/* Main Flowchart Viewport Container */}
         <div className="grid flex-1 grid-cols-12 gap-3 overflow-hidden p-3">
           {/* Step Palette (Editable Mode) */}
-          {isEditMode && <StepPaletteSidebar onAddStep={handleAddStep} />}
+          {isEditMode && (
+            <StepPaletteSidebar
+              onAddStep={handleAddStep}
+              isCustomWorkflow={isCustomWorkflow}
+            />
+          )}
 
           {/* 2D Flowchart Canvas Grid */}
           <FlowchartCanvasGrid

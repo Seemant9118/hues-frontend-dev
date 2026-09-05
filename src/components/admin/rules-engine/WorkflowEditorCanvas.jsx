@@ -371,7 +371,10 @@ export default function WorkflowEditorCanvas({
       nodes,
       edges,
       moduleName,
-      triggerType: 'RECORD_CREATED',
+      triggerType:
+        moduleName === 'CUSTOM_WORKFLOW' || moduleName === 'CUSTOM'
+          ? 'MANUAL_START'
+          : 'RECORD_CREATED',
     });
   };
 
@@ -476,7 +479,11 @@ export default function WorkflowEditorCanvas({
           </h3>
 
           <div className="space-y-2">
-            {STEP_TYPES.map((st) => {
+            {STEP_TYPES.filter((st) =>
+              ['FORM', 'DATA_UPDATE', 'DOCUMENT_UPLOAD', 'END'].includes(
+                st.type,
+              ),
+            ).map((st) => {
               const getIcon = () => {
                 switch (st.type) {
                   case 'SYSTEM':

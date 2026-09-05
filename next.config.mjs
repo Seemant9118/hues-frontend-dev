@@ -18,8 +18,11 @@ const nextConfig = {
     return config;
   },
   images: {
-    domains: [
-      `hues-${process.env.NEXT_PUBLIC_NODE_ENV}.s3.ap-south-1.amazonaws.com`,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: `hues-${process.env.NEXT_PUBLIC_NODE_ENV}.s3.ap-south-1.amazonaws.com`,
+      },
     ],
   },
   experimental: {
