@@ -1,6 +1,3 @@
-'use client';
-
-import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -11,11 +8,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import React from 'react';
 
 export default function WorkflowFormFieldsRenderer({
   formFields = [],
   currentStepValues = {},
   formData = {},
+  errors = {},
   targetStepKey = '',
   onStepValueChange,
 }) {
@@ -30,7 +30,7 @@ export default function WorkflowFormFieldsRenderer({
         <Textarea
           rows={3}
           className="mt-1"
-          placeholder={`Enter form input values for step...`}
+          placeholder="Enter form input values for step..."
           value={currentStepValues.formNotes || ''}
           onChange={(e) =>
             onStepValueChange?.(targetStepKey, 'formNotes', e.target.value)
@@ -54,14 +54,30 @@ export default function WorkflowFormFieldsRenderer({
           (mappingKey ? formData?.customFields?.[mappingKey] : undefined) ??
           '';
 
+        const isFieldRequired = Boolean(
+          field.required === true ||
+          field.required === 'true' ||
+          field.isRequired === true ||
+          field.isRequired === 'true' ||
+          field.validation?.required === true,
+        );
+
+        const errorMessage =
+          errors?.[fieldKey] ||
+          (mappingKey ? errors?.[mappingKey] : null) ||
+          errors?.[`${targetStepKey}.${fieldKey}`] ||
+          errors?.[`${targetStepKey}_${fieldKey}`];
+
         return (
           <div
             key={field.id || fieldKey}
             className={field.type === 'TEXTAREA' ? 'md:col-span-2' : ''}
           >
-            <Label className="text-xs font-medium">
+            <Label className="flex items-center text-xs font-medium">
               <span>{field.label || fieldKey}</span>
-              {field.required && <span className="text-red-500">*</span>}
+              {isFieldRequired && (
+                <span className="ml-1 font-bold text-red-500">*</span>
+              )}
             </Label>
 
             {field.type === 'SELECT' ? (
@@ -71,7 +87,12 @@ export default function WorkflowFormFieldsRenderer({
                   onStepValueChange?.(targetStepKey, fieldKey, val)
                 }
               >
-                <SelectTrigger className="mt-1 bg-white text-sm">
+                <SelectTrigger
+                  className={cn(
+                    'mt-1 bg-white text-sm',
+                    errorMessage && 'border-red-500 ring-1 ring-red-500',
+                  )}
+                >
                   <SelectValue
                     placeholder={field.placeholder || `Select ${field.label}`}
                   />
@@ -90,7 +111,10 @@ export default function WorkflowFormFieldsRenderer({
             ) : field.type === 'TEXTAREA' ? (
               <Textarea
                 rows={3}
-                className="mt-1 bg-white text-sm"
+                className={cn(
+                  'mt-1 bg-white text-sm',
+                  errorMessage && 'border-red-500 ring-1 ring-red-500',
+                )}
                 placeholder={field.placeholder || `Enter ${field.label}`}
                 value={value}
                 onChange={(e) =>
@@ -100,7 +124,10 @@ export default function WorkflowFormFieldsRenderer({
             ) : field.type === 'NUMBER' ? (
               <Input
                 type="number"
-                className="mt-1 bg-white text-sm"
+                className={cn(
+                  'mt-1 bg-white text-sm',
+                  errorMessage && 'border-red-500 ring-1 ring-red-500',
+                )}
                 placeholder={field.placeholder || `Enter ${field.label}`}
                 value={value}
                 onChange={(e) =>
@@ -114,7 +141,10 @@ export default function WorkflowFormFieldsRenderer({
             ) : (
               <Input
                 type="text"
-                className="mt-1 bg-white text-sm"
+                className={cn(
+                  'mt-1 bg-white text-sm',
+                  errorMessage && 'border-red-500 ring-1 ring-red-500',
+                )}
                 placeholder={field.placeholder || `Enter ${field.label}`}
                 value={value}
                 onChange={(e) =>
@@ -123,11 +153,15 @@ export default function WorkflowFormFieldsRenderer({
               />
             )}
 
-            {field.helpText && (
+            {errorMessage ? (
+              <p className="mt-1 text-xs font-medium text-red-500">
+                {errorMessage}
+              </p>
+            ) : field.helpText ? (
               <p className="mt-1 text-sm text-muted-foreground">
                 {field.helpText}
               </p>
-            )}
+            ) : null}
           </div>
         );
       })}

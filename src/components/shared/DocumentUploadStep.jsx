@@ -20,6 +20,8 @@ export default function DocumentUploadStep({
   setFormData,
   stepKey,
   stepData,
+  errors = {},
+  setErrors,
 }) {
   const [isUploading, setIsUploading] = useState(false);
 
@@ -27,11 +29,26 @@ export default function DocumentUploadStep({
   const stepIdentifier =
     stepKey || targetStep.key || targetStep.id || 'DOCUMENT_UPLOAD';
 
+  const errorMsg =
+    errors?.attachments ||
+    errors?.[stepIdentifier] ||
+    errors?.[`${stepIdentifier}.attachments`];
+
   // Get current step uploaded attachments from formData
   const currentStepData = formData?.workflowStepValues?.[stepIdentifier] || {};
   const uploadedFiles = currentStepData.attachments || [];
 
   const updateFormDataDocuments = (newUploadedList) => {
+    if (setErrors && errorMsg) {
+      setErrors((prev) => {
+        if (!prev) return prev;
+        const next = { ...prev };
+        delete next.attachments;
+        delete next[stepIdentifier];
+        delete next[`${stepIdentifier}.attachments`];
+        return next;
+      });
+    }
     const attachmentIds = newUploadedList
       .map((f) => f.id)
       .filter((id) => id !== undefined && id !== null);
@@ -190,6 +207,10 @@ export default function DocumentUploadStep({
             )}
           </Button>
         </div>
+
+        {errorMsg && (
+          <p className="text-xs font-semibold text-destructive">* {errorMsg}</p>
+        )}
 
         {/* Uploaded Files List */}
         {uploadedFiles.length > 0 && (

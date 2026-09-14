@@ -2,7 +2,7 @@ import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import StepIndicator from './StepIndicator';
 
@@ -43,6 +43,12 @@ export default function MultiStepForm({
   const shouldRenderBreadcrumbList = useMemo(() => {
     return Array.isArray(breadcrumbs) && breadcrumbs.length > 0;
   }, [breadcrumbs]);
+
+  useEffect(() => {
+    if (currentStep >= steps.length && steps.length > 0) {
+      setCurrentStep(steps.length - 1);
+    }
+  }, [currentStep, steps.length]);
 
   const validateCurrentStep = () => {
     const currentStepConfig = steps[currentStep];
@@ -128,7 +134,8 @@ export default function MultiStepForm({
     onSubmit?.(action);
   };
 
-  const CurrentStepComponent = steps[currentStep].component;
+  const CurrentStepComponent =
+    steps[currentStep]?.component || steps[steps.length - 1]?.component || null;
 
   return (
     <div className="flex h-[calc(100vh-0px)] flex-col gap-2">
@@ -172,14 +179,16 @@ export default function MultiStepForm({
           {/* Step Component */}
           <div className="flex h-full flex-col px-4 py-6">
             <div className="flex-1">
-              <CurrentStepComponent
-                formData={formData}
-                setFormData={setFormData}
-                errors={errors}
-                translation={translation}
-                configFields={configFields}
-                isConfigLoading={isConfigLoading}
-              />
+              {CurrentStepComponent && (
+                <CurrentStepComponent
+                  formData={formData}
+                  setFormData={setFormData}
+                  errors={errors}
+                  translation={translation}
+                  configFields={configFields}
+                  isConfigLoading={isConfigLoading}
+                />
+              )}
             </div>
           </div>
         </div>

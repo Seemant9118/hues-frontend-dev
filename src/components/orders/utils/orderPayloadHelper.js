@@ -2,14 +2,30 @@ export const filterSubmitPayload = (orderData, formConfig = []) => {
   // Clone orderData so we do not mutate state
   const payload = { ...orderData };
 
-  // Remove internal configuration keys
-  delete payload._formFields;
-  delete payload.workflowStepValues;
-  delete payload.workflowNotes;
-  delete payload.workflowClientClass;
-  delete payload.formConfig;
-  delete payload.customFields;
-  delete payload.documents;
+  // Remove internal configuration, UI state, and transient keys
+  const transientKeys = [
+    '_formFields',
+    'workflowStepValues',
+    'workflowNotes',
+    'workflowClientClass',
+    'formConfig',
+    'customFields',
+    'documents',
+    'attachments',
+    'attachmentIds',
+    'documentIds',
+    'name',
+    'cta',
+    'isOrder',
+    'isCreatingSales',
+    'isCreatingPurchase',
+    'isPurchasePage',
+    'referenceOrderId',
+  ];
+
+  transientKeys.forEach((key) => {
+    delete payload[key];
+  });
 
   // 1. Populate extraInfo object preserving all non-workflow custom fields
   const extraInfoObj = {
@@ -73,33 +89,104 @@ export const buildEnhancedOrderPayload = (
 
       if (st.type === 'FORM') {
         const configId = Number(
-          st.formConfigurationId || st.formConfiguration?.id || 8,
+          st.formConfigurationId ||
+            st.formConfiguration?.id ||
+            st.formConfig?.id ||
+            stepValues[st.key]?.formConfigurationId ||
+            9,
         );
 
         const valuesObj = {};
+        const formFields =
+          st.formConfiguration?.fields ||
+          st.formConfig?.fields ||
+          st.fields ||
+          [];
 
-        // 1. Check formConfiguration.fields
-        if (Array.isArray(st.formConfiguration?.fields)) {
-          st.formConfiguration.fields.forEach((f) => {
-            if (f.key) workflowFieldKeys.add(f.key);
-            const val =
-              stepValues[st.key]?.[f.key] ??
-              orderData?.[f.key] ??
-              orderData?.customFields?.[f.key];
+        if (Array.isArray(formFields) && formFields.length > 0) {
+          formFields.forEach((f) => {
+            const fieldKey = f.key || f.name;
+            if (!fieldKey) return;
+            workflowFieldKeys.add(fieldKey);
 
-            if (val !== undefined && val !== null && val !== '') {
-              valuesObj[f.key] = val;
+            let rawVal =
+              stepValues[st.key]?.[fieldKey] ??
+              (f.mappingKey ? stepValues[st.key]?.[f.mappingKey] : undefined) ??
+              orderData?.[fieldKey] ??
+              (f.mappingKey ? orderData?.[f.mappingKey] : undefined) ??
+              orderData?.customFields?.[fieldKey] ??
+              (f.mappingKey
+                ? orderData?.customFields?.[f.mappingKey]
+                : undefined);
+
+            if (rawVal !== undefined && rawVal !== null && rawVal !== '') {
+              const isNumericField =
+                f.type === 'NUMBER' ||
+                f.inputType === 'number' ||
+                f.dataType === 'NUMBER';
+
+              if (isNumericField && !Number.isNaN(Number(rawVal))) {
+                rawVal = Number(rawVal);
+              } else if (
+                typeof rawVal === 'string' &&
+                /^\d+$/.test(rawVal.trim()) &&
+                (fieldKey.toLowerCase().includes('number') ||
+                  fieldKey.toLowerCase().includes('amount') ||
+                  fieldKey.toLowerCase().includes('qty') ||
+                  fieldKey.toLowerCase().includes('quantity') ||
+                  fieldKey.toLowerCase().includes('phone') ||
+                  fieldKey.toLowerCase().includes('mobile') ||
+                  fieldKey.toLowerCase().includes('pincode') ||
+                  fieldKey.toLowerCase().includes('postalcode'))
+              ) {
+                rawVal = Number(rawVal.trim());
+              }
+
+              valuesObj[fieldKey] = rawVal;
             }
           });
-        }
+        } else if (
+          stepValues[st.key] &&
+          typeof stepValues[st.key] === 'object'
+        ) {
+          const internalKeys = new Set([
+            'attachments',
+            'attachmentIds',
+            'documentIds',
+            'formConfig',
+            'formConfiguration',
+            'formConfigurationId',
+            'stepKey',
+            'stepType',
+            'status',
+            'notes',
+            'id',
+            '_formFields',
+            'errors',
+          ]);
 
-        // 2. Check any remaining values in stepValues[st.key]
-        if (stepValues[st.key]) {
-          Object.keys(stepValues[st.key]).forEach((k) => {
-            workflowFieldKeys.add(k);
-            const val = stepValues[st.key][k];
-            if (val !== undefined && val !== null && val !== '') {
-              valuesObj[k] = val;
+          Object.entries(stepValues[st.key]).forEach(([k, val]) => {
+            if (
+              !internalKeys.has(k) &&
+              val !== undefined &&
+              val !== null &&
+              val !== ''
+            ) {
+              workflowFieldKeys.add(k);
+              let cleanVal = val;
+              if (
+                typeof cleanVal === 'string' &&
+                /^\d+$/.test(cleanVal.trim()) &&
+                (k.toLowerCase().includes('number') ||
+                  k.toLowerCase().includes('amount') ||
+                  k.toLowerCase().includes('qty') ||
+                  k.toLowerCase().includes('quantity') ||
+                  k.toLowerCase().includes('phone') ||
+                  k.toLowerCase().includes('mobile'))
+              ) {
+                cleanVal = Number(cleanVal.trim());
+              }
+              valuesObj[k] = cleanVal;
             }
           });
         }
@@ -120,20 +207,36 @@ export const buildEnhancedOrderPayload = (
         const rawAttIds =
           stepValues[st.key]?.attachmentIds ||
           docObj?.attachmentIds ||
-          orderData?.attachmentIds;
+          (stepValues[st.key]?.attachments
+            ? stepValues[st.key].attachments.map((a) => a.id)
+            : null);
+
         const rawDocIds =
           stepValues[st.key]?.documentIds ||
           docObj?.documentIds ||
-          orderData?.documentIds;
+          (stepValues[st.key]?.attachments
+            ? stepValues[st.key].attachments.map((a) => a.documentId)
+            : null);
 
         const parseIds = (v) => {
-          if (Array.isArray(v))
-            return v.map(Number).filter((n) => !Number.isNaN(n));
+          if (Array.isArray(v)) {
+            return v
+              .map((item) =>
+                typeof item === 'object' && item !== null && item.id
+                  ? item.id
+                  : item,
+              )
+              .map(Number)
+              .filter((n) => !Number.isNaN(n));
+          }
           if (typeof v === 'string' && v.trim() !== '') {
             return v
               .split(',')
               .map((s) => Number(s.trim()))
               .filter((n) => !Number.isNaN(n));
+          }
+          if (typeof v === 'number' && !Number.isNaN(v)) {
+            return [v];
           }
           return [];
         };
@@ -141,29 +244,53 @@ export const buildEnhancedOrderPayload = (
         const attIds = parseIds(rawAttIds);
         const docIds = parseIds(rawDocIds);
 
-        actions.push({
-          stepKey: st.key,
-          action: 'UPLOAD_DOCUMENT',
-          attachmentIds: attIds,
-          documentIds: docIds,
-        });
+        if (attIds.length > 0 || docIds.length > 0) {
+          actions.push({
+            stepKey: st.key,
+            action: 'UPLOAD_DOCUMENT',
+            attachmentIds: attIds,
+            documentIds: docIds,
+          });
+        }
       }
     });
   }
 
-  // Remove all workflow step field keys from root of payload
+  // Remove all workflow step keys (e.g. FORM_2, DOCUMENT_UPLOAD_3, workflow-FORM_2)
+  if (Array.isArray(runtimeSteps)) {
+    runtimeSteps.forEach((st) => {
+      if (st.key) {
+        delete payload[st.key];
+        delete payload[`workflow-${st.key}`];
+      }
+    });
+  }
+
+  // Remove all workflow step field keys from root of payload and extraInfo
   workflowFieldKeys.forEach((wfKey) => {
     delete payload[wfKey];
+    if (payload.extraInfo) {
+      delete payload.extraInfo[wfKey];
+    }
   });
 
   // Also remove keys that came from workflowStepValues
   Object.keys(stepValues).forEach((sKey) => {
-    if (stepValues[sKey]) {
+    delete payload[sKey];
+    delete payload[`workflow-${sKey}`];
+    if (stepValues[sKey] && typeof stepValues[sKey] === 'object') {
       Object.keys(stepValues[sKey]).forEach((fKey) => {
         delete payload[fKey];
+        if (payload.extraInfo) {
+          delete payload.extraInfo[fKey];
+        }
       });
     }
   });
+
+  if (payload.extraInfo && Object.keys(payload.extraInfo).length === 0) {
+    delete payload.extraInfo;
+  }
 
   // Attach workflowInitialData if actions exist
   if (actions.length > 0) {

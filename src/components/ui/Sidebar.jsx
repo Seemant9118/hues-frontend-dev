@@ -13,6 +13,7 @@ import { useDeveloperMode } from '@/context/DeveloperModeContext';
 import { useFeatureFlags } from '@/context/FeatureFlagContext';
 import { useSidebarLayout } from '@/context/SidebarLayoutContext';
 import { usePermission } from '@/hooks/usePermissions';
+import { useCustomWorkflowDefinitions } from '@/hooks/workflows/useWorkflowRuntime';
 import { Link } from '@/i18n/routing';
 import { LocalStorageService } from '@/lib/utils';
 import {
@@ -33,6 +34,7 @@ import {
   Gauge,
   GitGraph,
   HandPlatter,
+  Layers,
   Network,
   IndianRupee,
   NotebookTabs,
@@ -89,6 +91,7 @@ const Sidebar = () => {
   const { isRouteEnabled } = useFeatureFlags();
   const { isCollapsed, toggleSidebar } = useSidebarLayout();
   const { hasPermission } = usePermission();
+  const { data: customWorkflows = [] } = useCustomWorkflowDefinitions();
   const router = useRouter();
 
   const isEnterpriseSwitched = Boolean(
@@ -182,6 +185,24 @@ const Sidebar = () => {
     }),
     [contactSubTabs],
   );
+
+  const customWorkflowLinks = useMemo(() => {
+    if (
+      !hasPermission(PERMISSIONS.VIEW_DASHBOARD) ||
+      !Array.isArray(customWorkflows)
+    ) {
+      return [];
+    }
+
+    return customWorkflows.map((def) => {
+      const defId = def.definitionId || def.id;
+      return {
+        name: def.name || 'Custom Workflow',
+        icon: <Layers size={ICON_SIZE} />,
+        path: `/dashboard/custom-workflows/${defId}`,
+      };
+    });
+  }, [hasPermission, customWorkflows]);
 
   const mainLinks = useMemo(() => {
     const links = [
@@ -390,6 +411,11 @@ const Sidebar = () => {
               icon: <ScrollText size={ICON_SIZE} />,
               path: '/dashboard/templates/forms',
             },
+            hasPermission(PERMISSIONS.VIEW_DASHBOARD) && {
+              name: 'Custom Forms',
+              icon: <FileText size={ICON_SIZE} />,
+              path: '/dashboard/custom-forms',
+            },
           ].filter(Boolean),
         },
       isDeveloperMode &&
@@ -399,11 +425,8 @@ const Sidebar = () => {
           icon: <Wrench size={ICON_SIZE} />,
           path: '/dashboard/studio',
         },
-      hasPermission(PERMISSIONS.VIEW_DASHBOARD) && {
-        name: 'Custom Forms',
-        icon: <ScrollText size={ICON_SIZE} />,
-        path: '/dashboard/custom-forms',
-      },
+
+      ...customWorkflowLinks,
       isRouteEnabled('/dashboard/work-flow-engine') &&
         isDeveloperMode &&
         hasPermission(PERMISSIONS.VIEW_DASHBOARD) && {
@@ -419,6 +442,7 @@ const Sidebar = () => {
     isRouteEnabled,
     contactSubTabs,
     contactsLink,
+    customWorkflowLinks,
     isDeveloperMode,
   ]);
 
