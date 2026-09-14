@@ -2,14 +2,14 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { getDefinitionSteps } from '@/components/custom-workflows/utils/customWorkflowPayloadHelper';
 import { CheckCircle2, FileText, UploadCloud } from 'lucide-react';
-import React from 'react';
 
 export default function CustomWorkflowFinalPreview({
   definition,
   formData = {},
 }) {
-  const steps = definition?.graph?.steps || definition?.steps || [];
+  const steps = getDefinitionSteps(definition);
   const allStepValues = formData?.workflowStepValues || {};
 
   return (

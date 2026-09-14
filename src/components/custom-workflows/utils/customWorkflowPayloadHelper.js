@@ -35,6 +35,38 @@ function cleanFieldValue(key, val, fieldDef = null) {
 }
 
 /**
+ * Robust extractor for workflow definition steps across different backend responses
+ */
+export function getDefinitionSteps(definition) {
+  if (!definition) return [];
+  return (
+    definition.graph?.steps ||
+    definition.runtime?.steps ||
+    definition.definition?.graph?.steps ||
+    definition.definition?.runtime?.steps ||
+    definition.definition?.steps ||
+    definition.steps ||
+    []
+  );
+}
+
+/**
+ * Robust extractor for workflow definition transitions across different backend responses
+ */
+export function getDefinitionTransitions(definition) {
+  if (!definition) return [];
+  return (
+    definition.graph?.transitions ||
+    definition.runtime?.transitions ||
+    definition.definition?.graph?.transitions ||
+    definition.definition?.runtime?.transitions ||
+    definition.definition?.transitions ||
+    definition.transitions ||
+    []
+  );
+}
+
+/**
  * Extract condition paths from workflow graph transitions
  */
 export function getConditionPathsFromTransitions(
@@ -173,7 +205,7 @@ export function buildInstanceStartPayload({
   formData = {},
   definition = null,
 }) {
-  const steps = definition?.graph?.steps || definition?.steps || [];
+  const steps = getDefinitionSteps(definition);
   const allStepValues = formData?.workflowStepValues || {};
   const rootCustomFields = formData?.customFields || {};
 
@@ -327,4 +359,60 @@ export function buildInstanceStartPayload({
       workflowData,
     },
   };
+}
+
+/**
+ * Validate a specific workflow step against its required fields/documents
+ */
+export function validateWorkflowStep(st, data) {
+  const errs = {};
+  const stepValues = data?.workflowStepValues?.[st.key] || {};
+
+  if (st.type === 'DOCUMENT_UPLOAD') {
+    const isReq = Boolean(
+      st.required === true ||
+      st.required === 'true' ||
+      st.isRequired === true ||
+      st.isRequired === 'true' ||
+      st.validation?.required === true,
+    );
+    const attachments = stepValues.attachments || [];
+    const docIds = stepValues.documentIds || [];
+    if (isReq && attachments.length === 0 && docIds.length === 0) {
+      errs.attachments = 'Please upload at least one required document';
+    }
+    return errs;
+  }
+
+  const fields =
+    st.formConfiguration?.fields || st.formConfig?.fields || st.fields || [];
+
+  fields.forEach((f) => {
+    const isReq = Boolean(
+      f.required === true ||
+      f.required === 'true' ||
+      f.isRequired === true ||
+      f.isRequired === 'true' ||
+      f.validation?.required === true,
+    );
+
+    if (isReq && f.visible !== false && f.state !== 'ARCHIVED') {
+      const val =
+        stepValues[f.key] ??
+        (f.mappingKey ? stepValues[f.mappingKey] : undefined) ??
+        data?.customFields?.[f.key] ??
+        (f.mappingKey ? data?.customFields?.[f.mappingKey] : undefined) ??
+        data?.[f.key];
+
+      if (
+        val === undefined ||
+        val === null ||
+        String(val).trim() === '' ||
+        (Array.isArray(val) && val.length === 0)
+      ) {
+        errs[f.key] = `${f.label || f.key} is required`;
+      }
+    }
+  });
+  return errs;
 }

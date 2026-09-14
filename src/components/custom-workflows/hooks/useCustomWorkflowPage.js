@@ -4,7 +4,8 @@ import {
   useCustomWorkflowRuntimeDefinition,
   useWorkflowInstancesInfinite,
 } from '@/hooks/workflows/useWorkflowRuntime';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
 export function useCustomWorkflowPage({ definitionId, limit = 10 }) {
@@ -12,7 +13,20 @@ export function useCustomWorkflowPage({ definitionId, limit = 10 }) {
   const searchParams = useSearchParams();
 
   // Check if ?create is present in the URL query string
-  const isCreating = searchParams ? searchParams.has('create') : false;
+  const isUrlCreating = searchParams
+    ? searchParams.has('create') || searchParams.get('create') === 'true'
+    : false;
+
+  const [isCreatingInternal, setIsCreatingInternal] = useState(
+    () => isUrlCreating,
+  );
+
+  // Sync internal state when URL search parameters change (e.g. back/forward navigation)
+  useEffect(() => {
+    setIsCreatingInternal(isUrlCreating);
+  }, [isUrlCreating]);
+
+  const isCreating = isUrlCreating || isCreatingInternal;
 
   const [selectedInstance, setSelectedInstance] = useState(null);
   const [isInspectOpen, setIsInspectOpen] = useState(false);
@@ -88,18 +102,21 @@ export function useCustomWorkflowPage({ definitionId, limit = 10 }) {
   }, [infiniteData]);
 
   const handleStartCreate = useCallback(() => {
+    setIsCreatingInternal(true);
     if (definitionId) {
       router.push(`/dashboard/custom-workflows/${definitionId}?create`);
     }
   }, [router, definitionId]);
 
   const handleCancelCreate = useCallback(() => {
+    setIsCreatingInternal(false);
     if (definitionId) {
       router.push(`/dashboard/custom-workflows/${definitionId}`);
     }
   }, [router, definitionId]);
 
   const handleCreateSuccess = useCallback(() => {
+    setIsCreatingInternal(false);
     if (definitionId) {
       router.push(`/dashboard/custom-workflows/${definitionId}`);
     }

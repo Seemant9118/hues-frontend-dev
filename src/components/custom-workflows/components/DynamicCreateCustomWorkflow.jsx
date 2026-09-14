@@ -4,7 +4,7 @@ import MultiStepForm from '@/components/shared/MultiStepForm/MultiStepForm';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import React from 'react';
-import { useDynamicCustomWorkflowCreate } from '../hooks/useDynamicCustomWorkflowCreate';
+import { useDynamicCustomWorkflowCreate } from '@/components/custom-workflows/hooks/useDynamicCustomWorkflowCreate';
 
 export default function DynamicCreateCustomWorkflow({
   definition,
@@ -30,10 +30,23 @@ export default function DynamicCreateCustomWorkflow({
     onSuccess,
   });
 
-  if (!activeDefinition || isFetchingDef || stepsConfig.length === 0) {
+  if (isFetchingDef) {
     return (
       <div className="flex h-full items-center justify-center p-12">
         <Loading />
+      </div>
+    );
+  }
+
+  if (!activeDefinition || stepsConfig.length === 0) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-4 p-12 text-center">
+        <p className="text-sm text-muted-foreground">
+          No workflow form steps found for this definition.
+        </p>
+        <Button variant="outline" size="sm" onClick={onCancel}>
+          Back to Instances
+        </Button>
       </div>
     );
   }

@@ -6,6 +6,8 @@ import React from 'react';
 
 export default function CustomWorkflowEmptyState({
   moduleName = 'Workflow',
+  title,
+  description,
   onCreate,
 }) {
   return (
@@ -14,11 +16,11 @@ export default function CustomWorkflowEmptyState({
         <Network className="h-7 w-7" />
       </div>
       <h3 className="mt-4 text-base font-bold text-gray-900">
-        No {moduleName} Responses Yet
+        {title || `No ${moduleName} Instances Found`}
       </h3>
       <p className="mt-1.5 max-w-sm text-xs text-muted-foreground">
-        No workflow instances or responses have been submitted for {moduleName}{' '}
-        yet. Click below to start and submit your first instance.
+        {description ||
+          `No execution responses have been created for this workflow yet. Click below to create the first one.`}
       </p>
       {onCreate && (
         <Button

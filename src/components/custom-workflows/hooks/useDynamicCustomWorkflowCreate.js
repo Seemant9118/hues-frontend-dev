@@ -8,12 +8,15 @@ import {
 } from '@/hooks/workflows/useWorkflowRuntime';
 import React, { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import CustomWorkflowFinalPreview from '../components/CustomWorkflowFinalPreview';
-import DynamicCustomWorkflowStep from '../components/DynamicCustomWorkflowStep';
+import CustomWorkflowFinalPreview from '@/components/custom-workflows/components/CustomWorkflowFinalPreview';
+import DynamicCustomWorkflowStep from '@/components/custom-workflows/components/DynamicCustomWorkflowStep';
 import {
   buildInstanceStartPayload,
   buildNextStepPreviewPayload,
-} from '../utils/customWorkflowPayloadHelper';
+  getDefinitionSteps,
+  getDefinitionTransitions,
+  validateWorkflowStep,
+} from '@/components/custom-workflows/utils/customWorkflowPayloadHelper';
 
 // Stable component caches to avoid remounting inputs on re-render
 const stepComponentCache = new Map();
@@ -65,7 +68,10 @@ export function useDynamicCustomWorkflowCreate({
       enabled: !definition && Boolean(definitionId),
     });
 
-  const activeDefinition = definition || runtimeDef;
+  const activeDefinition = useMemo(() => {
+    const base = definition || runtimeDef;
+    return base?.definition || base?.data || base;
+  }, [definition, runtimeDef]);
 
   const [formData, setFormData] = useState(() => ({
     workflowStepValues: {},
@@ -81,15 +87,11 @@ export function useDynamicCustomWorkflowCreate({
   const isSubmitting = isStarting || isSubmittingAction;
 
   const rawSteps = useMemo(() => {
-    return activeDefinition?.graph?.steps || activeDefinition?.steps || [];
+    return getDefinitionSteps(activeDefinition);
   }, [activeDefinition]);
 
   const rawTransitions = useMemo(() => {
-    return (
-      activeDefinition?.graph?.transitions ||
-      activeDefinition?.transitions ||
-      []
-    );
+    return getDefinitionTransitions(activeDefinition);
   }, [activeDefinition]);
 
   const hasTransitionsWithCondition = useMemo(() => {
@@ -139,61 +141,7 @@ export function useDynamicCustomWorkflowCreate({
       label: st.label || st.key,
       stepType: st.type,
       component: getCustomStepComponent(st),
-      validate: (data) => {
-        const errs = {};
-        const stepValues = data?.workflowStepValues?.[st.key] || {};
-
-        if (st.type === 'DOCUMENT_UPLOAD') {
-          const isReq = Boolean(
-            st.required === true ||
-            st.required === 'true' ||
-            st.isRequired === true ||
-            st.isRequired === 'true' ||
-            st.validation?.required === true,
-          );
-          const attachments = stepValues.attachments || [];
-          const docIds = stepValues.documentIds || [];
-          if (isReq && attachments.length === 0 && docIds.length === 0) {
-            errs.attachments = 'Please upload at least one required document';
-          }
-          return errs;
-        }
-
-        const fields =
-          st.formConfiguration?.fields ||
-          st.formConfig?.fields ||
-          st.fields ||
-          [];
-
-        fields.forEach((f) => {
-          const isReq = Boolean(
-            f.required === true ||
-            f.required === 'true' ||
-            f.isRequired === true ||
-            f.isRequired === 'true' ||
-            f.validation?.required === true,
-          );
-
-          if (isReq && f.visible !== false && f.state !== 'ARCHIVED') {
-            const val =
-              stepValues[f.key] ??
-              (f.mappingKey ? stepValues[f.mappingKey] : undefined) ??
-              data?.customFields?.[f.key] ??
-              (f.mappingKey ? data?.customFields?.[f.mappingKey] : undefined) ??
-              data?.[f.key];
-
-            if (
-              val === undefined ||
-              val === null ||
-              String(val).trim() === '' ||
-              (Array.isArray(val) && val.length === 0)
-            ) {
-              errs[f.key] = `${f.label || f.key} is required`;
-            }
-          }
-        });
-        return errs;
-      },
+      validate: (data) => validateWorkflowStep(st, data),
     }));
 
     // Final preview step
