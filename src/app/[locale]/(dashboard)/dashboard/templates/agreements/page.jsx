@@ -3,22 +3,22 @@
 'use client';
 
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
-import TemplateCard, {
-  CreateTemplateCard,
-} from '@/components/templates/TemplateCard';
+import TemplateCard from '@/components/templates/TemplateCard';
 import Loading from '@/components/ui/Loading';
 import SubHeader from '@/components/ui/Sub-header';
 import { FeatureFlagWrapper } from '@/components/wrappers/FeatureFlagWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 
 import TemplateTypeModal from '@/components/Modals/TemplateTypeModal';
+import { Button } from '@/components/ui/button';
+import AgreementShareModal from '@/components/Modals/AgreementShareModal';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import {
   deleteTemplate,
   getTemplates,
 } from '@/services/template-builder/TemplateBuilderServices';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Clock, FileText, LayoutGrid, Plus } from 'lucide-react';
+import { FileText, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
@@ -31,6 +31,7 @@ export default function TemplatesListingPage() {
   const enterpriseId = getEnterpriseId();
   const [activeMenu, setActiveMenu] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [sharingAgreement, setSharingAgreement] = useState(null);
 
   const isFeatureEnabled = useFeatureFlag('BUILDER_TEMPLATES');
   const { hasPermission } = usePermission();
@@ -113,19 +114,13 @@ export default function TemplatesListingPage() {
     <FeatureFlagWrapper flag="BUILDER_TEMPLATES" redirectTo="/dashboard">
       <ProtectedWrapper permissionCode="permission:form-config-manage">
         <Wrapper>
-          {/* Sub Header */}
-          <SubHeader name="Agreements" />
-
-          {/* Page Heading & Filters */}
-          <div className="mt-2 flex items-center justify-between border-b border-neutral-100 p-1">
-            <div className="flex items-center gap-2 text-sm font-medium text-neutral-500">
-              <LayoutGrid size={16} />
-              <span>Grid View</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-neutral-400">
-              <Clock size={12} />
-              <span>Sorted by last modified</span>
-            </div>
+          {/* Sub Header & CTA */}
+          <div className="flex items-end justify-between">
+            <SubHeader name="Agreements" />
+            <Button onClick={() => setIsModalOpen(true)} size="sm">
+              <Plus size={16} className="mr-2" />
+              Create a new Agreement
+            </Button>
           </div>
 
           {isLoading ? (
@@ -153,13 +148,6 @@ export default function TemplatesListingPage() {
             </div>
           ) : (
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {/* Create New Card */}
-              <CreateTemplateCard
-                onClick={() => setIsModalOpen(true)}
-                title="Create a new template"
-                description="Start building a customized agreement from scratch"
-              />
-
               {/* Template Cards */}
               {templates.map((template) => (
                 <TemplateCard
@@ -170,6 +158,12 @@ export default function TemplatesListingPage() {
                   }
                   onEdit={handleEdit}
                   onDelete={handleDelete}
+                  onShare={(id, e) => {
+                    e.stopPropagation();
+                    setActiveMenu(null);
+                    setSharingAgreement(template);
+                  }}
+                  shareLabel="Share Agreement"
                   activeMenu={activeMenu}
                   setActiveMenu={setActiveMenu}
                 />
@@ -183,6 +177,13 @@ export default function TemplatesListingPage() {
             title="Select Template Type"
             description="What type of template do you want to create?"
           />
+          {sharingAgreement && (
+            <AgreementShareModal
+              isOpen={!!sharingAgreement}
+              onClose={() => setSharingAgreement(null)}
+              agreement={sharingAgreement}
+            />
+          )}
         </Wrapper>
       </ProtectedWrapper>
     </FeatureFlagWrapper>

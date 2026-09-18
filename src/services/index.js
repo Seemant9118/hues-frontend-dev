@@ -19,7 +19,8 @@ let failedQueue = []; // requests waiting for the refresh to finish
 const forceLogout = () => {
   if (
     typeof window !== 'undefined' &&
-    window.location.search.includes('boneyard=true')
+    (window.location.search.includes('boneyard=true') ||
+      window.location.pathname.includes('/shared-resources'))
   ) {
     return;
   }
@@ -66,6 +67,14 @@ APIinstance.interceptors.response.use(
 
     // Only handle 401 (Unauthorized) for token refresh
     if (statusCode !== 401) {
+      return Promise.reject(error);
+    }
+
+    // Public / shared routes should not force logout if a request returns 401
+    if (
+      typeof window !== 'undefined' &&
+      window.location.pathname.includes('/shared-resources')
+    ) {
       return Promise.reject(error);
     }
 

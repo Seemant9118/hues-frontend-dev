@@ -28,15 +28,16 @@ import {
   FileCheck,
   FileSignature,
   FileSignatureIcon,
+  FileSliders,
   FileSymlink,
   FileText,
   FileTextIcon,
   Gauge,
   GitGraph,
   HandPlatter,
+  IndianRupee,
   Layers,
   Network,
-  IndianRupee,
   NotebookTabs,
   NotepadText,
   Package,
@@ -44,6 +45,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   PencilRuler,
+  PencilRulerIcon,
   ReceiptIndianRupee,
   ReceiptText,
   ScrollText,
@@ -386,14 +388,15 @@ const Sidebar = () => {
       },
       hasPermission(PERMISSIONS.CONFIG_MANAGE) &&
         (isRouteEnabled('/dashboard/templates/agreements') ||
-          isRouteEnabled('/dashboard/templates/forms') ||
+          isRouteEnabled('/dashboard/templates/system-forms') ||
+          isRouteEnabled('/dashboard/templates/custom-forms') ||
           isRouteEnabled('/dashboard/templates/contracts')) && {
           name: 'sidebar.templates',
           icon: <Blocks size={ICON_SIZE} />,
           path: isRouteEnabled('/dashboard/templates/agreements')
             ? '/dashboard/templates/agreements'
-            : isRouteEnabled('/dashboard/templates/forms')
-              ? '/dashboard/templates/forms'
+            : isRouteEnabled('/dashboard/templates/system-forms')
+              ? '/dashboard/templates/system-forms'
               : '/dashboard/templates/contracts',
           subTab: [
             isRouteEnabled('/dashboard/templates/agreements') && {
@@ -406,24 +409,36 @@ const Sidebar = () => {
               icon: <FileSignatureIcon size={ICON_SIZE} />,
               path: '/dashboard/templates/contracts',
             },
-            isRouteEnabled('/dashboard/templates/forms') && {
-              name: 'sidebar.subTabs.forms',
-              icon: <ScrollText size={ICON_SIZE} />,
-              path: '/dashboard/templates/forms',
+            isRouteEnabled('/dashboard/templates/system-forms') && {
+              name: 'System Forms',
+              icon: <FileSliders size={ICON_SIZE} />,
+              path: '/dashboard/templates/system-forms',
             },
-            hasPermission(PERMISSIONS.VIEW_DASHBOARD) && {
+            isRouteEnabled('/dashboard/templates/custom-forms') && {
               name: 'Custom Forms',
-              icon: <FileText size={ICON_SIZE} />,
-              path: '/dashboard/custom-forms',
+              icon: <PencilRulerIcon size={ICON_SIZE} />,
+              path: '/dashboard/templates/custom-forms',
             },
           ].filter(Boolean),
         },
       isDeveloperMode &&
         hasPermission(PERMISSIONS.CONFIG_MANAGE) &&
         isRouteEnabled('/dashboard/studio') && {
-          name: 'sidebar.studio',
-          icon: <Wrench size={ICON_SIZE} />,
-          path: '/dashboard/studio',
+          name: 'Studio Workflows',
+          icon: <Network size={ICON_SIZE} />,
+          path: '/dashboard/studio/system-workflows',
+          subTab: [
+            {
+              name: 'System Workflows',
+              icon: <Blocks size={ICON_SIZE} />,
+              path: '/dashboard/studio/system-workflows',
+            },
+            {
+              name: 'Custom Workflows',
+              icon: <Wrench size={ICON_SIZE} />,
+              path: '/dashboard/studio/custom-workflows',
+            },
+          ],
         },
 
       ...customWorkflowLinks,

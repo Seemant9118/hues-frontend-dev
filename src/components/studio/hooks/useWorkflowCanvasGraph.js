@@ -66,6 +66,7 @@ export function useWorkflowCanvasGraph({
 
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
+  const [graphConfig, setGraphConfig] = useState({});
   const [selectedNodeForModal, setSelectedNodeForModal] = useState(null);
   const [selectedNodeId, setSelectedNodeId] = useState(null);
 
@@ -257,6 +258,7 @@ export function useWorkflowCanvasGraph({
       const parsed = transformBackendGraphToCanvas(currentGraphToRender);
       let initialNodes = parsed.nodes || [];
       const initialEdges = parsed.edges || [];
+      const initialGraphConfig = parsed.graphConfig || {};
 
       // Ensure System Start node presence ONLY for system workflows
       if (!isCustomWorkflow) {
@@ -288,6 +290,7 @@ export function useWorkflowCanvasGraph({
       // Render strictly according to backend graph payload edges (no synthetic duplicate connections)
       setNodes(initialNodes);
       setEdges(initialEdges);
+      setGraphConfig(initialGraphConfig);
       setIsValidated(activeVersionObj?.valid !== false);
       setIsDraftSaved(true);
       setHasUnsavedChanges(false);
@@ -631,6 +634,13 @@ export function useWorkflowCanvasGraph({
     setHasUnsavedChanges(true);
   };
 
+  const handleUpdateGraphConfig = (newConfig) => {
+    setGraphConfig(newConfig);
+    setIsValidated(false);
+    setIsDraftSaved(false);
+    setHasUnsavedChanges(true);
+  };
+
   // Delete Step Node
   const handleDeleteNode = (nodeId) => {
     const nodeToDelete = nodes.find((n) => n.id === nodeId);
@@ -856,6 +866,7 @@ export function useWorkflowCanvasGraph({
       edges,
       moduleName: targetModule,
       triggerType: isCustomWorkflow ? 'MANUAL_START' : 'RECORD_CREATED',
+      graphConfig,
     });
 
     if (isCreatingNewFlow || selectedDefinitionId === 'LOCAL_TEMP_DRAFT') {
@@ -909,12 +920,6 @@ export function useWorkflowCanvasGraph({
     });
   };
 
-  // SVG Bezier paths for edge transitions
-  const svgEdges = useMemo(() => computeSvgEdges(nodes, edges), [nodes, edges]);
-
-  // Dynamic canvas width
-  const canvasWidth = useMemo(() => computeCanvasWidth(nodes), [nodes]);
-
   return {
     targetModule,
     isCustomWorkflow,
@@ -950,9 +955,11 @@ export function useWorkflowCanvasGraph({
     pendingEventTarget,
     setPendingEventTarget,
     canvasRef,
-    svgEdges,
-    canvasWidth,
+    svgEdges: computeSvgEdges(nodes, edges),
+    canvasWidth: computeCanvasWidth(nodes),
     workflowMutations,
+    graphConfig,
+    handleUpdateGraphConfig,
     handleAddStep,
     handleUpdateNodeForm,
     handleUpdateNodeDataConfig,

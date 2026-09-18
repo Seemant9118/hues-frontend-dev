@@ -1,82 +1,31 @@
 'use client';
 
-import { auditLogsAPIs } from '@/api/auditLogs/auditLogsApi';
-import { invitation } from '@/api/invitation/Invitation';
-import { invoiceApi } from '@/api/invoice/invoiceApi';
-import { orderApi } from '@/api/order_api/order_api';
-import { stockInOutAPIs } from '@/api/stockInOutApis/stockInOutAPIs';
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
 import DynamicModal from '@/components/Modals/DynamicModal';
 import ProxyAcceptanceModal from '@/components/Modals/ProxyAcceptanceModal';
-import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
-import Tooltips from '@/components/auth/Tooltips';
-import CommentBox from '@/components/comments/CommentBox';
 import PINVerifyModal from '@/components/invoices/PINVerifyModal';
-import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import EditOrder from '@/components/orders/EditOrderS';
 import NegotiationHistory from '@/components/orders/NegotiationHistory';
-import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
-import PaymentDetails from '@/components/payments/PaymentDetails';
 import AccessDenied from '@/components/shared/AccessDenied';
-import { DataTable } from '@/components/table/data-table';
 import Loading from '@/components/ui/Loading';
-import TimelineItem from '@/components/ui/TimelineItem';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
 import { usePermission } from '@/hooks/usePermissions';
 import { useRouter } from '@/i18n/routing';
-import { getOrderAudits } from '@/services/AuditLogs_Services/AuditLogsService';
-import { getInvitationStatus } from '@/services/Invitation_Service/Invitation_Service';
-import {
-  acceptOrder,
-  withDrawOrder,
-} from '@/services/Invoice_Services/Invoice_Services';
-import {
-  bulkNegotiateAcceptOrReject,
-  bulkNegotiateAcceptOrRejectOnBehalf,
-  OrderDetails,
-  remindOrder,
-  updateOrderForUnrepliedSales,
-  viewOrderinNewTab,
-} from '@/services/Orders_Services/Orders_Services';
-import { stockOut } from '@/services/Stock_In_Stock_Out_Services/StockInOutServices';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  Check,
-  CheckCheck,
-  Eye,
-  FileText,
-  Handshake,
-  HeartHandshake,
-  IndianRupee,
-  Package,
-  Pencil,
-  X,
-} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import ActionsCard from '@/components/shared/ActionsCard';
-import { useSalesOrderColumns } from './useSalesOrderColumns';
+import { useEffect, useMemo, useState } from 'react';
+
+import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
+import { CheckCheck } from 'lucide-react';
+import SalesOrderHeader from './components/SalesOrderHeader';
+import SalesOrderTabs from './components/SalesOrderTabs';
+import { useSalesOrderActions } from './hooks/useSalesOrderActions';
+import { useSalesOrderQueries } from './hooks/useSalesOrderQueries';
 
 // dynamic imports
-const OrdersOverview = dynamic(
-  () => import('@/components/orders/OrdersOverview'),
-  {
-    loading: () => <Loading />,
-  },
-);
-const PastInvoices = dynamic(
-  () => import('@/components/invoices/PastInvoices'),
-  {
-    loading: () => <Loading />,
-  },
-);
 const NegotiationComponent = dynamic(
   () => import('@/components/orders/NegotiationComponent'),
   {
@@ -109,20 +58,18 @@ const ViewOrder = () => {
 
   const translations = useTranslations('sales.sales-orders.order_details');
   const { hasPermission } = usePermission();
-  const queryClient = useQueryClient();
   const router = useRouter();
   const params = useParams();
   const enterpriseId = getEnterpriseId();
   const searchParams = useSearchParams();
+
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const [isEditingServiceOrder, setIsEditingServiceOrder] = useState(false);
   const [isNegotiation, setIsNegotiation] = useState(false);
   const [isGenerateInvoice, setIsGenerateInvoice] = useState(false);
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
   const [viewNegotiationHistory, setViewNegotiationHistory] = useState(false);
-  // const [isUploadingAttachements, setIsUploadingAttachements] = useState(false);
   const [tab, setTab] = useState('overview');
-  // const [files, setFiles] = useState([]);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [proxyModalOpen, setProxyModalOpen] = useState(false);
   const [isNegotiateOnBehalf, setIsNegotiateOnBehalf] = useState(false);
@@ -138,55 +85,7 @@ const ViewOrder = () => {
     setTab(value);
   };
 
-  const salesOrdersBreadCrumbs = [
-    {
-      id: 1,
-      name: translations('title.sales'),
-      path: '/dashboard/sales/sales-orders',
-      show: true, // Always show
-    },
-    {
-      id: 2,
-      name: translations('title.order_details'),
-      path: `/dashboard/sales/sales-orders/${params.order_id}`,
-      show: true, // Always show
-    },
-    {
-      id: 3,
-      name: isNegotiateOnBehalf
-        ? 'Negotiate on Behalf'
-        : translations('title.negotiation'),
-      path: `/dashboard/sales/sales-orders/${params.order_id}`,
-      show: isNegotiation, // Show only if isNegotiation is true
-    },
-    {
-      id: 4,
-      name: translations('title.generate_invoice'),
-      path: `/dashboard/sales/sales-orders/${params.order_id}`,
-      show: isGenerateInvoice, // Show only if isGenerateInvoice is true
-    },
-    {
-      id: 5,
-      name: translations('title.record_payment'),
-      path: `/dashboard/sales/sales-orders/${params.order_id}`,
-      show: isRecordingPayment, // Show only if isGenerateInvoice is true
-    },
-    {
-      id: 6,
-      name: 'Negotiation History',
-      path: `/dashboard/sales/sales-orders/${params.order_id}`,
-      show: viewNegotiationHistory, // Show only if viewNegotiatioHistory is true
-    },
-    {
-      id: 7,
-      name: 'Edit Order',
-      path: `/dashboard/sales/sales-orders/${params.order_id}`,
-      show: isEditingOrder || isEditingServiceOrder, // Show only if isEditingOrder is true
-    },
-  ];
-
   useEffect(() => {
-    // Read the state from the query parameters
     const state = searchParams.get('state');
     setIsEditingOrder(state === 'editOrder');
     setIsEditingServiceOrder(state === 'editServiceOrder');
@@ -197,11 +96,9 @@ const ViewOrder = () => {
     setIsGenerateInvoice(state === 'generateInvoice');
     setIsRecordingPayment(state === 'recordPayment');
     setViewNegotiationHistory(state === 'negotiationHistory');
-    // setIsUploadingAttachements(state === 'uploadingAttachements');
   }, [searchParams]);
 
   useEffect(() => {
-    // Update URL based on the state (avoid shallow navigation for full update)
     let newPath = `/dashboard/sales/sales-orders/${params.order_id}`;
 
     if (isNegotiation) {
@@ -222,7 +119,6 @@ const ViewOrder = () => {
       newPath += '';
     }
 
-    // Use router.replace instead of push to avoid adding a new history entry
     router.push(newPath);
   }, [
     isNegotiation,
@@ -236,199 +132,95 @@ const ViewOrder = () => {
     router,
   ]);
 
-  useEffect(() => {
-    queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
-  }, [isNegotiation]);
-
-  // api calling for order timeline
-  const { isLoading: isTimeLinesDataLoading, data: timeLineData } = useQuery({
-    queryKey: [auditLogsAPIs.getOrderAudits.endpointKey],
-    queryFn: () => getOrderAudits(params.order_id),
-    select: (data) => data.data.data,
-    enabled: tab === 'timeline',
-  });
-
-  // api calling for orderDEtails
   const {
+    isTimeLinesDataLoading,
+    timeLineData,
     isLoading,
-    data: orderDetails,
+    orderDetails,
     error,
-  } = useQuery({
-    queryKey: [orderApi.getOrderDetails.endpointKey],
-    queryFn: () => OrderDetails(params.order_id),
-    select: (data) => data.data.data,
-    enabled: hasPermission('permission:sales-view'),
-    retry: (failureCount, error) => {
-      // Don't retry if it's a 403 error
-      if (error?.response?.status === 403) return false;
-      return failureCount < 3;
-    },
+    invitationData,
+    acceptMutation,
+    handleAccept,
+    handleProxyAccept,
+    stockOutMutation,
+    acceptOrderMutation,
+    withdrawOrderMutation,
+    remindOrderMutation,
+    unRepliedInvoiceMutation,
+  } = useSalesOrderQueries({
+    orderId: params.order_id,
+    tab,
+    hasPermission,
+    translations,
+    setModalData,
+    setWithdrawModalOpen,
+    setIsPINError,
+    router,
   });
 
-  const { data: invitationData } = useQuery({
-    queryKey: [
-      invitation.getInvitationStatus.endpointKey,
-      orderDetails?.buyerId,
-    ],
-    queryFn: () => getInvitationStatus({ buyerId: orderDetails?.buyerId }),
-    select: (data) => data.data.data,
-    enabled: orderDetails?.buyerType === 'UNINVITED-ENTERPRISE',
-    refetchOnWindowFocus: false,
+  const {
+    ctaList,
+    recommendedActions,
+    ancillaryActions,
+    cancelAction,
+    hasAnyActions,
+  } = useSalesOrderActions({
+    orderDetails,
+    isGenerateInvoice,
+    isRecordingPayment,
+    isNegotiation,
+    viewNegotiationHistory,
+    hasPermission,
+    enterpriseId,
+    tab,
+    params,
+    translations,
+    acceptMutation,
+    handleAccept,
+    setIsNegotiation,
+    setIsNegotiateOnBehalf,
+    setProxyModalOpen,
+    setIsRecordingPayment,
+    setIsEditingOrder,
+    setIsEditingServiceOrder,
+    acceptOrderMutation,
+    setModalData,
+    remindOrderMutation,
+    unRepliedInvoiceMutation,
+    setIsGenerateInvoice,
+    stockOutMutation,
+    setWithdrawModalOpen,
   });
 
-  // accept mutation
-  const acceptMutation = useMutation({
-    mutationKey: orderApi.bulkNegotiateAcceptOrReject.endpointKey,
-    mutationFn: bulkNegotiateAcceptOrReject,
-    onSuccess: () => {
-      toast.success(translations('successMsg.order_accepted'));
-      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
-    },
-    onError: (error) => {
-      toast.error(
-        error.response.data.message || translations('errorMsg.common'),
-      );
-    },
-  });
+  const customFormsGroups = useMemo(() => {
+    const responses = orderDetails?.customFormResponses || [];
+    if (!responses.length) return [];
 
-  const acceptOnBehalfMutation = useMutation({
-    mutationKey: orderApi.bulkNegotiateAcceptOrRejectOnBehalf.endpointKey,
-    mutationFn: bulkNegotiateAcceptOrRejectOnBehalf,
-    onSuccess: () => {
-      toast.success(translations('successMsg.order_accepted'));
-      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
-    },
-    onError: (error) => {
-      toast.error(
-        error.response.data.message || translations('errorMsg.common'),
-      );
-    },
-  });
+    const groupsMap = new Map();
 
-  const handleAccept = () => {
-    acceptMutation.mutate({
-      orderId: Number(params.order_id),
-      status: 'ACCEPTED',
-    });
-  };
-
-  const handleProxyAccept = (proxyData) => {
-    // FORMDATA
-    const formData = new FormData();
-    formData.append('orderId', Number(params.order_id));
-    formData.append('status', 'ACCEPTED');
-    formData.append('isProxy', true);
-    formData.append('reason', proxyData.reason);
-    formData.append('consentNote', proxyData.consentNote);
-    if (proxyData.files && proxyData.files.length > 0) {
-      proxyData.files.forEach((file) => {
-        formData.append('files', file);
-      });
-    }
-    acceptOnBehalfMutation.mutate(formData);
-  };
-
-  const stockOutMutation = useMutation({
-    mutationKey: [stockInOutAPIs.stockOut.endpointKey],
-    mutationFn: stockOut,
-    onSuccess: () => {
-      toast.success(translations('successMsg.stock_out'));
-      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
-    },
-    onError: (error) => {
-      toast.error(
-        error.response.data.message || translations('errorMsg.common'),
-      );
-    },
-  });
-
-  const acceptOrderMutation = useMutation({
-    mutationKey: [invoiceApi.acceptOrder.endpointKey],
-    mutationFn: acceptOrder,
-    onSuccess: (res) => {
-      toast.success(translations('ctas.mark_as_confirmed_offline.successMsg'));
-      setModalData((prev) => ({
-        ...prev,
-        isOpen: false,
-      }));
-      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
-      router.push(
-        `/dashboard/sales/sales-orders/${res?.data?.data?.orderId}?state=generateInvoice`,
-      );
-    },
-    onError: (error) => {
-      toast.error(
-        error.response.data.message ||
-          translations('ctas.mark_as_confirmed_offline.errorMsg') ||
-          translations('errorMsg.common'),
-      );
-    },
-  });
-
-  // for order withdraw
-  const withdrawOrderMutation = useMutation({
-    mutationKey: [invoiceApi.withDrawOrder.endpointKey],
-    mutationFn: withDrawOrder,
-    onSuccess: () => {
-      toast.success(translations('ctas.cancel.successMsg'));
-      setModalData((prev) => ({
-        ...prev,
-        isOpen: false,
-      }));
-      setWithdrawModalOpen(false);
-      setIsPINError(false);
-      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
-    },
-    onError: (error) => {
-      if (error?.response?.data?.message?.toLowerCase()?.includes('pin')) {
-        setIsPINError(true);
+    responses.forEach((res) => {
+      const formId = res.formConfigurationId;
+      if (!groupsMap.has(formId)) {
+        groupsMap.set(formId, {
+          formId,
+          formName: res.formConfiguration?.name || 'Custom Form',
+          fields: res.formConfiguration?.fields || [],
+          data: [],
+        });
       }
-      toast.error(
-        error.response?.data?.message ||
-          translations('ctas.cancel.errorMsg') ||
-          translations('errorMsg.common'),
-      );
-    },
-  });
 
-  const remindOrderMutation = useMutation({
-    mutationKey: [orderApi.remindOrder.endpointKey],
-    mutationFn: () => remindOrder(Number(params.order_id)),
-    onSuccess: () => {
-      toast.success('Reminder Send Successfully');
+      const group = groupsMap.get(formId);
+      group.data.push({
+        ...res.values,
+        __id: res.id,
+      });
+    });
 
-      setModalData((prev) => ({
-        ...prev,
-        isOpen: false,
-      }));
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || 'Something went wrong');
-    },
-  });
+    return Array.from(groupsMap.values());
+  }, [orderDetails?.customFormResponses]);
 
-  // for making invoice of unrreplied order
-  const unRepliedInvoiceMutation = useMutation({
-    mutationFn: updateOrderForUnrepliedSales,
-    onSuccess: (res) => {
-      toast.success(translations('successMsg.invoice_generate_success'));
-      setModalData((prev) => ({
-        ...prev,
-        isOpen: false,
-      }));
-      queryClient.invalidateQueries([orderApi.getOrderDetails.endpointKey]);
-      router.push(
-        `/dashboard/sales/sales-orders/${res?.data?.data?.newOrderId}?state=generateInvoice`,
-      );
-    },
-    onError: (error) => {
-      toast.error(
-        error.response?.data?.message || translations('errorMsg.common'),
-      );
-    },
-  });
-
-  const OrderColumns = useSalesOrderColumns(orderDetails?.negotiationStatus);
+  const orderAttachments =
+    orderDetails?.attachments || orderDetails?.orderAttachments || [];
 
   const orderStatus = orderDetails?.metaData?.sellerData?.orderStatus;
   const negotiationStatus = orderDetails?.negotiationStatus;
@@ -454,647 +246,63 @@ const ViewOrder = () => {
     </div>
   );
 
-  // maintain ctas in sales order
-  const ctaList = [];
-  if (orderDetails) {
-    const threeDotActions = [];
-    // negotiation ctas
-    if (
-      !isGenerateInvoice &&
-      !isNegotiation &&
-      !isRecordingPayment &&
-      !viewNegotiationHistory
-    ) {
-      if (hasPermission('permission:sales-negotiation')) {
-        if (
-          tab === 'overview' &&
-          orderDetails?.negotiationStatus === 'NEW' &&
-          orderDetails?.sellerEnterpriseId === enterpriseId
-        ) {
-          if (orderDetails?.orderType === 'PURCHASE' && !isNegotiation) {
-            ctaList.push({
-              isDropdown: true,
-              label: translations('ctas.footer_ctas.negotiate'),
-              variant: 'blue_outline',
-              actions: [
-                {
-                  key: 'negotiate',
-                  label: translations('ctas.footer_ctas.negotiate'),
-                  icon: Handshake,
-                  onClick: () => setIsNegotiation(true),
-                },
-                orderDetails?.negotiationStatus === 'NEGOTIATION' && {
-                  key: 'negotiateByBehalf',
-                  label: translations('ctas.footer_ctas.negotiateByBehalf'),
-                  icon: HeartHandshake,
-                  onClick: () => {
-                    setIsNegotiation(true);
-                    setIsNegotiateOnBehalf(true);
-                  },
-                },
-              ],
-            });
-            ctaList.push({
-              isDropdown: true,
-              label: acceptMutation.isPending ? (
-                <Loading size={14} />
-              ) : (
-                translations('ctas.footer_ctas.accept')
-              ),
-              variant: 'default',
-              disabled: acceptMutation.isPending,
-              actions: [
-                {
-                  key: 'accept',
-                  label: translations('ctas.footer_ctas.accept'),
-                  icon: Check,
-                  onClick: handleAccept,
-                  disabled: acceptMutation.isPending,
-                },
-                orderDetails?.negotiationStatus === 'NEGOTIATION' && {
-                  key: 'acceptByBehalf',
-                  label: translations('ctas.footer_ctas.acceptByBehalf'),
-                  icon: CheckCheck,
-                  onClick: () => setProxyModalOpen(true),
-                  disabled: acceptMutation.isPending,
-                },
-              ],
-            });
-          }
-        }
-        if (
-          tab === 'overview' &&
-          orderDetails?.negotiationStatus === 'NEGOTIATION' &&
-          orderDetails?.sellerEnterpriseId === enterpriseId &&
-          !viewNegotiationHistory
-        ) {
-          if (orderDetails?.orderStatus === 'BID_SUBMITTED' && !isNegotiation) {
-            ctaList.push({
-              isDropdown: true,
-              label: translations('ctas.footer_ctas.negotiate'),
-              variant: 'blue_outline',
-              actions: [
-                {
-                  key: 'negotiate',
-                  label: translations('ctas.footer_ctas.negotiate'),
-                  icon: Handshake,
-                  onClick: () => setIsNegotiation(true),
-                },
-                orderDetails?.negotiationStatus === 'NEGOTIATION' && {
-                  key: 'negotiateByBehalf',
-                  label: translations('ctas.footer_ctas.negotiateByBehalf'),
-                  icon: HeartHandshake,
-                  onClick: () => {
-                    setIsNegotiation(true);
-                    setIsNegotiateOnBehalf(true);
-                  },
-                },
-              ],
-            });
-            ctaList.push({
-              isDropdown: true,
-              label: acceptMutation.isPending ? (
-                <Loading size={14} />
-              ) : (
-                translations('ctas.footer_ctas.accept')
-              ),
-              variant: 'default',
-              disabled: acceptMutation.isPending,
-              actions: [
-                {
-                  key: 'accept',
-                  label: translations('ctas.footer_ctas.accept'),
-                  icon: Check,
-                  onClick: handleAccept,
-                  disabled: acceptMutation.isPending,
-                },
-                orderDetails?.negotiationStatus === 'NEGOTIATION' && {
-                  key: 'acceptByBehalf',
-                  label: translations('ctas.footer_ctas.acceptByBehalf'),
-                  icon: CheckCheck,
-                  onClick: () => setProxyModalOpen(true),
-                  disabled: acceptMutation.isPending,
-                },
-              ],
-            });
-          }
-        }
-      }
-    }
-
-    // record payment CTA
-    if (
-      !isGenerateInvoice &&
-      !isRecordingPayment &&
-      (orderDetails.negotiationStatus === 'INVOICED' ||
-        orderDetails?.negotiationStatus === 'PARTIAL_INVOICED') &&
-      orderDetails?.metaData?.payment?.status !== 'PAID' &&
-      !viewNegotiationHistory
-    ) {
-      if (hasPermission('permission:sales-create-payment')) {
-        ctaList.push({
-          icon: <IndianRupee size={14} />,
-          label: translations('ctas.record_payment'),
-          onClick: () => setIsRecordingPayment(true),
-          variant: 'blue_outline',
-        });
-      }
-    }
-
-    // revise CTA
-    if (
-      !isGenerateInvoice &&
-      !isRecordingPayment &&
-      !isNegotiation &&
-      orderDetails.orderType === 'SALES' &&
-      enterpriseId.toString() === orderDetails.sellerEnterpriseId.toString() &&
-      orderDetails.negotiationStatus !== 'WITHDRAWN' &&
-      orderDetails.negotiationStatus !== 'ACCEPTED' &&
-      orderDetails.negotiationStatus !== 'INVOICED' &&
-      orderDetails.negotiationStatus !== 'PARTIAL_INVOICED' &&
-      orderDetails.negotiationStatus !== 'NEGOTIATION' &&
-      !viewNegotiationHistory
-    ) {
-      if (hasPermission('permission:sales-edit')) {
-        threeDotActions.push({
-          key: 'revise',
-          icon: Pencil,
-          label: translations('ctas.more.revise'),
-          onClick: () => {
-            if (orderDetails?.invoiceType === 'GOODS') {
-              setIsEditingOrder(true);
-            } else {
-              setIsEditingServiceOrder(true);
-            }
-          },
-        });
-      }
-    }
-
-    // marked as confirmed (offline)
-    if (
-      !isGenerateInvoice &&
-      !isRecordingPayment &&
-      !isNegotiation &&
-      orderDetails.negotiationStatus === 'NEW' &&
-      orderDetails?.orderType === 'SALES' &&
-      orderDetails?.buyerType === 'UNINVITED-ENTERPRISE' &&
-      orderDetails?.metaData?.sellerData?.orderStatus === 'OFFER_SENT'
-    ) {
-      if (hasPermission('permission:sales-edit')) {
-        ctaList.push({
-          icon: <Check size={14} />,
-          label: translations('ctas.mark_as_confirmed_offline.cta'),
-          onClick: () =>
-            acceptOrderMutation.mutate({ orderId: Number(params.order_id) }),
-          variant: 'default',
-        });
-      }
-    }
-
-    // generateInvoice CTA
-    if (
-      !isGenerateInvoice &&
-      !isRecordingPayment &&
-      !orderDetails?.invoiceGenerationCompleted &&
-      (orderDetails?.negotiationStatus === 'ACCEPTED' ||
-        orderDetails?.negotiationStatus === 'PARTIAL_INVOICED' ||
-        (orderDetails.negotiationStatus === 'NEW' &&
-          orderDetails?.orderType === 'SALES')) &&
-      orderDetails?.buyerType === 'ENTERPRISE'
-    ) {
-      if (hasPermission('permission:sales-invoice-create')) {
-        ctaList.push({
-          icon: <FileText size={14} />,
-          label: translations('ctas.generate_invoice'),
-          onClick: () => {
-            if (
-              orderDetails?.buyerType === 'ENTERPRISE' &&
-              orderDetails?.metaData?.sellerData?.orderStatus === 'OFFER_SENT'
-            ) {
-              setModalData({
-                isOpen: true,
-                title: 'Enterprise Offer Pending',
-                description:
-                  'Your client hasn’t replied to this order yet. Proceeding will accept the order and allow you to create an invoice. Would you like to proceed?',
-                buttons: [
-                  {
-                    label: 'Remind',
-                    variant: 'outline',
-                    onClick: () => remindOrderMutation.mutate(),
-                  },
-                  {
-                    label: 'Proceed, anyway',
-                    onClick: () => {
-                      unRepliedInvoiceMutation.mutate({
-                        orderId: Number(params.order_id),
-                        amount: orderDetails?.amount,
-                        gstAmount: orderDetails?.gstAmount,
-                        orderItems: orderDetails?.orderItems,
-                      });
-                    },
-                  },
-                ],
-              });
-            } else {
-              setIsGenerateInvoice(true);
-            }
-          },
-          variant: 'blue_outline',
-        });
-      }
-    }
-
-    // stock-out CTA
-    if (
-      !isGenerateInvoice &&
-      !isRecordingPayment &&
-      !orderDetails?.invoiceGenerationCompleted &&
-      orderDetails?.negotiationStatus === 'ACCEPTED' &&
-      orderDetails?.metaData?.sellerData?.stockOut === 'STOCK_OUT' &&
-      !viewNegotiationHistory
-    ) {
-      if (hasPermission('permission:sales-stock-out')) {
-        ctaList.push({
-          icon: <Package size={14} />,
-          label: translations('ctas.stock-out'),
-          onClick: () =>
-            stockOutMutation.mutate({
-              enterpriseId: Number(enterpriseId),
-              orderId: Number(params.order_id),
-            }),
-          variant: 'outline',
-        });
-      }
-    }
-
-    // cancel cta
-    if (
-      !isGenerateInvoice &&
-      !isRecordingPayment &&
-      orderDetails?.negotiationStatus === 'NEW' &&
-      orderDetails?.metaData?.sellerData?.orderStatus === 'OFFER_SENT'
-    ) {
-      if (hasPermission('permission:sales-edit')) {
-        threeDotActions.push({
-          key: 'cancel',
-          icon: X,
-          label: translations('ctas.cancel.cta'),
-          onClick: () => setWithdrawModalOpen(true),
-        });
-      }
-    }
-
-    if (threeDotActions.length > 0) {
-      ctaList.push({
-        isDropdown: true,
-        isThreeDots: true,
-        label: 'more-actions',
-        variant: 'outline',
-        actions: threeDotActions,
-      });
-    }
-  }
-
-  const recommendedActions = [];
-  const ancillaryActions = [];
-  let cancelAction = null;
-
-  if (orderDetails) {
-    ctaList.forEach((cta) => {
-      if (cta.isHeader) {
-        // Skipped, kept in header
-      } else if (cta.isDropdown) {
-        if (cta.isThreeDots) {
-          (cta.actions || []).forEach((action) => {
-            if (action) {
-              if (action.key === 'cancel') {
-                cancelAction = action;
-              } else {
-                ancillaryActions.push(action);
-              }
-            }
-          });
-        } else {
-          (cta.actions || []).forEach((action) => {
-            if (action) {
-              ancillaryActions.push(action);
-            }
-          });
-        }
-      } else {
-        recommendedActions.push(cta);
-      }
-    });
-  }
-
-  const hasAnyActions =
-    recommendedActions.length > 0 ||
-    ancillaryActions.length > 0 ||
-    !!cancelAction;
-
   return (
     <ProtectedWrapper permissionCode={'permission:sales-view'}>
       <Wrapper className="h-full py-2">
-        {isLoading && !orderDetails && <Loading />}
-
-        {/* 403 Access Denied */}
-        {!isLoading && error?.response?.status === 403 && <AccessDenied />}
-
-        {/* modal */}
-        {modalData.isOpen && (
-          <DynamicModal
-            isOpen={modalData.isOpen}
-            onClose={() =>
-              setModalData((prev) => ({
-                ...prev,
-                isOpen: false,
-              }))
-            }
-            title={modalData.title}
-            description={modalData.description}
-            buttons={modalData.buttons}
-          />
+        {isLoading && (
+          <div className="flex h-full w-full items-center justify-center">
+            <Loading />
+          </div>
         )}
 
-        {/* withdraw pin modal */}
-        <PINVerifyModal
-          open={withdrawModalOpen}
-          setOpen={setWithdrawModalOpen}
-          order={orderDetails}
-          handleCreateFn={(updatedOrder) => {
-            withdrawOrderMutation.mutate({
-              orderId: Number(params.order_id),
-              pin: updatedOrder.pin,
-              invoiceType:
-                orderDetails?.invoiceType ||
-                (orderDetails?.orderType === 'PURCHASE' ? 'GOODS' : 'GOODS'),
-            });
-          }}
-          isPINError={isPINError}
-          setIsPINError={setIsPINError}
-          isPendingInvoice={withdrawOrderMutation.isPending}
-        />
+        {!isLoading && error && (
+          <div className="flex h-full w-full items-center justify-center">
+            <AccessDenied />
+          </div>
+        )}
 
-        <ProxyAcceptanceModal
-          open={proxyModalOpen}
-          setOpen={setProxyModalOpen}
-          orderId={params.order_id}
-          orderRefNumber={orderDetails?.referenceNumber}
-          userRole="Sender"
-          onConfirm={handleProxyAccept}
-          isPending={acceptOnBehalfMutation.isPending}
-        />
-
-        {!isEditingOrder &&
+        {!isLoading &&
+          !error &&
+          !isEditingOrder &&
           !isEditingServiceOrder &&
-          !isLoading &&
           orderDetails && (
             <>
-              {/* headers */}
-              <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
-                <div className="flex gap-2">
-                  {/* breadcrumbs */}
-                  <OrderBreadCrumbs
-                    possiblePagesBreadcrumbs={salesOrdersBreadCrumbs}
-                    setIsNegotiation={setIsNegotiation}
-                    setIsGenerateInvoice={setIsGenerateInvoice}
-                  />
-                </div>
-                <div className="flex gap-1">
-                  {/* view CTA */}
-                  {!isGenerateInvoice &&
-                    !isRecordingPayment &&
-                    !isNegotiation &&
-                    !viewNegotiationHistory &&
-                    orderDetails?.negotiationStatus !== 'WITHDRAWN' && (
-                      <Tooltips
-                        trigger={
-                          <Button
-                            onClick={() => viewOrderinNewTab(params.order_id)}
-                            size="sm"
-                            variant="outline"
-                            className="font-bold"
-                          >
-                            <Eye size={14} />
-                          </Button>
-                        }
-                        content={translations('ctas.view.placeholder')}
-                      />
-                    )}
+              <SalesOrderHeader
+                params={params}
+                viewNegotiationHistory={viewNegotiationHistory}
+                isGenerateInvoice={isGenerateInvoice}
+                isRecordingPayment={isRecordingPayment}
+                isEditingOrder={isEditingOrder}
+                isEditingServiceOrder={isEditingServiceOrder}
+                isNegotiation={isNegotiation}
+                isNegotiateOnBehalf={isNegotiateOnBehalf}
+                ctaList={ctaList}
+                tab={tab}
+              />
 
-                  {/* Dynamic CTAs */}
-                  {ctaList.filter((cta) => cta.isHeader).length > 0 &&
-                    ctaList
-                      .filter((cta) => cta.isHeader)
-                      .map((cta) => {
-                        if (cta.isHide) return null;
-                        if (cta.isDropdown) {
-                          const visibleActions = (cta.actions || []).filter(
-                            (action) => !!action && !action.isHide,
-                          );
-                          if (visibleActions.length === 0) return null;
-                          if (visibleActions.length === 1) {
-                            const singleAction = visibleActions[0];
-                            const ActionIcon = singleAction.icon;
-                            return (
-                              <Button
-                                key={singleAction.key || singleAction.label}
-                                size="sm"
-                                variant={cta.variant || 'default'}
-                                onClick={singleAction.onClick}
-                                disabled={singleAction.disabled || cta.disabled}
-                                className={
-                                  cta.className ||
-                                  'item-center flex gap-1 font-bold'
-                                }
-                              >
-                                {ActionIcon && <ActionIcon size={14} />}
-                                {singleAction.label}
-                              </Button>
-                            );
-                          }
-                          return (
-                            <ActionsDropdown
-                              key={cta.label}
-                              label={cta.label}
-                              variant={cta.variant}
-                              disabled={cta.disabled}
-                              actions={visibleActions}
-                              isThreeDots={cta.isThreeDots}
-                              isHide={cta.isHide}
-                            />
-                          );
-                        }
-                        return (
-                          <Button
-                            key={cta.label}
-                            size="sm"
-                            variant={cta.variant || 'default'}
-                            onClick={cta.onClick}
-                            disabled={cta.disabled}
-                            className={
-                              cta.className || 'item-center flex gap-1'
-                            }
-                          >
-                            {cta.icon}
-                            {cta.label}
-                          </Button>
-                        );
-                      })}
-                </div>
-              </section>
-
-              {/* switch tabs */}
               {!isGenerateInvoice &&
                 !isNegotiation &&
                 !isRecordingPayment &&
                 !viewNegotiationHistory && (
-                  <section>
-                    <Tabs
-                      value={tab}
-                      onValueChange={onTabChange}
-                      defaultValue={'overview'}
-                    >
-                      <section className="sticky top-12 bg-white">
-                        <TabsList className="border">
-                          <TabsTrigger
-                            className={`${tab === 'overview' ? 'shadow-customShadow' : ''}`}
-                            value="overview"
-                          >
-                            {translations('tabs.label.tab1')}
-                          </TabsTrigger>
-                          <TabsTrigger
-                            className={`${tab === 'invoices' ? 'shadow-customShadow' : ''}`}
-                            value="invoices"
-                          >
-                            {translations('tabs.label.tab2')}
-                          </TabsTrigger>
-                          <TabsTrigger
-                            className={`${tab === 'payment' ? 'shadow-customShadow' : ''}`}
-                            value="payment"
-                          >
-                            {translations('tabs.label.tab3')}
-                          </TabsTrigger>
-                          <TabsTrigger
-                            className={`${tab === 'timeline' ? 'shadow-customShadow' : ''}`}
-                            value="timeline"
-                          >
-                            {translations('tabs.label.tab4')}
-                          </TabsTrigger>
-                        </TabsList>
-                      </section>
-
-                      <TabsContent
-                        value="overview"
-                        className="flex flex-col gap-2"
-                      >
-                        {hasAnyActions ? (
-                          <div className="grid grid-cols-1 items-start gap-2 lg:grid-cols-3">
-                            <div className="flex flex-col gap-2 lg:col-span-2">
-                              {/* orders overview */}
-                              <OrdersOverview
-                                isCollapsableOverview={false}
-                                orderDetails={orderDetails}
-                                orderId={orderDetails?.referenceNumber}
-                                multiStatus={multiStatus}
-                                Name={orderDetails?.clientName}
-                                mobileNumber={orderDetails?.mobileNumber}
-                                amtPaid={orderDetails?.amountPaid}
-                                totalAmount={
-                                  orderDetails.amount + orderDetails.gstAmount
-                                }
-                                invitationData={invitationData}
-                                setViewNegotiationHistory={
-                                  setViewNegotiationHistory
-                                }
-                              />
-
-                              <CommentBox
-                                contextId={params.order_id}
-                                context={'ORDER'}
-                              />
-                            </div>
-
-                            <div className="lg:col-span-1">
-                              <ActionsCard
-                                recommendedActions={recommendedActions}
-                                ancillaryActions={ancillaryActions}
-                                cancelAction={cancelAction}
-                              />
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col gap-2">
-                            {/* orders overview */}
-                            <OrdersOverview
-                              isCollapsableOverview={false}
-                              orderDetails={orderDetails}
-                              orderId={orderDetails?.referenceNumber}
-                              multiStatus={multiStatus}
-                              Name={orderDetails?.clientName}
-                              mobileNumber={orderDetails?.mobileNumber}
-                              amtPaid={orderDetails?.amountPaid}
-                              totalAmount={
-                                orderDetails.amount + orderDetails.gstAmount
-                              }
-                              invitationData={invitationData}
-                              setViewNegotiationHistory={
-                                setViewNegotiationHistory
-                              }
-                            />
-
-                            <CommentBox
-                              contextId={params.order_id}
-                              context={'ORDER'}
-                            />
-                          </div>
-                        )}
-
-                        {/* orderDetail Table */}
-                        <DataTable
-                          columns={OrderColumns}
-                          data={orderDetails?.orderItems}
-                        ></DataTable>
-                      </TabsContent>
-                      <TabsContent value="invoices">
-                        <PastInvoices
-                          setIsGenerateInvoice={setIsGenerateInvoice}
-                          orderDetails={orderDetails}
-                        />
-                      </TabsContent>
-                      <TabsContent value="payment">
-                        <PaymentDetails
-                          orderId={params.order_id}
-                          orderDetails={orderDetails}
-                          setIsRecordingPayment={setIsRecordingPayment}
-                        />
-                      </TabsContent>
-                      <TabsContent value="timeline">
-                        <div className="h-full w-full animate-fadeInUp overflow-auto p-2">
-                          {isTimeLinesDataLoading && <Loading />}
-                          {!isTimeLinesDataLoading &&
-                            timeLineData?.length > 0 &&
-                            timeLineData?.map((timeLinetItem, index) => (
-                              <TimelineItem
-                                key={timeLinetItem?.id}
-                                title={timeLinetItem?.action}
-                                dateTime={timeLinetItem?.createdAt}
-                                isLast={index === timeLineData.length - 1}
-                                action={timeLinetItem?.action}
-                                module={timeLinetItem?.module}
-                                details={timeLinetItem?.details}
-                              />
-                            ))}
-
-                          {!isTimeLinesDataLoading &&
-                            timeLineData?.length === 0 && (
-                              <div>No Timeline recorded yet</div>
-                            )}
-                        </div>
-                      </TabsContent>
-                    </Tabs>
-                  </section>
+                  <SalesOrderTabs
+                    tab={tab}
+                    onTabChange={onTabChange}
+                    translations={translations}
+                    customFormsGroups={customFormsGroups}
+                    hasAnyActions={hasAnyActions}
+                    orderDetails={orderDetails}
+                    multiStatus={multiStatus}
+                    invitationData={invitationData}
+                    setViewNegotiationHistory={setViewNegotiationHistory}
+                    params={params}
+                    recommendedActions={recommendedActions}
+                    ancillaryActions={ancillaryActions}
+                    cancelAction={cancelAction}
+                    orderAttachments={orderAttachments}
+                    isTimeLinesDataLoading={isTimeLinesDataLoading}
+                    timeLineData={timeLineData}
+                    setIsRecordingPayment={setIsRecordingPayment}
+                  />
                 )}
 
               {/* Negotiation Component */}
@@ -1143,16 +351,14 @@ const ViewOrder = () => {
                   />
                 )}
 
-              {
-                // negotiation history
-                viewNegotiationHistory &&
-                  !isGenerateInvoice &&
-                  !isNegotiation &&
-                  !isEditingOrder &&
-                  !isRecordingPayment && (
-                    <NegotiationHistory orderId={params.order_id} />
-                  )
-              }
+              {/* negotiation history */}
+              {viewNegotiationHistory &&
+                !isGenerateInvoice &&
+                !isNegotiation &&
+                !isEditingOrder &&
+                !isRecordingPayment && (
+                  <NegotiationHistory orderId={params.order_id} />
+                )}
             </>
           )}
 
@@ -1169,13 +375,45 @@ const ViewOrder = () => {
         {/* editOrder Component - service */}
         {isEditingServiceOrder && (
           <EditOrderServices
-            createSalesServiceBreadCrumbs={salesOrdersBreadCrumbs}
+            createSalesServiceBreadCrumbs={[]}
             cta="offer"
             orderId={params.order_id}
             setIsCreatingSalesService={setIsEditingServiceOrder}
           />
         )}
       </Wrapper>
+
+      {/* MODALS */}
+      <ProxyAcceptanceModal
+        modalOpen={proxyModalOpen}
+        setModalOpen={setProxyModalOpen}
+        onAccept={handleProxyAccept}
+        header="Negotiate On Behalf"
+        buttonText="Accept Proposal"
+        buttonIcon={<CheckCheck size={14} />}
+        subHeading="You will be accepting this order on behalf of the customer"
+      />
+      <PINVerifyModal
+        orderId={params.order_id}
+        open={withdrawModalOpen}
+        setOpen={setWithdrawModalOpen}
+        cancelAction={() => withdrawOrderMutation.mutate(params.order_id)}
+        actionString="Cancel"
+        isPINError={isPINError}
+        setIsPINError={setIsPINError}
+      />
+      <DynamicModal
+        open={modalData?.isOpen}
+        setOpen={(val) =>
+          setModalData((prev) => ({
+            ...prev,
+            isOpen: val,
+          }))
+        }
+        title={modalData?.title}
+        description={modalData?.description}
+        buttons={modalData?.buttons}
+      />
     </ProtectedWrapper>
   );
 };

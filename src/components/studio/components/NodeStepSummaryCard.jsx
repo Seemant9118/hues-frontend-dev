@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 
 export default function NodeStepSummaryCard({
   nodeType,
@@ -270,6 +271,34 @@ export default function NodeStepSummaryCard({
           </div>
         </div>
       )}
+
+      {/* Step PDF Generation Configuration Card */}
+      <div className="space-y-3 rounded-xl border border-blue-200 bg-blue-50/40 p-4 shadow-sm">
+        <div className="flex items-center justify-between border-b border-blue-200 pb-2">
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-blue-600" />
+            <span className="font-bold text-blue-900">Document Generation</span>
+          </div>
+        </div>
+        <div className="flex items-center space-x-2 pt-2">
+          <Switch
+            id={`step-pdf-${nodeId}`}
+            checked={Boolean(nodeContent.config?.generatePdf)}
+            onCheckedChange={(checked) =>
+              onUpdateNodeDataConfig?.(nodeId, {
+                ...nodeContent.config,
+                generatePdf: checked,
+              })
+            }
+          />
+          <Label
+            htmlFor={`step-pdf-${nodeId}`}
+            className="cursor-pointer text-xs font-semibold text-slate-700"
+          >
+            Generate PDF after step completes
+          </Label>
+        </div>
+      </div>
     </>
   );
 }

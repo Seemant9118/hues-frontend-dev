@@ -7,6 +7,7 @@ import {
   FileText,
   MoreVertical,
   Plus,
+  Share2,
   Trash2,
 } from 'lucide-react';
 import React from 'react';
@@ -38,11 +39,13 @@ export default function TemplateCard({
   onEdit,
   onDelete,
   onView,
+  onShare,
   activeMenu,
   setActiveMenu,
   editLabel = 'Edit Template',
   deleteLabel = 'Delete Template',
   viewLabel = 'Open Template',
+  shareLabel = 'Share Form',
 }) {
   const isDraft = template.status?.toLowerCase() === 'draft';
   const isMenuOpen = activeMenu === template.id;
@@ -91,6 +94,14 @@ export default function TemplateCard({
                       className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-neutral-700 hover:bg-neutral-50"
                     >
                       <Edit size={12} /> {editLabel}
+                    </button>
+                  )}
+                  {onShare && (
+                    <button
+                      onClick={(e) => onShare(template.id, e)}
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs text-neutral-700 hover:bg-neutral-50"
+                    >
+                      <Share2 size={12} /> {shareLabel}
                     </button>
                   )}
                   {onDelete && (

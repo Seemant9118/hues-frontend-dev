@@ -53,7 +53,10 @@ export const FEATURE_FLAGS = {
   BUILDER_FORMS: {
     enabled: process.env.NEXT_PUBLIC_NODE_ENV === 'dev',
     label: 'Builder Forms Module',
-    routePrefixes: ['/dashboard/templates/forms'],
+    routePrefixes: [
+      '/dashboard/templates/system-forms',
+      '/dashboard/templates/custom-forms',
+    ],
   },
   BUILDER_CONTRACTS: {
     enabled: process.env.NEXT_PUBLIC_NODE_ENV === 'dev',

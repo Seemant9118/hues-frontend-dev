@@ -3,7 +3,6 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { FileText, Plus } from 'lucide-react';
-import CreateNewFormCard from '@/components/templates/CreateNewFormCard';
 import TemplateCard from '@/components/templates/TemplateCard';
 import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
@@ -21,11 +20,9 @@ export default function StudioWorkflowGrid({
 
   const handleCardClick = (template) => {
     if (template.isCustom || isCustomTab) {
-      router.push(
-        `/dashboard/studio/CUSTOM_WORKFLOW?definitionId=${template.id}&tab=custom`,
-      );
+      router.push(`/dashboard/studio/custom-workflows/${template.id}`);
     } else {
-      router.push(`/dashboard/studio/${template.id}?tab=system`);
+      router.push(`/dashboard/studio/system-workflows/${template.id}`);
     }
   };
 
@@ -71,13 +68,6 @@ export default function StudioWorkflowGrid({
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {isCustomTab && onCreateNew && (
-        <CreateNewFormCard
-          onClick={onCreateNew}
-          title="Create New Workflow"
-          description="Start building a custom workflow definition from scratch"
-        />
-      )}
       {forms.map((template) => (
         <TemplateCard
           key={template.id}

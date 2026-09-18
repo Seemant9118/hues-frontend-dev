@@ -81,9 +81,10 @@ export const viewPdfInNewTab = async (urlString) => {
   }
 };
 
-export function signAgreement(agreementId, data) {
+export function signAgreement(agreementId, data, config = {}) {
   return APIinstance.post(
     templateApi.signAgreement.endpoint.replace(':id', agreementId),
     data,
+    config,
   );
 }

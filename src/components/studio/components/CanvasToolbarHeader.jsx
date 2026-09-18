@@ -10,6 +10,8 @@ import {
   ShieldCheck,
   X,
 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import React from 'react';
 import { getWorkflowStatusBadge } from '../utils/workflowBadges';
 
@@ -40,6 +42,8 @@ export default function CanvasToolbarHeader({
   hasUnsavedChanges,
   onPublishGraph,
   onCancelNewWorkflow,
+  graphConfig = {},
+  onUpdateGraphConfig,
 }) {
   const isArchivedStatus =
     selectedWorkflowDef?.status === 'ARCHIVED' ||
@@ -75,6 +79,30 @@ export default function CanvasToolbarHeader({
 
       {/* Action CTAs (All 3 buttons disabled when isEditMode === false) */}
       <div className="flex flex-wrap items-center gap-2">
+        {/* Overall PDF Generation Toggle */}
+        <div className="mr-2 flex items-center space-x-2 border-r pr-4">
+          <Switch
+            id="overall-pdf-generation"
+            checked={Boolean(graphConfig?.pdf?.generateOverall)}
+            onCheckedChange={(checked) => {
+              onUpdateGraphConfig({
+                ...graphConfig,
+                pdf: {
+                  ...graphConfig?.pdf,
+                  generateOverall: checked,
+                },
+              });
+            }}
+            disabled={!isEditMode}
+          />
+          <Label
+            htmlFor="overall-pdf-generation"
+            className="cursor-pointer text-xs font-semibold text-slate-700"
+          >
+            Generate Overall PDF
+          </Label>
+        </div>
+
         {/* Cancel Building Button (Shown when building new flow) */}
         {isCreatingNewFlow && (
           <Button

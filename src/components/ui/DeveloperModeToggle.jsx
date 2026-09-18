@@ -176,8 +176,12 @@ export default function DeveloperModeToggle() {
     }
 
     // 4. Forms / Templates detail page
-    if (pathname.includes('/templates/forms/')) {
-      const parts = pathname.split('/templates/forms/');
+    if (pathname.includes('/templates/system-forms/')) {
+      const parts = pathname.split('/templates/system-forms/');
+      if (parts[1]) return `/dashboard/studio/${parts[1]}`;
+    }
+    if (pathname.includes('/templates/custom-forms/')) {
+      const parts = pathname.split('/templates/custom-forms/');
       if (parts[1]) return `/dashboard/studio/${parts[1]}`;
     }
 

@@ -140,6 +140,7 @@ export function transformCanvasToBackendGraph({
   edges = [],
   moduleName = 'ORDER',
   triggerType,
+  graphConfig = {},
 }) {
   const isCustom =
     moduleName === 'CUSTOM_WORKFLOW' ||
@@ -240,6 +241,7 @@ export function transformCanvasToBackendGraph({
     trigger: {
       type: resolvedTriggerType,
     },
+    config: graphConfig,
     steps,
     transitions,
   };
@@ -249,7 +251,7 @@ export function transformCanvasToBackendGraph({
  * Transforms backend graph schema ({ module, trigger, steps, transitions }) into visual canvas ({ nodes, edges }).
  */
 export function transformBackendGraphToCanvas(graphPayload = {}) {
-  const { steps = [], transitions = [] } = graphPayload;
+  const { steps = [], transitions = [], config = {} } = graphPayload;
 
   const nodes = steps.map((step, index) => {
     // Determine position: use preserved visual position or calculate default grid position
@@ -304,5 +306,6 @@ export function transformBackendGraphToCanvas(graphPayload = {}) {
     edges,
     moduleName: graphPayload.module || 'ORDER',
     triggerType: graphPayload.trigger?.type || 'RECORD_CREATED',
+    graphConfig: config,
   };
 }

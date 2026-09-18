@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import StudioActionHeaderControls from '@/app/[locale]/(dashboard)/dashboard/studio/[id]/components/StudioActionHeaderControls';
+import StudioActionHeaderControls from '@/app/[locale]/(dashboard)/dashboard/studio/_details/components/StudioActionHeaderControls';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link as LinkIcon, Sparkles } from 'lucide-react';
@@ -63,6 +63,8 @@ export default function StudioWorkflowOverviewPane({
     svgEdges,
     canvasWidth,
     workflowMutations,
+    graphConfig,
+    handleUpdateGraphConfig,
     handleAddStep,
     handleUpdateNodeForm,
     handleUpdateNodeDataConfig,
@@ -110,7 +112,12 @@ export default function StudioWorkflowOverviewPane({
       return detailData;
     }
 
-    const currentGraph = transformCanvasToBackendGraph(nodes, edges);
+    const currentGraph = transformCanvasToBackendGraph({
+      nodes,
+      edges,
+      moduleName: targetModule,
+      graphConfig,
+    });
     return {
       id: selectedWorkflowDef?.id || 'DRAFT',
       workflowDefinitionId: selectedWorkflowDef?.id || 'DRAFT',
@@ -216,6 +223,8 @@ export default function StudioWorkflowOverviewPane({
           newWorkflowName={newWorkflowName}
           selectedWorkflowDef={selectedWorkflowDef}
           targetModule={targetModule}
+          graphConfig={graphConfig}
+          onUpdateGraphConfig={handleUpdateGraphConfig}
           nodesCount={nodes.length}
           edgesCount={edges.length}
           selectedDefinitionId={selectedDefinitionId}

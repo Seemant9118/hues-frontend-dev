@@ -3,14 +3,11 @@
 import React from 'react';
 import SubHeader from '@/components/ui/Sub-header';
 
-export default function StudioPageHeader() {
+export default function StudioPageHeader({ name, description }) {
   return (
-    <>
-      <SubHeader name="Studio (Workflows)" />
-      <p className="mb-4 text-xs text-neutral-500">
-        Manage system form configurations and custom dynamic forms for your
-        workspace.
-      </p>
-    </>
+    <div className="mb-4 flex flex-col gap-1">
+      <SubHeader name={name} />
+      {description && <p className="text-xs text-neutral-500">{description}</p>}
+    </div>
   );
 }
