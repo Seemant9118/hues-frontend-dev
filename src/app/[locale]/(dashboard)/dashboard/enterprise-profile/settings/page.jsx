@@ -15,6 +15,7 @@ import GstRegistrations from '@/components/settings/GSTRegistrationsSettings';
 import InvoiceSettings from '@/components/settings/InvoiceSettings';
 import PaymentSettings from '@/components/settings/PaymentSettings';
 import LanguagesSwitcher from '@/components/ui/LanguagesSwitcher';
+import StorageSettings from '@/components/settings/StorageSettings';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -217,6 +218,9 @@ const Settings = () => {
             <TabsTrigger value="pinSettings">
               {translations('tabs.label.tab8')}
             </TabsTrigger>
+            <TabsTrigger value="storageIntegrations">
+              Storage Integrations
+            </TabsTrigger>
             <TabsTrigger value="languages">
               {translations('tabs.label.tab9')}
             </TabsTrigger>
@@ -356,6 +360,10 @@ const Settings = () => {
                 <DataTable columns={PINAuditLogsColumns} data={pinAuditLogs} />
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="storageIntegrations">
+            <StorageSettings />
           </TabsContent>
 
           <TabsContent value="languages">

@@ -1,26 +1,75 @@
-import React from 'react';
+import React, { useState } from 'react';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
-import Tooltips from '@/components/auth/Tooltips';
 import { Button } from '@/components/ui/button';
 import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
-import { Eye } from 'lucide-react';
-import { viewOrderinNewTab } from '@/services/Orders_Services/Orders_Services';
-import { useTranslations } from 'next-intl';
+import { HardDriveUpload } from 'lucide-react';
+import { useGoogleDrive } from '@/hooks/useGoogleDrive';
+
+import GoogleDriveAttachmentsModal from '@/components/Modals/GoogleDriveAttachmentsModal';
+import ExternalStorageAuthModal from '@/components/Modals/ExternalStorageAuthModal';
 
 const PurchaseOrderHeader = ({
   params,
   purchaseOrdersBreadCrumbs,
   setIsNegotiation,
   setIsPastInvoices,
-  isPaymentAdvicing,
-  isNegotiation,
-  viewNegotiationHistory,
   orderDetails,
   ctaList,
+  orderAttachments,
 }) => {
-  const translations = useTranslations(
-    'purchases.purchase-orders.order_details',
-  );
+  const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const { isConnected, connect, bulkUpload, isBulkUploading } =
+    useGoogleDrive();
+
+  // Combine all possible attachments
+  const combinedAttachments = [
+    {
+      isModuleDocument: true,
+      documentType: 'order',
+      id: parseInt(params.order_id, 10),
+      documentName: orderDetails?.referenceNumber || 'Order PDF',
+    },
+    ...(orderAttachments || []),
+  ];
+
+  const handleDriveClick = () => {
+    if (!isConnected) {
+      setIsAuthModalOpen(true);
+    } else {
+      setIsDriveModalOpen(true);
+    }
+  };
+
+  const handleAuthorize = () => {
+    setIsAuthModalOpen(false);
+    connect(); // Redirects to settings
+  };
+
+  const handleSaveAttachments = async (selectedAttachments) => {
+    const s3Urls = [];
+    const documents = [];
+
+    selectedAttachments.forEach((att) => {
+      if (att.isModuleDocument) {
+        documents.push({
+          documentType: att.documentType,
+          ids: [att.id],
+        });
+      } else if (att.documentUrl) {
+        s3Urls.push(att.documentUrl);
+      }
+    });
+
+    const payload = {
+      provider: 'google_drive',
+    };
+    if (s3Urls.length > 0) payload.s3_urls = s3Urls;
+    if (documents.length > 0) payload.documents = documents;
+
+    return bulkUpload(payload);
+  };
 
   return (
     <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2 pb-4 backdrop-blur-md">
@@ -33,85 +82,88 @@ const PurchaseOrderHeader = ({
         />
       </div>
 
-      <div className="flex gap-1">
-        {/* view CTA */}
-        {!isPaymentAdvicing &&
-          !isNegotiation &&
-          !viewNegotiationHistory &&
-          orderDetails?.negotiationStatus !== 'WITHDRAWN' && (
-            <Tooltips
-              trigger={
-                <Button
-                  onClick={() => viewOrderinNewTab(params.order_id)}
-                  size="sm"
-                  variant="outline"
-                  className="font-bold"
-                  title="Preview Order"
-                >
-                  <Eye size={14} className="text-primary" />
-                </Button>
-              }
-              content={translations('ctas.view.placeholder')}
-            />
-          )}
-
+      <div className="flex items-center gap-2">
         {/* Dynamic CTAs */}
-        {ctaList.filter((cta) => cta.isHeader).length > 0 &&
-          ctaList
-            .filter((cta) => cta.isHeader)
-            .map((cta) => {
-              if (cta.isHide) return null;
-              if (cta.isDropdown) {
-                const visibleActions = (cta.actions || []).filter(
-                  (action) => !!action && !action.isHide,
-                );
-                if (visibleActions.length === 0) return null;
-                if (visibleActions.length === 1) {
-                  const singleAction = visibleActions[0];
-                  const ActionIcon = singleAction.icon;
+        <div className="flex items-center gap-2 max-sm:hidden">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDriveClick}
+            className="flex items-center gap-2 font-bold text-gray-700"
+          >
+            <HardDriveUpload size={16} />
+            Save to external resource
+          </Button>
+          {ctaList.filter((cta) => cta.isHeader).length > 0 &&
+            ctaList
+              .filter((cta) => cta.isHeader)
+              .map((cta) => {
+                if (cta.isHide) return null;
+                if (cta.isDropdown) {
+                  const visibleActions = (cta.actions || []).filter(
+                    (action) => !!action && !action.isHide,
+                  );
+                  if (visibleActions.length === 0) return null;
+                  if (visibleActions.length === 1) {
+                    const singleAction = visibleActions[0];
+                    const ActionIcon = singleAction.icon;
+                    return (
+                      <Button
+                        key={singleAction.key || singleAction.label}
+                        size="sm"
+                        variant={cta.variant || 'default'}
+                        onClick={singleAction.onClick}
+                        disabled={singleAction.disabled || cta.disabled}
+                        className={
+                          cta.className || 'flex items-center gap-1 font-bold'
+                        }
+                      >
+                        {ActionIcon && <ActionIcon size={14} />}
+                        {singleAction.label}
+                      </Button>
+                    );
+                  }
                   return (
-                    <Button
-                      key={singleAction.key || singleAction.label}
-                      size="sm"
-                      variant={cta.variant || 'default'}
-                      onClick={singleAction.onClick}
-                      disabled={singleAction.disabled || cta.disabled}
-                      className={
-                        cta.className || 'flex items-center gap-1 font-bold'
-                      }
-                    >
-                      {ActionIcon && <ActionIcon size={14} />}
-                      {singleAction.label}
-                    </Button>
+                    <ActionsDropdown
+                      key={cta.label}
+                      label={cta.label}
+                      variant={cta.variant}
+                      disabled={cta.disabled}
+                      actions={visibleActions}
+                      isThreeDots={cta.isThreeDots}
+                      isHide={cta.isHide}
+                    />
                   );
                 }
                 return (
-                  <ActionsDropdown
+                  <Button
                     key={cta.label}
-                    label={cta.label}
-                    variant={cta.variant}
+                    size="sm"
+                    variant={cta.variant || 'default'}
+                    onClick={cta.onClick}
                     disabled={cta.disabled}
-                    actions={visibleActions}
-                    isThreeDots={cta.isThreeDots}
-                    isHide={cta.isHide}
-                  />
+                    className={cta.className || 'flex items-center gap-1'}
+                  >
+                    {cta.icon}
+                    {cta.label}
+                  </Button>
                 );
-              }
-              return (
-                <Button
-                  key={cta.label}
-                  size="sm"
-                  variant={cta.variant || 'default'}
-                  onClick={cta.onClick}
-                  disabled={cta.disabled}
-                  className={cta.className || 'flex items-center gap-1'}
-                >
-                  {cta.icon}
-                  {cta.label}
-                </Button>
-              );
-            })}
+              })}
+        </div>
       </div>
+
+      <GoogleDriveAttachmentsModal
+        isOpen={isDriveModalOpen}
+        onClose={() => setIsDriveModalOpen(false)}
+        attachments={combinedAttachments}
+        onSave={handleSaveAttachments}
+        isSaving={isBulkUploading}
+      />
+      <ExternalStorageAuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthorize={handleAuthorize}
+      />
     </section>
   );
 };

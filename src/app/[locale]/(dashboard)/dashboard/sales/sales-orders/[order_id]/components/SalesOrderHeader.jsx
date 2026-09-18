@@ -1,9 +1,12 @@
+import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
+import ExternalStorageAuthModal from '@/components/Modals/ExternalStorageAuthModal';
+import GoogleDriveAttachmentsModal from '@/components/Modals/GoogleDriveAttachmentsModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import { Button } from '@/components/ui/button';
-import ActionsDropdown from '@/components/deliveryManagement/ActionsDropdown';
+import { useGoogleDrive } from '@/hooks/useGoogleDrive';
+import { HardDriveUpload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Eye } from 'lucide-react';
-import { viewOrderinNewTab } from '@/services/Orders_Services/Orders_Services';
+import { useState } from 'react';
 
 const SalesOrderHeader = ({
   params,
@@ -15,8 +18,64 @@ const SalesOrderHeader = ({
   isNegotiation,
   isNegotiateOnBehalf,
   ctaList,
+  orderDetails,
+  orderAttachments,
 }) => {
   const translations = useTranslations('sales.sales-orders.order_details');
+
+  const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const { isConnected, connect, bulkUpload, isBulkUploading } =
+    useGoogleDrive();
+
+  // Combine all possible attachments
+  const combinedAttachments = [
+    {
+      isModuleDocument: true,
+      documentType: 'order',
+      id: parseInt(params.order_id, 10),
+      documentName: orderDetails?.referenceNumber || 'Order PDF',
+    },
+    ...(orderAttachments || []),
+  ];
+
+  const handleDriveClick = () => {
+    if (!isConnected) {
+      setIsAuthModalOpen(true);
+    } else {
+      setIsDriveModalOpen(true);
+    }
+  };
+
+  const handleAuthorize = () => {
+    setIsAuthModalOpen(false);
+    connect(); // Redirects to settings
+  };
+
+  const handleSaveAttachments = async (selectedAttachments) => {
+    const s3Urls = [];
+    const documents = [];
+
+    selectedAttachments.forEach((att) => {
+      if (att.isModuleDocument) {
+        documents.push({
+          documentType: att.documentType,
+          ids: [att.id],
+        });
+      } else if (att.documentUrl) {
+        s3Urls.push(att.documentUrl);
+      }
+    });
+
+    const payload = {
+      provider: 'google_drive',
+    };
+    if (s3Urls.length > 0) payload.s3_urls = s3Urls;
+    if (documents.length > 0) payload.documents = documents;
+
+    return bulkUpload(payload);
+  };
 
   const salesOrdersBreadCrumbs = [
     {
@@ -79,11 +138,11 @@ const SalesOrderHeader = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => viewOrderinNewTab(params.order_id)}
-            className="flex items-center gap-1 font-bold"
-            title="Preview Order"
+            onClick={handleDriveClick}
+            className="flex items-center gap-2 font-bold text-gray-700"
           >
-            <Eye size={16} className="text-primary" />
+            <HardDriveUpload size={16} />
+            Save to external resource
           </Button>
 
           {ctaList.filter((cta) => cta.isHeader).length > 0 &&
@@ -143,6 +202,19 @@ const SalesOrderHeader = ({
               })}
         </div>
       </div>
+
+      <GoogleDriveAttachmentsModal
+        isOpen={isDriveModalOpen}
+        onClose={() => setIsDriveModalOpen(false)}
+        attachments={combinedAttachments}
+        onSave={handleSaveAttachments}
+        isSaving={isBulkUploading}
+      />
+      <ExternalStorageAuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthorize={handleAuthorize}
+      />
     </section>
   );
 };

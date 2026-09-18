@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, File } from 'lucide-react';
 import InvoiceMediaViewModal from '@/components/Modals/InvoicePDFViewModal';
 import dynamic from 'next/dynamic';
+import { viewOrderinNewTab } from '@/services/Orders_Services/Orders_Services';
 import { useSalesOrderColumns } from '../useSalesOrderColumns';
 
 const OrdersOverview = dynamic(
@@ -52,12 +53,29 @@ const SalesOrderTabs = ({
   const columns = useSalesOrderColumns(orderDetails?.negotiationStatus);
 
   const renderAttachments = () => {
-    if (!orderAttachments || orderAttachments.length === 0) return null;
     return (
       <div className="flex flex-col gap-2 rounded-xl border bg-white p-4">
-        <h4 className="text-sm font-bold text-gray-700">Attachments</h4>
+        <h4 className="text-sm font-bold text-gray-700">
+          Documents / Attachments
+        </h4>
         <div className="flex flex-wrap gap-2">
-          {orderAttachments.map((att) => {
+          <Button
+            variant="outline"
+            className="w-56 cursor-pointer overflow-hidden px-2 hover:text-primary"
+            onClick={() => viewOrderinNewTab(params.order_id)}
+          >
+            <div className="flex w-full items-center gap-2">
+              <FileText size={14} className="shrink-0" />
+              <span
+                className="truncate"
+                title={orderDetails?.referenceNumber || 'Order PDF'}
+              >
+                {orderDetails?.referenceNumber || 'Order PDF'}
+              </span>
+            </div>
+          </Button>
+
+          {orderAttachments?.map((att) => {
             const isPdf = att.attachmentFileName
               ?.toLowerCase()
               .endsWith('.pdf');

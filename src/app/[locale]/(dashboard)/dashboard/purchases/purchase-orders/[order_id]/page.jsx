@@ -271,6 +271,7 @@ const ViewOrder = () => {
                 isNegotiation={isNegotiation}
                 viewNegotiationHistory={viewNegotiationHistory}
                 orderDetails={orderDetails}
+                orderAttachments={orderAttachments}
                 ctaList={ctaList}
               />
 

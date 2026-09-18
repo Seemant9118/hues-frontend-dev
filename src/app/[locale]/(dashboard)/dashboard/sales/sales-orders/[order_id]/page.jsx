@@ -278,6 +278,8 @@ const ViewOrder = () => {
                 isNegotiateOnBehalf={isNegotiateOnBehalf}
                 ctaList={ctaList}
                 tab={tab}
+                orderDetails={orderDetails}
+                orderAttachments={orderAttachments}
               />
 
               {!isGenerateInvoice &&
