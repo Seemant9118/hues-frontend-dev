@@ -7,14 +7,15 @@ import {
   formattedAmount,
   getQCDefectStatuses,
 } from '@/appUtils/helperFunctions';
-import AccessDenied from '@/components/shared/AccessDenied';
-import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import EditDebitNoteItem from '@/components/debitNote/EditDebitNoteItem';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import AccessDenied from '@/components/shared/AccessDenied';
+import ActionsCard from '@/components/shared/ActionsCard';
+import DocumentsAttachmentsSection from '@/components/shared/DocumentsAttachmentsSection';
+import SaveToExternalResource from '@/components/shared/SaveToExternalResource';
 import { DataTable } from '@/components/table/data-table';
-import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
 import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -36,14 +37,13 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { BookOpen, Eye, MoveUpRight } from 'lucide-react';
+import { BookOpen, MoveUpRight } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import ActionsCard from '@/components/shared/ActionsCard';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { useCreditNotesColumns } from '../../purchase-creditNotes/useCreditNotesColumns';
 import { PurchaseTable } from '../../purchasetable/PurchaseTable';
@@ -165,6 +165,16 @@ const ViewDebitNote = () => {
       return failureCount < 3;
     },
   });
+
+  const combinedAttachments = [
+    {
+      isModuleDocument: true,
+      documentType: 'debit_note',
+      id: parseInt(params.debit_id, 10),
+      documentName: debitNoteDetails?.referenceNumber || 'Debit Note PDF',
+    },
+    ...(debitNoteDetails?.attachments || []),
+  ];
 
   const overviewData = {
     debitNoteId: debitNoteDetails?.referenceNumber,
@@ -443,21 +453,9 @@ const ViewDebitNote = () => {
               <OrderBreadCrumbs
                 possiblePagesBreadcrumbs={debitNoteBreadCrumbs}
               />
-
-              {/* preview */}
-              <Tooltips
-                trigger={
-                  <Button
-                    onClick={handlePreview}
-                    size="sm"
-                    variant="outline"
-                    className="font-bold"
-                  >
-                    <Eye size={14} />
-                  </Button>
-                }
-                content={translations('preview.tootips-content')}
-              />
+              <div className="flex items-center gap-2">
+                <SaveToExternalResource attachments={combinedAttachments} />
+              </div>
             </section>
 
             <Tabs
@@ -489,6 +487,16 @@ const ViewDebitNote = () => {
                           customRender={customRender}
                         />
 
+                        <DocumentsAttachmentsSection
+                          mainDocument={{
+                            name:
+                              debitNoteDetails?.referenceNumber ||
+                              'Debit Note PDF',
+                            onClick: handlePreview,
+                          }}
+                          attachments={debitNoteDetails?.attachments}
+                        />
+
                         {/* comment */}
                         <CommentBox
                           contextId={debitNoteId}
@@ -512,6 +520,16 @@ const ViewDebitNote = () => {
                         data={overviewData}
                         labelMap={overviewLabels}
                         customRender={customRender}
+                      />
+
+                      <DocumentsAttachmentsSection
+                        mainDocument={{
+                          name:
+                            debitNoteDetails?.referenceNumber ||
+                            'Debit Note PDF',
+                          onClick: handlePreview,
+                        }}
+                        attachments={debitNoteDetails?.attachments}
                       />
 
                       {/* comment */}

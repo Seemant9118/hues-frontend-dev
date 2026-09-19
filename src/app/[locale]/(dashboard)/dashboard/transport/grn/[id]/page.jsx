@@ -8,6 +8,7 @@ import {
 import Tooltips from '@/components/auth/Tooltips';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import SaveToExternalResource from '@/components/shared/SaveToExternalResource';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import Overview from '@/components/ui/Overview';
@@ -62,6 +63,16 @@ export default function GRN() {
     queryFn: () => getGRN({ id: params.id }),
     select: (data) => data.data.data,
   });
+
+  const combinedAttachments = [
+    {
+      isModuleDocument: true,
+      documentType: 'grn',
+      id: parseInt(params.id, 10),
+      documentName: grnDetails?.referenceNumber || 'GRN PDF',
+    },
+    ...(grnDetails?.attachments || []),
+  ];
 
   const isSeller = grnDetails?.metaData?.sellerEnterpriseId === enterpriseId;
 
@@ -272,20 +283,23 @@ export default function GRN() {
       <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
         <OrderBreadCrumbs possiblePagesBreadcrumbs={grnsBreadCrumbs} />
 
-        {/* preview */}
-        <Tooltips
-          trigger={
-            <Button
-              onClick={handlePreview}
-              size="sm"
-              variant="outline"
-              className="font-bold"
-            >
-              <Eye size={14} />
-            </Button>
-          }
-          content={'Preview GRN Document'}
-        />
+        <div className="flex items-center gap-2">
+          <SaveToExternalResource attachments={combinedAttachments} />
+          {/* preview */}
+          <Tooltips
+            trigger={
+              <Button
+                onClick={handlePreview}
+                size="sm"
+                variant="outline"
+                className="font-bold"
+              >
+                <Eye size={14} />
+              </Button>
+            }
+            content={'Preview GRN Document'}
+          />
+        </div>
       </section>
 
       <Tabs value={tabs} onValueChange={onTabChange} defaultValue={'overview'}>

@@ -38,6 +38,8 @@ import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import ActionsCard from '@/components/shared/ActionsCard';
+import SaveToExternalResource from '@/components/shared/SaveToExternalResource';
+import DocumentsAttachmentsSection from '@/components/shared/DocumentsAttachmentsSection';
 
 const PaymentDetails = () => {
   useMetaData('Hues! - Payments Details', 'HUES PAYMENT DETAILS');
@@ -81,6 +83,16 @@ const PaymentDetails = () => {
       return failureCount < 3;
     },
   });
+
+  const combinedAttachments = [
+    {
+      isModuleDocument: true,
+      documentType: 'payment_advice',
+      id: parseInt(params.payment_id, 10),
+      documentName: paymentsDetails?.paymentReferenceNumber || 'Payment PDF',
+    },
+    ...(paymentsDetails?.attachments || []),
+  ];
 
   const uploadMedia = async (file) => {
     setFiles((prev) => [...prev, file]);
@@ -163,6 +175,8 @@ const PaymentDetails = () => {
               possiblePagesBreadcrumbs={paymentsOrdersBreadCrumbs}
             />
             <div className="flex items-center gap-2">
+              <SaveToExternalResource attachments={combinedAttachments} />
+
               {paymentsDetails?.paymentAdviceAttachment && (
                 <Tooltips
                   trigger={
@@ -207,6 +221,12 @@ const PaymentDetails = () => {
               <div className="flex flex-col gap-4 lg:col-span-2">
                 {/* OVERVIEW */}
                 <PaymentOverview paymentsDetails={paymentsDetails} />
+
+                <DocumentsAttachmentsSection
+                  mainDocument={null}
+                  attachments={paymentsDetails?.attachments}
+                />
+
                 {/* COMMENTS */}
                 <div className="flex h-full flex-col gap-4 p-2">
                   <section className="flex w-full items-center gap-2">
@@ -375,6 +395,12 @@ const PaymentDetails = () => {
             <div className="flex flex-col gap-4">
               {/* OVERVIEW */}
               <PaymentOverview paymentsDetails={paymentsDetails} />
+
+              <DocumentsAttachmentsSection
+                mainDocument={null}
+                attachments={paymentsDetails?.attachments}
+              />
+
               {/* COMMENTS */}
               <div className="flex h-full flex-col gap-4 p-2">
                 <section className="flex w-full items-center gap-2">

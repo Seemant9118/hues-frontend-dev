@@ -11,6 +11,7 @@ import { ModifyPOD } from '@/components/deliveryManagement/ModifyPOD';
 import RejectReasonModal from '@/components/deliveryManagement/RejectReasonModal';
 import PINVerifyModal from '@/components/invoices/PINVerifyModal';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import SaveToExternalResource from '@/components/shared/SaveToExternalResource';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import Overview from '@/components/ui/Overview';
@@ -74,6 +75,16 @@ const ViewPOD = () => {
     queryFn: () => getPODByID({ id: params.id }),
     select: (data) => data.data.data,
   });
+
+  const combinedAttachments = [
+    {
+      isModuleDocument: true,
+      documentType: 'pod',
+      id: parseInt(params.id, 10),
+      documentName: podDetails?.referenceNumber || 'PoD PDF',
+    },
+    ...(podDetails?.attachments || podDetails?.proofOfDeliveryImages || []),
+  ];
   const isSeller = podDetails?.metaData?.sellerEnterpriseId === enterpriseId;
 
   // iamSeller -> show my vendorname
@@ -281,20 +292,23 @@ const ViewPOD = () => {
       <section className="sticky top-0 z-10 flex items-center justify-between bg-white py-2">
         <OrderBreadCrumbs possiblePagesBreadcrumbs={podsBreadCrumbs} />
 
-        {/* preview */}
-        <Tooltips
-          trigger={
-            <Button
-              onClick={handlePreview}
-              size="sm"
-              variant="outline"
-              className="font-bold"
-            >
-              <Eye size={14} />
-            </Button>
-          }
-          content={'Preview PoD Document'}
-        />
+        <div className="flex items-center gap-2">
+          <SaveToExternalResource attachments={combinedAttachments} />
+          {/* preview */}
+          <Tooltips
+            trigger={
+              <Button
+                onClick={handlePreview}
+                size="sm"
+                variant="outline"
+                className="font-bold"
+              >
+                <Eye size={14} />
+              </Button>
+            }
+            content={'Preview PoD Document'}
+          />
+        </div>
       </section>
 
       <Tabs value={tabs} onValueChange={onTabChange} defaultValue={'overview'}>

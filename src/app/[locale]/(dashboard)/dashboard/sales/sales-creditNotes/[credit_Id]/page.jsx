@@ -5,13 +5,13 @@ import {
   formattedAmount,
   getQCDefectStatuses,
 } from '@/appUtils/helperFunctions';
-import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import AccessDenied from '@/components/shared/AccessDenied';
+import DocumentsAttachmentsSection from '@/components/shared/DocumentsAttachmentsSection';
+import SaveToExternalResource from '@/components/shared/SaveToExternalResource';
 import { MergerDataTable } from '@/components/table/merger-data-table';
-import { Button } from '@/components/ui/button';
 import Overview from '@/components/ui/Overview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
@@ -25,7 +25,7 @@ import {
 } from '@/services/Credit_Note_Services/CreditNoteServices';
 import { viewPdfInNewTab } from '@/services/Template_Services/Template_Services';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Eye, MoveUpRight } from 'lucide-react';
+import { MoveUpRight } from 'lucide-react';
 import moment from 'moment';
 import { useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
@@ -78,6 +78,16 @@ const ViewCreditNote = () => {
       return failureCount < 3;
     },
   });
+
+  const combinedAttachments = [
+    {
+      isModuleDocument: true,
+      documentType: 'credit_note',
+      id: parseInt(params.credit_Id, 10),
+      documentName: creditNoteDetails?.referenceNumber || 'Credit Note PDF',
+    },
+    ...(creditNoteDetails?.attachments || []),
+  ];
 
   // overviw component data
   const overviewData = {
@@ -323,20 +333,9 @@ const ViewCreditNote = () => {
             {/* breadcrumbs */}
             <OrderBreadCrumbs possiblePagesBreadcrumbs={debitNoteBreadCrumbs} />
 
-            {/* preview */}
-            <Tooltips
-              trigger={
-                <Button
-                  onClick={handlePreview}
-                  size="sm"
-                  variant="outline"
-                  className="font-bold"
-                >
-                  <Eye size={14} />
-                </Button>
-              }
-              content={translations('preview.tootips-content')}
-            />
+            <div className="flex items-center gap-2">
+              <SaveToExternalResource attachments={combinedAttachments} />
+            </div>
           </section>
 
           <Tabs
@@ -360,6 +359,15 @@ const ViewCreditNote = () => {
                   data={overviewData}
                   labelMap={overviewLabels}
                   customRender={customRender}
+                />
+
+                <DocumentsAttachmentsSection
+                  mainDocument={{
+                    name:
+                      creditNoteDetails?.referenceNumber || 'Credit Note PDF',
+                    onClick: handlePreview,
+                  }}
+                  attachments={creditNoteDetails?.attachments}
                 />
 
                 {/* comment */}

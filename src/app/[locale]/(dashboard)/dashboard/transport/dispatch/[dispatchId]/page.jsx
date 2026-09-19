@@ -15,6 +15,7 @@ import AddTransport from '@/components/dispatchNote/AddTransport';
 import GenerateDCPreviewForm from '@/components/dispatchNote/generateDCform/GenerateDCPreivewForm';
 import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import SaveToExternalResource from '@/components/shared/SaveToExternalResource';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import Loading from '@/components/ui/Loading';
@@ -252,6 +253,16 @@ const ViewDispatchNote = () => {
       queryFn: () => getDispatchNote(params.dispatchId),
       select: (data) => data.data.data,
     });
+
+  const combinedAttachments = [
+    {
+      isModuleDocument: true,
+      documentType: 'dispatch_note',
+      id: parseInt(params.dispatchId, 10),
+      documentName: dispatchDetails?.referenceNumber || 'Dispatch Note PDF',
+    },
+    ...(dispatchDetails?.attachments || []),
+  ];
 
   // formated dispatched items for table
   const mapDispatchDetailsForItems = (dispatchDetails = {}) => {
@@ -924,6 +935,13 @@ const ViewDispatchNote = () => {
 
                 {/* ctas */}
                 <div className="flex items-center gap-2">
+                  <SaveToExternalResource attachments={combinedAttachments} />
+
+                  {/* generateDC cta */}
+                  <Button size="sm" onClick={generateDC}>
+                    {translations('overview_inputs.ctas.generateDC')}
+                  </Button>
+
                   {/* preview */}
                   <Tooltips
                     trigger={
@@ -940,10 +958,6 @@ const ViewDispatchNote = () => {
                       'overview_inputs.ctas.preview.tootips-content',
                     )}
                   />
-                  {/* generateDC cta */}
-                  <Button size="sm" onClick={generateDC}>
-                    {translations('overview_inputs.ctas.generateDC')}
-                  </Button>
                 </div>
               </section>
 

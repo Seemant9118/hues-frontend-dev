@@ -6,19 +6,24 @@ import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { paymentApi } from '@/api/payments/payment_api';
 import { templateApi } from '@/api/templates_api/template_api';
 import { getQCDefectStatuses } from '@/appUtils/helperFunctions';
-import AccessDenied from '@/components/shared/AccessDenied';
-import Tooltips from '@/components/auth/Tooltips';
 import CommentBox from '@/components/comments/CommentBox';
 import { useDispatchNoteColumns } from '@/components/dispatchNote/dispatchNotesColumns';
 import InvoiceOverview from '@/components/invoices/InvoiceOverview';
+import PINVerifyModal from '@/components/invoices/PINVerifyModal';
+import DynamicModal from '@/components/Modals/DynamicModal';
 import ConditionalRenderingStatus from '@/components/orders/ConditionalRenderingStatus';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
 import MakePaymentNewInvoice from '@/components/payments/MakePaymentNewInvoice';
 import { usePaymentColumns } from '@/components/payments/paymentColumns';
+import AccessDenied from '@/components/shared/AccessDenied';
+import ActionsCard from '@/components/shared/ActionsCard';
+import DocumentsAttachmentsSection from '@/components/shared/DocumentsAttachmentsSection';
+import SaveToExternalResource from '@/components/shared/SaveToExternalResource';
 import { DataTable } from '@/components/table/data-table';
-import Loading from '@/components/ui/Loading';
 import { Button } from '@/components/ui/button';
+import Loading from '@/components/ui/Loading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { ProtectedWrapper } from '@/components/wrappers/ProtectedWrapper';
 import Wrapper from '@/components/wrappers/Wrapper';
 import useMetaData from '@/hooks/useMetaData';
@@ -36,16 +41,11 @@ import {
   viewPdfInNewTab,
 } from '@/services/Template_Services/Template_Services';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download, Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import PINVerifyModal from '@/components/invoices/PINVerifyModal';
-import DynamicModal from '@/components/Modals/DynamicModal';
-import { Textarea } from '@/components/ui/textarea';
-import ActionsCard from '@/components/shared/ActionsCard';
 import emptyImg from '../../../../../../../../public/Empty.png';
 import { debitNoteColumns } from './debitNoteColumns';
 import { useSalesInvoiceColumns } from './useSalesInvoiceColumns';
@@ -162,7 +162,7 @@ const ViewInvoice = () => {
   // conversion pvt url to public url to download
   const pvtUrl = invoiceDetails?.invoiceDetails?.attachmentLink;
   // Fetch the PDF document using react-query
-  const { data: pdfDoc } = useQuery({
+  useQuery({
     queryKey: [templateApi.getS3Document.endpointKey, pvtUrl],
     queryFn: () => getDocument(pvtUrl),
     enabled: !!pvtUrl, // Only fetch if pvtUrl is available
@@ -322,46 +322,20 @@ const ViewInvoice = () => {
                 possiblePagesBreadcrumbs={invoiceOrdersBreadCrumbs}
               />
             </div>
-            <div className="flex gap-2">
-              {/* View CTA modal */}
-              <ProtectedWrapper permissionCode={'permission:sales-document'}>
-                {!isRecordingPayment && (
-                  <Tooltips
-                    trigger={
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => viewPdfInNewTab(pvtUrl)}
-                      >
-                        <Eye size={14} />
-                      </Button>
-                    }
-                    content={translations('ctas.view.placeholder')}
-                  />
-                )}
-
-                {/* download CTA */}
-                {!isRecordingPayment && (
-                  <Tooltips
-                    trigger={
-                      <Button
-                        size="sm"
-                        asChild
-                        variant="outline"
-                        className="w-full"
-                      >
-                        <a
-                          download={pdfDoc?.publicUrl}
-                          href={pdfDoc?.publicUrl}
-                        >
-                          <Download size={14} />
-                        </a>
-                      </Button>
-                    }
-                    content={translations('ctas.download.placeholder')}
-                  />
-                )}
-              </ProtectedWrapper>
+            <div className="flex items-center gap-2">
+              <SaveToExternalResource
+                attachments={[
+                  {
+                    isModuleDocument: true,
+                    documentType: 'invoice',
+                    id: parseInt(params.invoiceId, 10),
+                    documentName:
+                      invoiceDetails?.invoiceDetails?.invoiceReferenceNumber ||
+                      'Invoice PDF',
+                  },
+                  ...(invoiceDetails?.invoiceDetails?.attachments || []),
+                ]}
+              />
             </div>
           </section>
           {!isRecordingPayment && (
@@ -426,6 +400,18 @@ const ViewInvoice = () => {
                             }
                           />
 
+                          <DocumentsAttachmentsSection
+                            mainDocument={{
+                              name:
+                                invoiceDetails?.invoiceDetails
+                                  ?.invoiceReferenceNumber || 'Invoice PDF',
+                              onClick: () => viewPdfInNewTab(pvtUrl),
+                            }}
+                            attachments={
+                              invoiceDetails?.invoiceDetails?.attachments
+                            }
+                          />
+
                           <CommentBox
                             contextId={params.invoiceId}
                             context={'INVOICE'}
@@ -470,6 +456,18 @@ const ViewInvoice = () => {
                           }
                           amountPaid={
                             invoiceDetails?.invoiceDetails?.amountPaid
+                          }
+                        />
+
+                        <DocumentsAttachmentsSection
+                          mainDocument={{
+                            name:
+                              invoiceDetails?.invoiceDetails
+                                ?.invoiceReferenceNumber || 'Invoice PDF',
+                            onClick: () => viewPdfInNewTab(pvtUrl),
+                          }}
+                          attachments={
+                            invoiceDetails?.invoiceDetails?.attachments
                           }
                         />
 

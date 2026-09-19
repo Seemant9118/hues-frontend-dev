@@ -17,6 +17,7 @@ import CreateEWBA from '@/components/dispatchNote/CreateEWBA';
 import CreateEWBB from '@/components/dispatchNote/CreateEWBB';
 import AddNewAddress from '@/components/enterprise/AddNewAddress';
 import OrderBreadCrumbs from '@/components/orders/OrderBreadCrumbs';
+import SaveToExternalResource from '@/components/shared/SaveToExternalResource';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import { DynamicTextInfo } from '@/components/ui/dynamic-text-info';
@@ -272,6 +273,16 @@ const ViewDelivery = () => {
       queryFn: () => getDeliveryChallan(params.deliveryId),
       select: (data) => data.data.data,
     });
+
+  const combinedAttachments = [
+    {
+      isModuleDocument: true,
+      documentType: 'voucher',
+      id: parseInt(params.deliveryId, 10),
+      documentName: dispatchDetails?.referenceNumber || 'Delivery Challan PDF',
+    },
+    ...(dispatchDetails?.attachments || []),
+  ];
   const isSeller =
     dispatchDetails?.metaData?.sellerEnterpriseId === enterpriseId;
 
@@ -1028,20 +1039,23 @@ const ViewDelivery = () => {
               <OrderBreadCrumbs
                 possiblePagesBreadcrumbs={dispatchOrdersBreadCrumbs}
               />
-              {/* preview */}
-              <Tooltips
-                trigger={
-                  <Button
-                    onClick={handlePreview}
-                    size="sm"
-                    variant="outline"
-                    className="font-bold"
-                  >
-                    <Eye size={14} />
-                  </Button>
-                }
-                content={'Preview Delivery challan'}
-              />
+              <div className="flex items-center gap-2">
+                <SaveToExternalResource attachments={combinedAttachments} />
+                {/* preview */}
+                <Tooltips
+                  trigger={
+                    <Button
+                      onClick={handlePreview}
+                      size="sm"
+                      variant="outline"
+                      className="font-bold"
+                    >
+                      <Eye size={14} />
+                    </Button>
+                  }
+                  content={'Preview Delivery challan'}
+                />
+              </div>
             </section>
 
             <Tabs
