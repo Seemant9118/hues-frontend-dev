@@ -32,6 +32,7 @@ export function useTemplateBuilderQueries({
         id: v.key,
         label: v.key,
         description: v.description,
+        ...v,
       });
     });
 

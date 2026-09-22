@@ -49,7 +49,11 @@ export default function AddFieldDialog({
       extraConfig.placeholder = placeholder.trim();
     }
 
-    if (fieldType === 'SELECT') {
+    if (
+      fieldType === 'SELECT' ||
+      fieldType === 'RADIO' ||
+      fieldType === 'CHECKBOX'
+    ) {
       const parsedOptions = optionsText
         .split(/[,\n]/)
         .map((opt) => opt.trim())
@@ -57,7 +61,7 @@ export default function AddFieldDialog({
         .map((opt) => ({ value: opt, label: opt }));
 
       if (parsedOptions.length === 0) {
-        toast.error('Please enter at least one option for the dropdown select');
+        toast.error('Please enter at least one option for this field');
         return;
       }
       extraConfig.options = parsedOptions;
@@ -146,8 +150,10 @@ export default function AddFieldDialog({
             </div>
           )}
 
-          {/* Dropdown Options */}
-          {fieldType === 'SELECT' && (
+          {/* Options for SELECT, RADIO, CHECKBOX */}
+          {(fieldType === 'SELECT' ||
+            fieldType === 'RADIO' ||
+            fieldType === 'CHECKBOX') && (
             <div className="flex flex-col gap-1.5 text-left">
               <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
                 Options <span className="text-red-500">*</span>
@@ -159,7 +165,7 @@ export default function AddFieldDialog({
                 className="min-h-[100px] w-full rounded-lg border-neutral-200 bg-white text-sm font-medium text-neutral-700 shadow-sm focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary/20"
               />
               <span className="text-[9px] text-neutral-400">
-                Each line or comma-separated item will become a dropdown option.
+                Each line or comma-separated item will become an option.
               </span>
             </div>
           )}

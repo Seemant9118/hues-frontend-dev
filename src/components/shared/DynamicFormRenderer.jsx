@@ -16,6 +16,7 @@ import {
   resetCustomForm,
 } from '@/services/Custom_Form_Services/CustomFormServices';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import ReactSelect from 'react-select';
 import {
   Asterisk,
@@ -329,7 +330,7 @@ export default function DynamicFormRenderer({
       )}
 
       {/* Fields Grid */}
-      <div className={`grid gap-5 ${gridCols}`}>
+      <div className={`grid items-start gap-5 ${gridCols}`}>
         {fieldsToRender.map((field, idx) => {
           // If a custom render function is provided, use it first
           const renderedField = renderCustomField
@@ -339,7 +340,7 @@ export default function DynamicFormRenderer({
           return (
             <div
               key={field.key}
-              className={`group relative flex flex-col justify-end rounded-lg p-2.5 transition-all ${
+              className={`group relative flex flex-col justify-start rounded-lg p-2.5 transition-all ${
                 canEdit
                   ? 'border border-dashed border-blue-200 bg-white hover:border-blue-400 hover:shadow-sm'
                   : ''
@@ -392,6 +393,112 @@ export default function DynamicFormRenderer({
                           selectedOption ? selectedOption.value : '',
                         )
                       }
+                    />
+                  ) : field.type === 'RADIO' ? (
+                    <div className="flex flex-col gap-2 pt-1">
+                      {(field.options || field.validation?.options || []).map(
+                        (opt, i) => (
+                          <label
+                            key={opt.value ?? i}
+                            className="flex items-center gap-2 text-sm text-neutral-600"
+                          >
+                            <input
+                              type="radio"
+                              name={field.key}
+                              value={opt.value}
+                              checked={formData[field.key] === opt.value}
+                              onChange={(e) =>
+                                onChange(field.key, e.target.value)
+                              }
+                              disabled={
+                                disabled ||
+                                (!canEdit && field.inputMode === 'COMPUTED')
+                              }
+                              className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                            />
+                            {opt.label}
+                          </label>
+                        ),
+                      )}
+                      {(field.options || field.validation?.options || [])
+                        .length === 0 && (
+                        <span className="text-xs italic text-neutral-400">
+                          No options configured
+                        </span>
+                      )}
+                    </div>
+                  ) : field.type === 'CHECKBOX' ? (
+                    <div className="flex flex-col gap-2 pt-1">
+                      {(field.options || field.validation?.options || [])
+                        .length > 0 ? (
+                        (field.options || field.validation?.options || []).map(
+                          (opt, i) => {
+                            const values = Array.isArray(formData[field.key])
+                              ? formData[field.key]
+                              : formData[field.key]
+                                ? [formData[field.key]]
+                                : [];
+                            const isChecked = values.includes(opt.value);
+                            return (
+                              <label
+                                key={opt.value ?? i}
+                                className="flex items-center gap-2 text-sm text-neutral-600"
+                              >
+                                <input
+                                  type="checkbox"
+                                  name={`${field.key}_${i}`}
+                                  value={opt.value}
+                                  checked={isChecked}
+                                  onChange={(e) => {
+                                    const newValues = e.target.checked
+                                      ? [...values, opt.value]
+                                      : values.filter((v) => v !== opt.value);
+                                    onChange(field.key, newValues);
+                                  }}
+                                  disabled={
+                                    disabled ||
+                                    (!canEdit && field.inputMode === 'COMPUTED')
+                                  }
+                                  className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
+                                />
+                                {opt.label}
+                              </label>
+                            );
+                          },
+                        )
+                      ) : (
+                        <label className="flex items-center gap-2 text-sm text-neutral-600">
+                          <input
+                            type="checkbox"
+                            checked={!!formData[field.key]}
+                            onChange={(e) =>
+                              onChange(field.key, e.target.checked)
+                            }
+                            disabled={
+                              disabled ||
+                              (!canEdit && field.inputMode === 'COMPUTED')
+                            }
+                            className="h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="text-xs text-neutral-500">
+                            Enable
+                          </span>
+                        </label>
+                      )}
+                    </div>
+                  ) : field.type === 'TEXTAREA' ? (
+                    <Textarea
+                      placeholder={
+                        field.placeholder ||
+                        field.validation?.placeholder ||
+                        `Enter ${field.label}...`
+                      }
+                      disabled={
+                        disabled || (!canEdit && field.inputMode === 'COMPUTED')
+                      }
+                      value={formData[field.key] || ''}
+                      onChange={(e) => onChange(field.key, e.target.value)}
+                      className="min-h-[80px]"
                     />
                   ) : field.type === 'DATE' ? (
                     <Input

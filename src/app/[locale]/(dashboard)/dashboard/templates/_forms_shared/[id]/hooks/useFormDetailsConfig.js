@@ -152,7 +152,13 @@ export function useFormDetailsConfig(
             origSys,
           );
 
-      if (res.status) {
+      const isSuccess =
+        res.status === true ||
+        res.status === 'success' ||
+        res.statusCode === 200 ||
+        res.status === 200;
+
+      if (isSuccess) {
         toast.success(
           `Form configuration for ${convertSnakeToTitleCase(
             config?.name || config?.module || moduleId,

@@ -98,24 +98,117 @@ export default function SharedFormView({
                           );
                         })}
                       </select>
+                    ) : field.type === 'RADIO' ? (
+                      <div className="flex flex-col gap-2 pt-1">
+                        {(field.options || field.validation?.options || []).map(
+                          (opt, i) => {
+                            const optVal = opt.value ?? opt;
+                            const optLabel = opt.label ?? opt;
+                            return (
+                              <label
+                                key={optVal ?? i}
+                                className="flex cursor-pointer items-center gap-2 text-xs text-neutral-600"
+                              >
+                                <input
+                                  type="radio"
+                                  name={field.key}
+                                  value={optVal}
+                                  checked={val === optVal}
+                                  required={isRequired && !val}
+                                  onChange={(e) =>
+                                    handleFieldValueChange(
+                                      field.key,
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-4 w-4 text-primary focus:ring-primary/30"
+                                />
+                                {optLabel}
+                              </label>
+                            );
+                          },
+                        )}
+                      </div>
                     ) : field.type === 'CHECKBOX' ? (
-                      <label className="inline-flex cursor-pointer items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={!!val}
-                          onChange={(e) =>
-                            handleFieldValueChange(field.key, e.target.checked)
-                          }
-                          className="h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary/30"
-                        />
-                        <span className="text-xs text-neutral-600">
-                          {field.placeholder || 'Yes, I agree / confirm'}
-                        </span>
-                      </label>
+                      <div className="flex flex-col gap-2 pt-1">
+                        {(field.options || field.validation?.options || [])
+                          .length > 0 ? (
+                          (
+                            field.options ||
+                            field.validation?.options ||
+                            []
+                          ).map((opt, i) => {
+                            const optVal = opt.value ?? opt;
+                            const optLabel = opt.label ?? opt;
+                            const values = Array.isArray(val)
+                              ? val
+                              : val
+                                ? [val]
+                                : [];
+                            const isChecked = values.includes(optVal);
+                            return (
+                              <label
+                                key={optVal ?? i}
+                                className="flex cursor-pointer items-center gap-2 text-xs text-neutral-600"
+                              >
+                                <input
+                                  type="checkbox"
+                                  name={`${field.key}_${i}`}
+                                  value={optVal}
+                                  checked={isChecked}
+                                  onChange={(e) => {
+                                    const newValues = e.target.checked
+                                      ? [...values, optVal]
+                                      : values.filter((v) => v !== optVal);
+                                    handleFieldValueChange(
+                                      field.key,
+                                      newValues,
+                                    );
+                                  }}
+                                  className="h-4 w-4 rounded text-primary focus:ring-primary/30"
+                                />
+                                {optLabel}
+                              </label>
+                            );
+                          })
+                        ) : (
+                          <label className="inline-flex cursor-pointer items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={!!val}
+                              required={isRequired && !val}
+                              onChange={(e) =>
+                                handleFieldValueChange(
+                                  field.key,
+                                  e.target.checked,
+                                )
+                              }
+                              className="h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary/30"
+                            />
+                            <span className="text-xs text-neutral-600">
+                              {field.placeholder || 'Yes, I agree / confirm'}
+                            </span>
+                          </label>
+                        )}
+                      </div>
+                    ) : field.type === 'FILE' ? (
+                      <input
+                        type="file"
+                        accept={
+                          field.allowedTypes || field.validation?.allowedTypes
+                        }
+                        required={isRequired && !val}
+                        onChange={(e) =>
+                          handleFieldValueChange(field.key, e.target.files)
+                        }
+                        className="w-full text-xs text-neutral-800 file:mr-4 file:rounded-full file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:text-xs file:font-semibold file:text-primary hover:file:bg-primary/20"
+                      />
                     ) : (
                       <input
                         type={
-                          field.type === 'NUMBER'
+                          field.type === 'NUMBER' ||
+                          field.type === 'CURRENCY' ||
+                          field.type === 'DECIMAL'
                             ? 'number'
                             : field.type === 'DATE'
                               ? 'date'
@@ -130,7 +223,15 @@ export default function SharedFormView({
                         value={val}
                         required={isRequired}
                         onChange={(e) =>
-                          handleFieldValueChange(field.key, e.target.value)
+                          handleFieldValueChange(
+                            field.key,
+                            (field.type === 'NUMBER' ||
+                              field.type === 'DECIMAL' ||
+                              field.type === 'CURRENCY') &&
+                              e.target.value !== ''
+                              ? Number(e.target.value)
+                              : e.target.value,
+                          )
                         }
                         className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-xs text-neutral-800 placeholder:text-neutral-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/30"
                       />

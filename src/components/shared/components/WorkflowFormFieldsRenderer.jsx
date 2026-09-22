@@ -121,9 +121,123 @@ export default function WorkflowFormFieldsRenderer({
                   onStepValueChange?.(targetStepKey, fieldKey, e.target.value)
                 }
               />
-            ) : field.type === 'NUMBER' ? (
+            ) : field.type === 'RADIO' ? (
+              <div className="mt-1 flex flex-col gap-2">
+                {(field.options || field.validation?.options || []).map(
+                  (opt, i) => {
+                    const optVal = opt.value ?? opt;
+                    const optLabel = opt.label ?? opt;
+                    return (
+                      <label
+                        key={optVal ?? i}
+                        className="flex items-center gap-2 text-sm text-neutral-600"
+                      >
+                        <input
+                          type="radio"
+                          name={fieldKey}
+                          value={optVal}
+                          checked={value === optVal}
+                          onChange={(e) =>
+                            onStepValueChange?.(
+                              targetStepKey,
+                              fieldKey,
+                              e.target.value,
+                            )
+                          }
+                          className="h-4 w-4 text-primary focus:ring-primary/30"
+                        />
+                        {optLabel}
+                      </label>
+                    );
+                  },
+                )}
+              </div>
+            ) : field.type === 'CHECKBOX' ? (
+              <div className="mt-1 flex flex-col gap-2">
+                {(field.options || field.validation?.options || []).length >
+                0 ? (
+                  (field.options || field.validation?.options || []).map(
+                    (opt, i) => {
+                      const optVal = opt.value ?? opt;
+                      const optLabel = opt.label ?? opt;
+                      const values = Array.isArray(value)
+                        ? value
+                        : value
+                          ? [value]
+                          : [];
+                      const isChecked = values.includes(optVal);
+                      return (
+                        <label
+                          key={optVal ?? i}
+                          className="flex items-center gap-2 text-sm text-neutral-600"
+                        >
+                          <input
+                            type="checkbox"
+                            name={`${fieldKey}_${i}`}
+                            value={optVal}
+                            checked={isChecked}
+                            onChange={(e) => {
+                              const newValues = e.target.checked
+                                ? [...values, optVal]
+                                : values.filter((v) => v !== optVal);
+                              onStepValueChange?.(
+                                targetStepKey,
+                                fieldKey,
+                                newValues,
+                              );
+                            }}
+                            className="h-4 w-4 rounded text-primary focus:ring-primary/30"
+                          />
+                          {optLabel}
+                        </label>
+                      );
+                    },
+                  )
+                ) : (
+                  <label className="flex items-center gap-2 text-sm text-neutral-600">
+                    <input
+                      type="checkbox"
+                      checked={!!value}
+                      onChange={(e) =>
+                        onStepValueChange?.(
+                          targetStepKey,
+                          fieldKey,
+                          e.target.checked,
+                        )
+                      }
+                      className="h-4 w-4 rounded text-primary focus:ring-primary/30"
+                    />
+                    <span className="text-xs text-neutral-500">
+                      {field.placeholder || 'Enable'}
+                    </span>
+                  </label>
+                )}
+              </div>
+            ) : field.type === 'FILE' ? (
               <Input
-                type="number"
+                type="file"
+                accept={field.allowedTypes || field.validation?.allowedTypes}
+                className={cn(
+                  'mt-1 bg-white text-sm',
+                  errorMessage && 'border-red-500 ring-1 ring-red-500',
+                )}
+                onChange={(e) =>
+                  onStepValueChange?.(targetStepKey, fieldKey, e.target.files)
+                }
+              />
+            ) : (
+              <Input
+                type={
+                  field.type === 'NUMBER' ||
+                  field.type === 'CURRENCY' ||
+                  field.type === 'DECIMAL'
+                    ? 'number'
+                    : field.type === 'DATE'
+                      ? 'date'
+                      : field.type === 'EMAIL'
+                        ? 'email'
+                        : 'text'
+                }
                 className={cn(
                   'mt-1 bg-white text-sm',
                   errorMessage && 'border-red-500 ring-1 ring-red-500',
@@ -134,21 +248,13 @@ export default function WorkflowFormFieldsRenderer({
                   onStepValueChange?.(
                     targetStepKey,
                     fieldKey,
-                    e.target.value === '' ? '' : Number(e.target.value),
+                    (field.type === 'NUMBER' ||
+                      field.type === 'DECIMAL' ||
+                      field.type === 'CURRENCY') &&
+                      e.target.value !== ''
+                      ? Number(e.target.value)
+                      : e.target.value,
                   )
-                }
-              />
-            ) : (
-              <Input
-                type="text"
-                className={cn(
-                  'mt-1 bg-white text-sm',
-                  errorMessage && 'border-red-500 ring-1 ring-red-500',
-                )}
-                placeholder={field.placeholder || `Enter ${field.label}`}
-                value={value}
-                onChange={(e) =>
-                  onStepValueChange?.(targetStepKey, fieldKey, e.target.value)
                 }
               />
             )}
