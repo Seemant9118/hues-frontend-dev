@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { invoiceApi } from '@/api/invoice/invoiceApi';
 import { isGstApplicable } from '@/appUtils/helperFunctions';
-import { filterSubmitPayload } from '@/components/orders/utils/orderPayloadHelper';
+import { buildEnhancedOrderPayload } from '@/components/orders/utils/orderPayloadHelper';
 import { SessionStorageService } from '@/lib/utils';
 import { previewDirectPurchaseInvoice } from '@/services/Invoice_Services/Invoice_Services';
 import { createPurchaseInvoice } from '@/services/Orders_Services/Orders_Services';
@@ -18,6 +18,7 @@ export function usePurchaseInvoiceActions({
   translations,
   setUrl,
   setIsInvoicePreview,
+  activeWorkflowData = null,
 }) {
   const router = useRouter();
   const [isPINError, setIsPINError] = useState(false);
@@ -43,6 +44,7 @@ export function usePurchaseInvoiceActions({
       }
 
       if (
+        orderData.source !== 'hues' &&
         (!orderData?.invoiceReferenceNumber ||
           String(orderData.invoiceReferenceNumber).trim() === '') &&
         (!orderData?.refrenceNumber ||
@@ -189,7 +191,7 @@ export function usePurchaseInvoiceActions({
           gstPercentage: Number(item.gstPerUnit) || 0,
         }));
 
-        const cleanPayload = filterSubmitPayload(
+        const cleanPayload = buildEnhancedOrderPayload(
           {
             ...updatedOrder,
             orderItems: mappedItems,
@@ -209,6 +211,7 @@ export function usePurchaseInvoiceActions({
             gstAmount: parseFloat(totalGstAmt.toFixed(2)),
             discountAmount: parseFloat(totalDiscountAmt.toFixed(2)),
           },
+          activeWorkflowData,
           order._formFields || fields,
         );
 
@@ -227,6 +230,7 @@ export function usePurchaseInvoiceActions({
       order._formFields,
       fields,
       invoiceMutation,
+      activeWorkflowData,
     ],
   );
 
@@ -272,7 +276,7 @@ export function usePurchaseInvoiceActions({
           gstPercentage: Number(item.gstPerUnit) || 0,
         }));
 
-        const cleanPayload = filterSubmitPayload(
+        const cleanPayload = buildEnhancedOrderPayload(
           {
             ...updatedOrder,
             orderItems: mappedItems,
@@ -292,6 +296,7 @@ export function usePurchaseInvoiceActions({
             gstAmount: parseFloat(totalGstAmt.toFixed(2)),
             discountAmount: parseFloat(totalDiscountAmt.toFixed(2)),
           },
+          activeWorkflowData,
           order._formFields || fields,
         );
 
@@ -309,6 +314,7 @@ export function usePurchaseInvoiceActions({
       order._formFields,
       fields,
       previewInvMutation,
+      activeWorkflowData,
     ],
   );
 

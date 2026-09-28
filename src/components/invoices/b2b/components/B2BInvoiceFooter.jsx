@@ -15,6 +15,7 @@ export default function B2BInvoiceFooter({
   order,
   isPending,
   translations,
+  hideActions = false,
 }) {
   return (
     <div className="sticky bottom-0 z-20 mt-3 flex items-center justify-between gap-2 border-t border-neutral-200 bg-white p-4">
@@ -81,23 +82,27 @@ export default function B2BInvoiceFooter({
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        <Button onClick={onCancel} size="sm" variant="outline">
-          {translations('form.ctas.cancel')}
-        </Button>
-        <Button
-          type="button"
-          onClick={() => {
-            isOrder === 'invoice' ? handlePreview(order) : handleSubmit(order);
-          }}
-          size="sm"
-          disabled={isPending}
-        >
-          {isOrder === 'invoice'
-            ? translations('form.ctas.next')
-            : translations('form.ctas.submit')}
-        </Button>
-      </div>
+      {!hideActions && (
+        <div className="flex items-center gap-2">
+          <Button onClick={onCancel} size="sm" variant="outline">
+            {translations('form.ctas.cancel')}
+          </Button>
+          <Button
+            type="button"
+            onClick={() => {
+              isOrder === 'invoice'
+                ? handlePreview(order)
+                : handleSubmit(order);
+            }}
+            size="sm"
+            disabled={isPending}
+          >
+            {isOrder === 'invoice'
+              ? translations('form.ctas.next')
+              : translations('form.ctas.submit')}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

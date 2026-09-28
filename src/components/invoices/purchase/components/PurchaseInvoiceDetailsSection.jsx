@@ -182,7 +182,7 @@ export default function PurchaseInvoiceDetailsSection({
                     />
                   </SelectTrigger>
                   <SelectContent className="rounded-lg border border-neutral-100 bg-white shadow-md">
-                    <SelectItem value="hues">Hues</SelectItem>
+                    {/* <SelectItem value="hues">Hues</SelectItem> */}
                     <SelectItem value="tally">Tally</SelectItem>
                     <SelectItem value="other">Other ERP</SelectItem>
                   </SelectContent>

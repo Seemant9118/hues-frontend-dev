@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { isGstApplicable } from '@/appUtils/helperFunctions';
-import { filterSubmitPayload } from '@/components/orders/utils/orderPayloadHelper';
+import { buildEnhancedOrderPayload } from '@/components/orders/utils/orderPayloadHelper';
 import { SessionStorageService } from '@/lib/utils';
 import { createInvoice } from '@/services/Orders_Services/Orders_Services';
 
@@ -13,6 +13,7 @@ export function useB2CInvoiceActions({
   fields,
   isGstApplicableForSalesOrders,
   translations,
+  activeWorkflowData = null,
 }) {
   const router = useRouter();
   const [errorMsg, setErrorMsg] = useState({});
@@ -113,7 +114,13 @@ export function useB2CInvoiceActions({
       0,
     );
 
-    return { totalAmount, totalGstAmt };
+    const totalDiscountAmt = (order?.orderItems || []).reduce(
+      (totalDisc, orderItem) =>
+        totalDisc + (Number(orderItem.discountAmount) || 0),
+      0,
+    );
+
+    return { totalAmount, totalGstAmt, totalDiscountAmt };
   }, [order?.orderItems, isGstApplicableForSalesOrders]);
 
   const { totalAmount, totalGstAmt } = handleSetTotalAmt();
@@ -135,13 +142,25 @@ export function useB2CInvoiceActions({
 
   const handleSubmit = useCallback(
     (updateOrder) => {
-      const { totalAmount: currentTotalAmt, totalGstAmt: currentTotalGst } =
-        handleSetTotalAmt();
+      const {
+        totalAmount: currentTotalAmt,
+        totalGstAmt: currentTotalGst,
+        totalDiscountAmt: currentTotalDiscount,
+      } = handleSetTotalAmt();
       const isError = validation({ order: updateOrder });
 
       if (Object.keys(isError).length === 0) {
         const mappedOrderItems = (updateOrder.orderItems || []).map((item) => ({
           ...item,
+          productId: item.productId || item.catalogueItemId || item.id,
+          quantity: Number(item.quantity) || 0,
+          unitPrice: Number(item.unitPrice) || 0,
+          gstPerUnit: Number(item.gstPerUnit) || 0,
+          totalAmount: Number(item.totalAmount) || 0,
+          totalGstAmount: Number(item.totalGstAmount) || 0,
+          productType: item.productType || updateOrder.invoiceType || 'GOODS',
+          discountPercentage: Number(item.discountPercentage) || 0,
+          discountAmount: Number(item.discountAmount) || 0,
           batchNo: item.batch?.batchNo || null,
           expiryDate: item.expiryDate
             ? moment(item.expiryDate).format('YYYY-MM-DD')
@@ -149,24 +168,36 @@ export function useB2CInvoiceActions({
           gstPercentage: Number(item.gstPerUnit) || 0,
         }));
 
-        const cleanPayload = filterSubmitPayload(
+        const cleanPayload = buildEnhancedOrderPayload(
           {
             ...updateOrder,
             orderItems: mappedOrderItems,
             invoiceItems: mappedOrderItems,
             buyerId: Number(updateOrder.buyerId),
             amount: parseFloat(currentTotalAmt.toFixed(2)),
+            roundOffAmount: Math.round(currentTotalAmt + currentTotalGst),
             gstAmount: parseFloat(currentTotalGst.toFixed(2)),
+            discountAmount: parseFloat(currentTotalDiscount.toFixed(2)),
           },
+          activeWorkflowData,
           order._formFields || fields,
         );
 
         invoiceMutation.mutate(cleanPayload);
       } else {
+        // eslint-disable-next-line no-console
+        console.log(isError);
         setErrorMsg(isError);
       }
     },
-    [handleSetTotalAmt, validation, order._formFields, fields, invoiceMutation],
+    [
+      handleSetTotalAmt,
+      validation,
+      order._formFields,
+      fields,
+      invoiceMutation,
+      activeWorkflowData,
+    ],
   );
 
   return {

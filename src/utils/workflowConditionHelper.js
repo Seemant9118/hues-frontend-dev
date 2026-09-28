@@ -39,84 +39,25 @@ export function extractConditionRecordData(formData = {}, conditionPaths = []) {
     0,
   );
 
-  const standardSystemKeys = [
-    'amount',
-    'gstAmount',
-    'buyerId',
-    'sellerEnterpriseId',
-    'orderType',
-    'invoiceType',
-    'clientType',
-    'paymentTerms',
-    'offerValidity',
-    'billingAddressId',
-    'shippingAddressId',
-    'orderItems',
-    'notesToCustomer',
-    'buyerType',
-  ];
-
-  standardSystemKeys.forEach((key) => {
-    let val;
-    if (key === 'amount') {
-      val =
-        formData?.amount ??
-        (calculatedAmount > 0
-          ? Number(calculatedAmount.toFixed(2))
-          : undefined);
-    } else {
-      val = formData?.[key];
-    }
-    if (val !== undefined && val !== null && val !== '') {
-      record[key] = val;
-    }
-  });
-
   (conditionPaths || []).forEach((path) => {
     const key = path.includes('.') ? path.split('.').pop() : path;
     if (key === 'selectedValue') return;
     if (record[key] !== undefined) return;
 
-    const val =
+    let val =
       formData?.[key] ??
       formData?.[path] ??
       formData?.customFields?.[key] ??
       formData?.extraInfo?.[key];
 
+    if (key === 'amount' && val === undefined && calculatedAmount > 0) {
+      val = Number(calculatedAmount.toFixed(2));
+    }
+
     if (val !== undefined && val !== null && val !== '') {
       record[key] = val;
     }
   });
-
-  // Always include all system form fields present in formData (except selectedValue and internal flags)
-  Object.keys(formData || {}).forEach((k) => {
-    if (
-      !k.startsWith('_') &&
-      ![
-        'workflowStepValues',
-        'isEditing',
-        'isCreatingSales',
-        'isCreatingPurchase',
-        'isPurchasePage',
-        'selectedValue',
-      ].includes(k)
-    ) {
-      if (
-        record[k] === undefined &&
-        formData[k] !== undefined &&
-        formData[k] !== null &&
-        formData[k] !== ''
-      ) {
-        record[k] = formData[k];
-      }
-    }
-  });
-
-  if (record.amount === undefined && calculatedAmount > 0) {
-    record.amount = Number(calculatedAmount.toFixed(2));
-  }
-
-  delete record.selectedValue;
 
   return record;
 }
@@ -144,11 +85,6 @@ export function extractConditionFormData(
       formValues[key] = val;
     }
   });
-
-  // Fallback: include all values from stepValues if conditionPaths didn't match
-  if (Object.keys(formValues).length === 0 && stepValues) {
-    Object.assign(formValues, stepValues);
-  }
 
   return formValues;
 }

@@ -61,6 +61,7 @@ const InvoicePreview = ({
   isActionable = false,
   isPINError,
   setIsPINError = false,
+  hideSubmitActions = false,
 }) => {
   const enterpriseId = getEnterpriseId();
   const [open, setOpen] = useState(false);
@@ -68,7 +69,7 @@ const InvoicePreview = ({
     order?.invoiceDate ? new Date(order.invoiceDate) : new Date(),
   );
   // State to determine if the document is a PDF
-  const [isPDF, setIsPDF] = useState(false);
+  const [isPDF, setIsPDF] = useState(isPDFProp || false);
   // State for storing customer remarks
   const [remarks, setRemarks] = useState('Thank you for your business!');
   // State for selected bank account
@@ -702,7 +703,12 @@ const InvoicePreview = ({
             Apply changes
           </Button>
         </div>
-        <div className="flex items-center gap-2">
+        <div
+          className={cn(
+            'flex items-center gap-2',
+            hideSubmitActions && 'hidden',
+          )}
+        >
           <Button
             size="sm"
             variant="outline"
@@ -732,6 +738,7 @@ const InvoicePreview = ({
 
           {isCreatable && (
             <Button
+              id="hidden-create-invoice-btn"
               size="sm"
               onClick={() => {
                 const updatedOrder = {

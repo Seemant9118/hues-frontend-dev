@@ -11,7 +11,7 @@ import {
   previewInvoice,
 } from '@/services/Invoice_Services/Invoice_Services';
 import { createInvoice } from '@/services/Orders_Services/Orders_Services';
-import { filterSubmitPayload } from '@/components/orders/utils/orderPayloadHelper';
+import { buildEnhancedOrderPayload } from '@/components/orders/utils/orderPayloadHelper';
 
 export function useB2BInvoiceActions({
   order,
@@ -21,6 +21,7 @@ export function useB2BInvoiceActions({
   translations,
   setUrl,
   setIsInvoicePreview,
+  activeWorkflowData = null,
 }) {
   const router = useRouter();
   const [isPINError, setIsPINError] = useState(false);
@@ -198,7 +199,7 @@ export function useB2BInvoiceActions({
       if (Object.keys(isError).length === 0) {
         const mappedRows = getMappedPayloadRows(updatedOrder);
 
-        const cleanPayload = filterSubmitPayload(
+        const cleanPayload = buildEnhancedOrderPayload(
           {
             ...updatedOrder,
             orderItems: mappedRows,
@@ -209,6 +210,7 @@ export function useB2BInvoiceActions({
             gstAmount: parseFloat(totalGstAmt.toFixed(2)),
             discountAmount: parseFloat(totalDiscountAmt.toFixed(2)),
           },
+          activeWorkflowData,
           order._formFields || fields,
         );
 
@@ -280,7 +282,7 @@ export function useB2BInvoiceActions({
       if (Object.keys(isError).length === 0) {
         const mappedRows = getMappedPayloadRows(updatedOrder);
         setErrorMsg({});
-        const cleanPayload = filterSubmitPayload(
+        const cleanPayload = buildEnhancedOrderPayload(
           {
             ...updatedOrder,
             orderItems: mappedRows,
@@ -291,6 +293,7 @@ export function useB2BInvoiceActions({
             gstAmount: parseFloat(totalGstAmt.toFixed(2)),
             discountAmount: parseFloat(totalDiscountAmt.toFixed(2)),
           },
+          activeWorkflowData,
           order._formFields || fields,
         );
 

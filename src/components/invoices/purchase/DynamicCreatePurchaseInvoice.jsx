@@ -1,61 +1,51 @@
-import { useTranslations } from 'next-intl';
-import React, { useMemo, useState } from 'react';
+'use client';
+
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
-import AddBatch from '@/components/inventory/batch/AddBatch';
-import { useDeveloperMode } from '@/context/DeveloperModeContext';
+import {
+  useActiveWorkflowRuntime,
+  useNextStepPreview,
+} from '@/hooks/workflows/useWorkflowRuntime';
 import { SessionStorageService } from '@/lib/utils';
-import { GetProductBatchList } from '@/services/Inventories_Services/Goods_Inventories/ProductBatch_Services';
+import {
+  extractConditionFormData,
+  extractConditionRecordData,
+  getConditionPathsFromTransitions,
+} from '@/utils/workflowConditionHelper';
 
-import PurchaseAddItemSection from './components/PurchaseAddItemSection';
-import PurchaseAdditionalInfoSection from './components/PurchaseAdditionalInfoSection';
-import PurchaseInvoiceDetailsSection from './components/PurchaseInvoiceDetailsSection';
-import PurchaseInvoiceFooter from './components/PurchaseInvoiceFooter';
-import PurchaseLineItemsTableSection from './components/PurchaseLineItemsTableSection';
-import { usePurchaseInvoiceActions } from './hooks/usePurchaseInvoiceActions';
-import { usePurchaseInvoiceFormConfig } from './hooks/usePurchaseInvoiceFormConfig';
-import { usePurchaseInvoiceQueries } from './hooks/usePurchaseInvoiceQueries';
-import { usePurchaseInvoiceTableColumns } from './hooks/usePurchaseInvoiceTableColumns';
-import { Button } from '../../ui/button';
-import EmptyStageComponent from '../../ui/EmptyStageComponent';
-import InvoicePreview from '../../ui/InvoicePreview';
-import SubHeader from '../../ui/Sub-header';
-import Wrapper from '../../wrappers/Wrapper';
+import MultiStepForm from '@/components/shared/MultiStepForm/MultiStepForm';
+import { Button } from '@/components/ui/button';
+import {
+  DynamicPurchaseInvoiceStepsConfig,
+  getWorkflowEnhancedStepsConfig,
+} from './DynamicCreate_Invoice_Purchase';
+
+const INVOICE_CONFIG = {
+  breadcrumbs: [
+    {
+      id: 1,
+      name: 'Purchases',
+      path: '/dashboard/purchases/purchase-invoices',
+      show: true,
+    },
+    { id: 2, name: 'Create Purchase Invoice', path: '#', show: true },
+  ],
+  homePath: '/dashboard/purchases/purchase-invoices',
+  homeText: 'Purchase Invoices',
+  title: 'Create Purchase Invoice',
+};
+
+const coreModuleName = 'INVOICE';
 
 const DynamicCreatePurchaseInvoice = ({ onCancel, name, isOrder }) => {
-  const translations = useTranslations('components.create_edit_order');
-  const { isDeveloperMode } = useDeveloperMode();
-  const enterpriseId = useMemo(() => getEnterpriseId(), []);
+  const router = useRouter();
+  const enterpriseId = getEnterpriseId();
 
-  const [url, setUrl] = useState(null);
-  const [isInvoicePreview, setIsInvoicePreview] = useState(false);
-  const [productBatchesMap, setProductBatchesMap] = useState({});
-  const [isAddingBatchFor, setIsAddingBatchFor] = useState(null);
+  const [errors, setErrors] = useState({});
 
-  // Lazy Initializers for state
-  const [selectedItem, setSelectedItem] = useState(() => {
-    const draft = SessionStorageService.get('purchaseInvoiceDraft');
-    return {
-      productName: draft?.itemDraft?.productName || '',
-      productType: draft?.itemDraft?.productType || '',
-      skuId: draft?.itemDraft?.skuId || '',
-      hsnCode: draft?.itemDraft?.hsnCode || '',
-      sac: draft?.itemDraft?.sac || '',
-      serviceName: draft?.itemDraft?.serviceName || '',
-      productId: draft?.itemDraft?.productId || null,
-      quantity: draft?.itemDraft?.quantity || null,
-      unitId: draft?.itemDraft?.unitId || null,
-      unitPrice: draft?.itemDraft?.unitPrice || null,
-      gstPerUnit: draft?.itemDraft?.gstPerUnit || 0,
-      totalAmount: draft?.itemDraft?.totalAmount || null,
-      totalGstAmount: draft?.itemDraft?.totalGstAmount || null,
-      batch: draft?.itemDraft?.batch || null,
-      batches: draft?.itemDraft?.batches || [],
-      expiryDate: draft?.itemDraft?.expiryDate || '',
-    };
-  });
-
-  const [order, setOrder] = useState(() => {
+  const [formData, setFormData] = useState(() => {
     const draft = SessionStorageService.get('purchaseInvoiceDraft');
     return {
       clientType: 'B2B',
@@ -87,262 +77,255 @@ const DynamicCreatePurchaseInvoice = ({ onCancel, name, isOrder }) => {
         draft?.invoiceReferenceNumber || draft?.refrenceNumber || '',
       roundOffAmount: draft?.roundOffAmount || 0,
       roundOffType: draft?.roundOffType || 'ADD',
+      itemDraft: draft?.itemDraft || {},
+      name,
+      isOrder,
     };
   });
 
-  const [
-    isGstApplicableForSelectedVendor,
-    setIsGstApplicableForSelectedVendor,
-  ] = useState(() => {
-    const draft = SessionStorageService.get('purchaseInvoiceDraft');
-    return draft?.isGstApplicableForSelectedVendor || false;
-  });
+  const { data: activeWorkflowData } = useActiveWorkflowRuntime(coreModuleName);
+  const [evaluatedStepsMap, setEvaluatedStepsMap] = useState({});
+  const nextStepPreviewMutation = useNextStepPreview();
 
-  // Custom Form Config Hook
-  const {
-    fields,
-    baseVersion,
-    revision,
-    etag,
-    originalCustomFields,
-    originalSystemFields,
-    handleSetFields,
-    handleSaveSuccess,
-  } = usePurchaseInvoiceFormConfig({ enterpriseId, setOrder });
-
-  // Custom Queries Hook
-  const {
-    units,
-    vendorData,
-    vendorOptions,
-    itemTypeOptions,
-    goodsData,
-    itemVendorListingOptions,
-    isItemAlreadyAdded,
-  } = usePurchaseInvoiceQueries({
-    enterpriseId,
-    invoiceType: order.invoiceType,
-    orderItems: order.orderItems,
-    productBatchesMap,
-    translations,
-  });
-
-  // Custom Table Columns Hook
-  const columns = usePurchaseInvoiceTableColumns({
-    isGstApplicableForSelectedVendor,
-    setSelectedItem,
-    setOrder,
-  });
-
-  // Custom Form Actions Hook
-  const {
-    isPINError,
-    setIsPINError,
-    errorMsg,
-    setErrorMsg,
-    totalAmount,
-    totalGstAmt,
-    finalTotal,
-    invoiceMutation,
-    handleSubmit,
-    handlePreview,
-  } = usePurchaseInvoiceActions({
-    order,
-    fields,
-    isGstApplicableForSelectedVendor,
-    isOrder,
-    translations,
-    setUrl,
-    setIsInvoicePreview,
-  });
-
-  if (!enterpriseId) {
-    return (
-      <div className="flex flex-col justify-center">
-        <EmptyStageComponent heading="Please Complete Your Onboarding to Create Invoice" />
-        <Button variant="outline" onClick={onCancel}>
-          Close
-        </Button>
-      </div>
+  const stepsConfig = React.useMemo(() => {
+    return getWorkflowEnhancedStepsConfig(
+      DynamicPurchaseInvoiceStepsConfig,
+      activeWorkflowData,
+      coreModuleName,
+      evaluatedStepsMap,
     );
-  }
+  }, [activeWorkflowData, evaluatedStepsMap]);
 
-  const isItemInputsDisabled =
-    (!order.sellerId && !order.sellerEnterpriseId) || !order.invoiceType;
+  const handleBeforeNext = async (currentStepIndex, stepConfig) => {
+    const runtimeTransitions = activeWorkflowData?.runtime?.transitions || [];
+    const runtimeSteps = activeWorkflowData?.runtime?.steps || [];
 
-  return (
-    <Wrapper>
-      {!isAddingBatchFor && (
-        <>
-          <div className="sticky top-0 z-20 -mx-4 flex items-end gap-2 border-t bg-white px-3">
-            <SubHeader
-              name={name}
-              className="text-xl font-bold text-neutral-800"
-            />
-          </div>
+    const hasTransitionsWithCondition = runtimeTransitions.some((tr) =>
+      Boolean(tr.condition && tr.condition.path),
+    );
+    const hasPrefillMappings = runtimeSteps.some((st) =>
+      Boolean(st.config?.prefillMappings?.length || st.prefillMappings?.length),
+    );
 
-          {!isInvoicePreview && (
-            <div className="flex min-h-[calc(100vh-100px)] flex-col">
-              <div className="flex flex-1 flex-col gap-4 overflow-y-auto pt-4">
-                {/* 1. Invoice Details Section */}
-                <PurchaseInvoiceDetailsSection
-                  fields={fields}
-                  handleSetFields={handleSetFields}
-                  order={order}
-                  setOrder={setOrder}
-                  setSelectedItem={setSelectedItem}
-                  baseVersion={baseVersion}
-                  etag={etag}
-                  originalCustomFields={originalCustomFields}
-                  originalSystemFields={originalSystemFields}
-                  revision={revision}
-                  handleSaveSuccess={handleSaveSuccess}
-                  errorMsg={errorMsg}
-                  setErrorMsg={setErrorMsg}
-                  translations={translations}
-                  vendorOptions={vendorOptions}
-                  vendorData={vendorData}
-                  itemTypeOptions={itemTypeOptions}
-                  isGstApplicableForSelectedVendor={
-                    isGstApplicableForSelectedVendor
-                  }
-                  setIsGstApplicableForSelectedVendor={
-                    setIsGstApplicableForSelectedVendor
-                  }
-                />
+    if (!hasTransitionsWithCondition && !hasPrefillMappings) return true;
 
-                {/* 2. Custom/Additional Fields Section */}
-                <PurchaseAdditionalInfoSection
-                  fields={fields}
-                  handleSetFields={handleSetFields}
-                  order={order}
-                  setOrder={setOrder}
-                  baseVersion={baseVersion}
-                  etag={etag}
-                  originalCustomFields={originalCustomFields}
-                  originalSystemFields={originalSystemFields}
-                  revision={revision}
-                  handleSaveSuccess={handleSaveSuccess}
-                  errorMsg={errorMsg}
-                  isDeveloperMode={isDeveloperMode}
-                  isGstApplicableForSelectedVendor={
-                    isGstApplicableForSelectedVendor
-                  }
-                />
+    const isSystemStep =
+      stepConfig.key === 'invoice-details' || stepConfig.stepType === 'SYSTEM';
 
-                {/* 3. Add Items Section */}
-                <PurchaseAddItemSection
-                  fields={fields}
-                  handleSetFields={handleSetFields}
-                  selectedItem={selectedItem}
-                  setSelectedItem={setSelectedItem}
-                  order={order}
-                  setOrder={setOrder}
-                  baseVersion={baseVersion}
-                  etag={etag}
-                  originalCustomFields={originalCustomFields}
-                  originalSystemFields={originalSystemFields}
-                  revision={revision}
-                  handleSaveSuccess={handleSaveSuccess}
-                  errorMsg={errorMsg}
-                  setErrorMsg={setErrorMsg}
-                  translations={translations}
-                  itemVendorListingOptions={itemVendorListingOptions}
-                  units={units}
-                  goodsData={goodsData}
-                  isGstApplicableForSelectedVendor={
-                    isGstApplicableForSelectedVendor
-                  }
-                  isItemInputsDisabled={isItemInputsDisabled}
-                  isItemAlreadyAdded={isItemAlreadyAdded}
-                  setProductBatchesMap={setProductBatchesMap}
-                  setIsAddingBatchFor={setIsAddingBatchFor}
-                />
+    const currentStepKey = isSystemStep
+      ? 'SYSTEM_INVOICE_START'
+      : stepConfig.rawKey || stepConfig.key.replace('workflow-', '');
 
-                {/* 4. Line Items Table */}
-                <PurchaseLineItemsTableSection
-                  columns={columns}
-                  orderItems={order.orderItems}
-                />
-              </div>
+    const conditionPaths = getConditionPathsFromTransitions(
+      runtimeTransitions,
+      currentStepKey,
+      runtimeSteps,
+    );
 
-              {/* 5. Footer Section */}
-              <PurchaseInvoiceFooter
-                order={order}
-                setOrder={setOrder}
-                totalAmount={totalAmount}
-                totalGstAmt={totalGstAmt}
-                finalTotal={finalTotal}
-                isGstApplicableForSelectedVendor={
-                  isGstApplicableForSelectedVendor
-                }
-                onCancel={onCancel}
-                isOrder={isOrder}
-                handlePreview={handlePreview}
-                handleSubmit={handleSubmit}
-                isPending={invoiceMutation.isPending}
-                translations={translations}
-              />
-            </div>
-          )}
-        </>
-      )}
+    const systemRecordData = extractConditionRecordData(
+      formData,
+      conditionPaths,
+    );
 
-      {isInvoicePreview && (
-        <InvoicePreview
-          enterpriseId={enterpriseId}
-          order={order}
-          setOrder={setOrder}
-          getAddressRelatedData={
-            order?.getAddressRelatedData || {
-              clientId: enterpriseId,
-              clientEnterpriseId: enterpriseId,
+    let payload;
+    if (isSystemStep) {
+      payload = {
+        module: coreModuleName,
+        stepKey: 'SYSTEM_INVOICE_START',
+        event: 'COMPLETED',
+        forms: {
+          SYSTEM_INVOICE_START: systemRecordData,
+          ...(formData?.workflowStepValues || {}),
+        },
+      };
+    } else {
+      const rawKey =
+        stepConfig.rawKey || stepConfig.key.replace('workflow-', '');
+
+      const formValues = extractConditionFormData(
+        formData,
+        rawKey,
+        conditionPaths,
+      );
+
+      const allForms = {
+        SYSTEM_INVOICE_START: systemRecordData,
+        ...(formData?.workflowStepValues || {}),
+        [rawKey]: formValues,
+      };
+
+      payload = {
+        module: coreModuleName,
+        stepKey: rawKey,
+        event: 'SUBMITTED',
+        forms: allForms,
+      };
+    }
+
+    try {
+      const res = await nextStepPreviewMutation.mutateAsync(payload);
+      const nextStepData = res?.data?.data || res?.data || {};
+      const nextKey =
+        nextStepData?.nextStepKey ||
+        nextStepData?.nextStep?.key ||
+        nextStepData?.key;
+
+      const prefillValues =
+        nextStepData?.prefillValues ||
+        nextStepData?.prefill ||
+        nextStepData?.values ||
+        {};
+
+      const metadataKeys = new Set([
+        'nextStepKey',
+        'nextStep',
+        'key',
+        'stepKey',
+        'status',
+        'valid',
+        'validationErrors',
+        'message',
+        'event',
+        'prefillValues',
+        'prefill',
+        'values',
+        'transitions',
+        'steps',
+      ]);
+
+      const extractedPrefills = { ...prefillValues };
+      Object.keys(nextStepData).forEach((k) => {
+        if (!metadataKeys.has(k) && !k.startsWith('_')) {
+          extractedPrefills[k] = nextStepData[k];
+        }
+      });
+
+      if (Object.keys(extractedPrefills).length > 0) {
+        setFormData((prev) => {
+          const updatedCustomFields = { ...(prev?.customFields || {}) };
+          const updatedStepValues = { ...(prev?.workflowStepValues || {}) };
+
+          const targetStepKey = nextKey || 'SYSTEM_INVOICE_START';
+          const targetStepMap = { ...(updatedStepValues[targetStepKey] || {}) };
+
+          Object.entries(extractedPrefills).forEach(([fieldKey, val]) => {
+            if (val !== undefined && val !== null && val !== '') {
+              updatedCustomFields[fieldKey] = val;
+              targetStepMap[fieldKey] = val;
+            }
+          });
+
+          return {
+            ...prev,
+            ...extractedPrefills,
+            customFields: updatedCustomFields,
+            workflowStepValues: {
+              ...updatedStepValues,
+              [targetStepKey]: targetStepMap,
+            },
+          };
+        });
+      }
+
+      const currentRawKey = isSystemStep
+        ? 'SYSTEM_INVOICE_START'
+        : stepConfig.rawKey || stepConfig.key?.replace('workflow-', '');
+
+      const currentRuntimeIndex = runtimeSteps.findIndex((st) => {
+        if (isSystemStep) {
+          return (
+            st.start ||
+            st.type === 'SYSTEM' ||
+            st.key === 'SYSTEM_INVOICE_START'
+          );
+        }
+        return (
+          st.key === currentRawKey || `workflow-${st.key}` === stepConfig.key
+        );
+      });
+
+      const downstreamKeys = new Set();
+      if (currentRuntimeIndex !== -1) {
+        runtimeSteps.slice(currentRuntimeIndex + 1).forEach((st) => {
+          if (st.key) {
+            downstreamKeys.add(st.key);
+            downstreamKeys.add(`workflow-${st.key}`);
+          }
+        });
+      } else if (isSystemStep) {
+        runtimeSteps.forEach((st) => {
+          if (!st.start && st.type !== 'SYSTEM') {
+            if (st.key) {
+              downstreamKeys.add(st.key);
+              downstreamKeys.add(`workflow-${st.key}`);
             }
           }
-          setIsPreviewOpen={setIsInvoicePreview}
-          url={url}
-          isPDFProp={true}
-          isPendingInvoice={invoiceMutation.isPending}
-          handleCreateFn={handleSubmit}
-          handlePreview={handlePreview}
-          isCreatable={true}
-          isAddressAddable={true}
-          isCustomerRemarksAddable={true}
-          isBankAccountDetailsSelectable={true}
-          isActionable={true}
-          isPINError={isPINError}
-          setIsPINError={setIsPINError}
-        />
-      )}
+        });
+      }
 
-      {isAddingBatchFor && (
-        <div className="h-full w-full">
-          <AddBatch
-            setIsAdding={(val) => {
-              if (!val) {
-                if (isAddingBatchFor?.skuId) {
-                  GetProductBatchList({
-                    searchString: isAddingBatchFor.skuId,
-                  }).then((res) => {
-                    const batches = res?.data?.data?.data || [];
-                    if (selectedItem.productId === isAddingBatchFor.productId) {
-                      setSelectedItem((prev) => ({ ...prev, batches }));
-                    }
-                    setProductBatchesMap((prev) => ({
-                      ...prev,
-                      [isAddingBatchFor.productId]: batches,
-                    }));
-                  });
-                }
-                setIsAddingBatchFor(null);
-              }
+      setEvaluatedStepsMap((prev) => {
+        const nextMap = { ...prev };
+        downstreamKeys.forEach((key) => {
+          delete nextMap[key];
+        });
+
+        if (nextKey && nextKey !== 'END' && !nextKey.startsWith('END_')) {
+          nextMap[nextKey] = true;
+          nextMap[`workflow-${nextKey}`] = true;
+        }
+
+        return nextMap;
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to preview next step condition:', err);
+    }
+
+    return true;
+  };
+
+  const handleBackNavigation = () => {
+    onCancel();
+    router.push(INVOICE_CONFIG.homePath);
+  };
+
+  const enhancedFormData = {
+    ...formData,
+    activeWorkflowData,
+  };
+
+  return (
+    <div className="h-full">
+      <MultiStepForm
+        steps={stepsConfig}
+        formData={enhancedFormData}
+        setFormData={setFormData}
+        errors={errors}
+        setErrors={setErrors}
+        onSubmit={() => {}} // FinalPreview handles it
+        onCancel={onCancel}
+        onBeforeNext={handleBeforeNext}
+        isSubmitting={false} // Handled by InvoicePreview
+        onBack={handleBackNavigation}
+        breadcrumbs={INVOICE_CONFIG.breadcrumbs}
+        breadcrumbHome={INVOICE_CONFIG.homePath}
+        breadcrumbHomeText={INVOICE_CONFIG.homeText}
+        breadcrumbTitle={INVOICE_CONFIG.title}
+        finalStepActions={({ isSubmitting }) => (
+          <Button
+            size="sm"
+            onClick={() => {
+              const btn = document.getElementById('hidden-create-invoice-btn');
+              if (btn) btn.click();
             }}
-            setIsEditing={() => {}}
-            initialSku={isAddingBatchFor}
-          />
-        </div>
-      )}
-    </Wrapper>
+            disabled={isSubmitting}
+            className="min-w-[100px]"
+          >
+            Create Invoice
+          </Button>
+        )}
+      />
+    </div>
   );
 };
 

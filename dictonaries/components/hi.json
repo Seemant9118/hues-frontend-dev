@@ -358,6 +358,15 @@
                     "customer": {
                         "placeholder": "नया जोड़ने या खोजने के लिए नंबर दर्ज करें"
                     },
+                    "customer_name": {
+                        "placeholder": "ग्राहक का नाम दर्ज करें"
+                    },
+                    "customer_address": {
+                        "placeholder": "ग्राहक का पता दर्ज करें"
+                    },
+                    "address_type": {
+                        "placeholder": "पते का प्रकार चुनें"
+                    },
                     "item_type": {
                         "goods": "सामान",
                         "services": "सेवाएँ",

@@ -33,12 +33,14 @@ export default function MultiStepForm({
   onBack,
   onBeforeNext,
   initialStep = 0,
+  submitText,
+  forceNotLastStep = false,
 }) {
   const [currentStep, setCurrentStep] = useState(initialStep);
 
   const totalSteps = steps.length;
   const isFirstStep = currentStep === 0;
-  const isLastStep = currentStep === totalSteps - 1;
+  const isLastStep = !forceNotLastStep && currentStep === totalSteps - 1;
 
   const shouldRenderBreadcrumbList = useMemo(() => {
     return Array.isArray(breadcrumbs) && breadcrumbs.length > 0;
@@ -106,6 +108,10 @@ export default function MultiStepForm({
     if (!validateCurrentStep()) return;
     if (onBeforeNext) {
       const canProceed = await onBeforeNext(currentStep, steps[currentStep]);
+      if (canProceed === 'SUBMIT') {
+        onSubmit?.('submit');
+        return;
+      }
       if (canProceed === false) return;
     }
     if (!isLastStep) setCurrentStep((prev) => prev + 1);
@@ -234,6 +240,17 @@ export default function MultiStepForm({
                       </span>
                     </div>
 
+                    {formData.totals.roundOff !== undefined && (
+                      <div className="flex flex-col border-l border-neutral-200 pl-8 text-left">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                          Round Off
+                        </span>
+                        <span className="text-sm font-semibold text-neutral-500">
+                          ₹{formData.totals.roundOff}
+                        </span>
+                      </div>
+                    )}
+
                     {/* Grand Total */}
                     <div className="flex flex-col border-l border-neutral-200 pl-8 text-right">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
@@ -303,7 +320,7 @@ export default function MultiStepForm({
                 disabled={isSubmitting}
                 className="min-w-[100px]"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit'}
+                {isSubmitting ? 'Submitting...' : submitText || 'Submit'}
               </Button>
             )}
           </div>

@@ -21,6 +21,18 @@ export const filterSubmitPayload = (orderData, formConfig = []) => {
     'isCreatingPurchase',
     'isPurchasePage',
     'referenceOrderId',
+    'activeWorkflowData',
+    'itemDraft',
+    'totals',
+    'type',
+    'label',
+    'config',
+    'formConfigurationId',
+    'formConfiguration',
+    'error',
+    'data',
+    'stepType',
+    'rawKey',
   ];
 
   transientKeys.forEach((key) => {

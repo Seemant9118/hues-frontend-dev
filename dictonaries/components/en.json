@@ -362,6 +362,15 @@
                     "customer": {
                         "placeholder": "Type a number to search OR add a new one"
                     },
+                    "customer_name": {
+                        "placeholder": "Enter customer name"
+                    },
+                    "customer_address": {
+                        "placeholder": "Enter customer address"
+                    },
+                    "address_type": {
+                        "placeholder": "Select address type"
+                    },
                     "item_type": {
                         "goods": "Goods",
                         "services": "Services",

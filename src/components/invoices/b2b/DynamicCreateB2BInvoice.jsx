@@ -1,29 +1,46 @@
-import { ChevronDown } from 'lucide-react';
+'use client';
+
 import moment from 'moment';
-import { useTranslations } from 'next-intl';
-import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 
 import { getEnterpriseId } from '@/appUtils/helperFunctions';
-import AddBatch from '@/components/inventory/batch/AddBatch';
-import { useDeveloperMode } from '@/context/DeveloperModeContext';
-import { LocalStorageService, SessionStorageService } from '@/lib/utils';
-import { GetProductBatchList } from '@/services/Inventories_Services/Goods_Inventories/ProductBatch_Services';
+import InvoiceTypePopover from '@/components/invoices/InvoiceTypePopover';
+import {
+  useActiveWorkflowRuntime,
+  useNextStepPreview,
+} from '@/hooks/workflows/useWorkflowRuntime';
+import { SessionStorageService } from '@/lib/utils';
+import {
+  extractConditionFormData,
+  extractConditionRecordData,
+  getConditionPathsFromTransitions,
+} from '@/utils/workflowConditionHelper';
 
-import B2BAddItemSection from './components/B2BAddItemSection';
-import B2BAdditionalInfoSection from './components/B2BAdditionalInfoSection';
-import B2BInvoiceDetailsSection from './components/B2BInvoiceDetailsSection';
-import B2BInvoiceFooter from './components/B2BInvoiceFooter';
-import B2BLineItemsTableSection from './components/B2BLineItemsTableSection';
-import { useB2BInvoiceActions } from './hooks/useB2BInvoiceActions';
-import { useB2BInvoiceFormConfig } from './hooks/useB2BInvoiceFormConfig';
-import { useB2BInvoiceQueries } from './hooks/useB2BInvoiceQueries';
-import { useB2BInvoiceTableColumns } from './hooks/useB2BInvoiceTableColumns';
-import InvoiceTypePopover from '../InvoiceTypePopover';
-import { Button } from '../../ui/button';
-import EmptyStageComponent from '../../ui/EmptyStageComponent';
-import InvoicePreview from '../../ui/InvoicePreview';
-import SubHeader from '../../ui/Sub-header';
-import Wrapper from '../../wrappers/Wrapper';
+import MultiStepForm from '@/components/shared/MultiStepForm/MultiStepForm';
+import { Button } from '@/components/ui/button';
+import {
+  DynamicB2BInvoiceStepsConfig,
+  getWorkflowEnhancedStepsConfig,
+} from './DynamicCreate_Invoice_B2B';
+
+const INVOICE_CONFIG = {
+  breadcrumbs: [
+    {
+      id: 1,
+      name: 'Sales',
+      path: '/dashboard/sales/sales-invoices',
+      show: true,
+    },
+    { id: 2, name: 'Create Sales Invoice', path: '#', show: true },
+  ],
+  homePath: '/dashboard/sales/sales-invoices',
+  homeText: 'Sales Invoices',
+  title: 'Create Sales Invoice',
+};
+
+const coreModuleName = 'INVOICE';
 
 const DynamicCreateB2BInvoice = ({
   onCancel,
@@ -33,41 +50,12 @@ const DynamicCreateB2BInvoice = ({
   invoiceType,
   setInvoiceType,
 }) => {
-  const translations = useTranslations('components.create_edit_order');
-  const { isDeveloperMode } = useDeveloperMode();
+  const router = useRouter();
+  const enterpriseId = getEnterpriseId();
 
-  const userId = useMemo(() => LocalStorageService.get('user_profile'), []);
-  const enterpriseId = useMemo(() => getEnterpriseId(), []);
+  const [errors, setErrors] = useState({});
 
-  const [url, setUrl] = useState(null);
-  const [isInvoicePreview, setIsInvoicePreview] = useState(false);
-  const [productBatchesMap, setProductBatchesMap] = useState({});
-  const [isAddingBatchFor, setIsAddingBatchFor] = useState(null);
-
-  // Lazy Initializers for State
-  const [selectedItem, setSelectedItem] = useState(() => {
-    const draft = SessionStorageService.get('b2bInvoiceDraft');
-    return {
-      productName: draft?.itemDraft?.productName || '',
-      productType: draft?.itemDraft?.productType || '',
-      skuId: draft?.itemDraft?.skuId || '',
-      hsnCode: draft?.itemDraft?.hsnCode || '',
-      sac: draft?.itemDraft?.sac || '',
-      serviceName: draft?.itemDraft?.serviceName || '',
-      productId: draft?.itemDraft?.productId || null,
-      quantity: draft?.itemDraft?.quantity || null,
-      unitId: draft?.itemDraft?.unitId || null,
-      unitPrice: draft?.itemDraft?.unitPrice || null,
-      gstPerUnit: draft?.itemDraft?.gstPerUnit || 0,
-      totalAmount: draft?.itemDraft?.totalAmount || null,
-      totalGstAmount: draft?.itemDraft?.totalGstAmount || null,
-      batch: draft?.itemDraft?.batch || null,
-      batches: draft?.itemDraft?.batches || [],
-      expiryDate: draft?.itemDraft?.expiryDate || '',
-    };
-  });
-
-  const [order, setOrder] = useState(() => {
+  const [formData, setFormData] = useState(() => {
     const draft = SessionStorageService.get('b2bInvoiceDraft');
     return {
       source: draft?.source || '',
@@ -98,248 +86,271 @@ const DynamicCreateB2BInvoice = ({
       buyerType: draft?.buyerType || null,
       roundOffAmount: draft?.roundOffAmount || 0,
       roundOffType: draft?.roundOffType || 'ADD',
+      itemDraft: draft?.itemDraft || {},
+      name,
+      cta,
+      isOrder,
     };
   });
 
-  // Custom Form Config Hook
-  const {
-    fields,
-    baseVersion,
-    revision,
-    etag,
-    originalCustomFields,
-    originalSystemFields,
-    handleSetFields,
-    handleSaveSuccess,
-  } = useB2BInvoiceFormConfig({ enterpriseId, setOrder });
+  const { data: activeWorkflowData } = useActiveWorkflowRuntime(coreModuleName);
+  const [evaluatedStepsMap, setEvaluatedStepsMap] = useState({});
+  const nextStepPreviewMutation = useNextStepPreview();
 
-  // Custom Queries & Options Hook
-  const {
-    units,
-    clientOptions,
-    itemTypeOptions,
-    isGstApplicableForSalesOrders,
-    goodsData,
-    itemClientListingOptions,
-    isItemAlreadyAdded,
-  } = useB2BInvoiceQueries({
-    enterpriseId,
-    userId,
-    invoiceType: order.invoiceType,
-    orderItems: order.orderItems,
-    productBatchesMap,
-    translations,
-  });
-
-  // Custom Table Columns Hook
-  const columns = useB2BInvoiceTableColumns({
-    isGstApplicableForSalesOrders,
-    setSelectedItem,
-    setOrder,
-  });
-
-  // Custom Form Actions & Calculations Hook
-  const {
-    isPINError,
-    setIsPINError,
-    errorMsg,
-    setErrorMsg,
-    totalAmount,
-    totalGstAmt,
-    roundedTotal,
-    roundOff,
-    invoiceMutation,
-    handleSubmit,
-    handlePreview,
-  } = useB2BInvoiceActions({
-    order,
-    fields,
-    isGstApplicableForSalesOrders,
-    isOrder,
-    translations,
-    setUrl,
-    setIsInvoicePreview,
-  });
-
-  if (!enterpriseId) {
-    return (
-      <div className="flex flex-col justify-center">
-        <EmptyStageComponent heading="Please Complete Your Onboarding to Create Invoice" />
-        <Button variant="outline" onClick={onCancel}>
-          Close
-        </Button>
-      </div>
+  const stepsConfig = React.useMemo(() => {
+    return getWorkflowEnhancedStepsConfig(
+      DynamicB2BInvoiceStepsConfig,
+      activeWorkflowData,
+      coreModuleName,
+      evaluatedStepsMap,
     );
-  }
+  }, [activeWorkflowData, evaluatedStepsMap]);
 
-  const isItemInputsDisabled =
-    (cta === 'offer' && order.buyerId == null) || !order.invoiceType;
+  const handleBeforeNext = async (currentStepIndex, stepConfig) => {
+    const runtimeTransitions = activeWorkflowData?.runtime?.transitions || [];
+    const runtimeSteps = activeWorkflowData?.runtime?.steps || [];
+
+    const hasTransitionsWithCondition = runtimeTransitions.some((tr) =>
+      Boolean(tr.condition && tr.condition.path),
+    );
+    const hasPrefillMappings = runtimeSteps.some((st) =>
+      Boolean(st.config?.prefillMappings?.length || st.prefillMappings?.length),
+    );
+
+    if (!hasTransitionsWithCondition && !hasPrefillMappings) return true;
+
+    const isSystemStep =
+      stepConfig.key === 'invoice-details' || stepConfig.stepType === 'SYSTEM';
+
+    const currentStepKey = isSystemStep
+      ? 'SYSTEM_INVOICE_START'
+      : stepConfig.rawKey || stepConfig.key.replace('workflow-', '');
+
+    const conditionPaths = getConditionPathsFromTransitions(
+      runtimeTransitions,
+      currentStepKey,
+      runtimeSteps,
+    );
+
+    const systemRecordData = extractConditionRecordData(
+      formData,
+      conditionPaths,
+    );
+
+    let payload;
+    if (isSystemStep) {
+      payload = {
+        module: coreModuleName,
+        stepKey: 'SYSTEM_INVOICE_START',
+        event: 'COMPLETED',
+        forms: {
+          SYSTEM_INVOICE_START: systemRecordData,
+          ...(formData?.workflowStepValues || {}),
+        },
+      };
+    } else {
+      const rawKey =
+        stepConfig.rawKey || stepConfig.key.replace('workflow-', '');
+
+      const formValues = extractConditionFormData(
+        formData,
+        rawKey,
+        conditionPaths,
+      );
+
+      const allForms = {
+        SYSTEM_INVOICE_START: systemRecordData,
+        ...(formData?.workflowStepValues || {}),
+        [rawKey]: formValues,
+      };
+
+      payload = {
+        module: coreModuleName,
+        stepKey: rawKey,
+        event: 'SUBMITTED',
+        forms: allForms,
+      };
+    }
+
+    try {
+      const res = await nextStepPreviewMutation.mutateAsync(payload);
+      const nextStepData = res?.data?.data || res?.data || {};
+      const nextKey =
+        nextStepData?.nextStepKey ||
+        nextStepData?.nextStep?.key ||
+        nextStepData?.key;
+
+      const prefillValues =
+        nextStepData?.prefillValues ||
+        nextStepData?.prefill ||
+        nextStepData?.values ||
+        {};
+
+      const metadataKeys = new Set([
+        'nextStepKey',
+        'nextStep',
+        'key',
+        'stepKey',
+        'status',
+        'valid',
+        'validationErrors',
+        'message',
+        'event',
+        'prefillValues',
+        'prefill',
+        'values',
+        'transitions',
+        'steps',
+      ]);
+
+      const extractedPrefills = { ...prefillValues };
+      Object.keys(nextStepData).forEach((k) => {
+        if (!metadataKeys.has(k) && !k.startsWith('_')) {
+          extractedPrefills[k] = nextStepData[k];
+        }
+      });
+
+      if (Object.keys(extractedPrefills).length > 0) {
+        setFormData((prev) => {
+          const updatedCustomFields = { ...(prev?.customFields || {}) };
+          const updatedStepValues = { ...(prev?.workflowStepValues || {}) };
+
+          const targetStepKey = nextKey || 'SYSTEM_INVOICE_START';
+          const targetStepMap = { ...(updatedStepValues[targetStepKey] || {}) };
+
+          Object.entries(extractedPrefills).forEach(([fieldKey, val]) => {
+            if (val !== undefined && val !== null && val !== '') {
+              updatedCustomFields[fieldKey] = val;
+              targetStepMap[fieldKey] = val;
+            }
+          });
+
+          return {
+            ...prev,
+            ...extractedPrefills,
+            customFields: updatedCustomFields,
+            workflowStepValues: {
+              ...updatedStepValues,
+              [targetStepKey]: targetStepMap,
+            },
+          };
+        });
+      }
+
+      const currentRawKey = isSystemStep
+        ? 'SYSTEM_INVOICE_START'
+        : stepConfig.rawKey || stepConfig.key?.replace('workflow-', '');
+
+      const currentRuntimeIndex = runtimeSteps.findIndex((st) => {
+        if (isSystemStep) {
+          return (
+            st.start ||
+            st.type === 'SYSTEM' ||
+            st.key === 'SYSTEM_INVOICE_START'
+          );
+        }
+        return (
+          st.key === currentRawKey || `workflow-${st.key}` === stepConfig.key
+        );
+      });
+
+      const downstreamKeys = new Set();
+      if (currentRuntimeIndex !== -1) {
+        runtimeSteps.slice(currentRuntimeIndex + 1).forEach((st) => {
+          if (st.key) {
+            downstreamKeys.add(st.key);
+            downstreamKeys.add(`workflow-${st.key}`);
+          }
+        });
+      } else if (isSystemStep) {
+        runtimeSteps.forEach((st) => {
+          if (!st.start && st.type !== 'SYSTEM') {
+            if (st.key) {
+              downstreamKeys.add(st.key);
+              downstreamKeys.add(`workflow-${st.key}`);
+            }
+          }
+        });
+      }
+
+      setEvaluatedStepsMap((prev) => {
+        const nextMap = { ...prev };
+        downstreamKeys.forEach((key) => {
+          delete nextMap[key];
+        });
+
+        if (nextKey && nextKey !== 'END' && !nextKey.startsWith('END_')) {
+          nextMap[nextKey] = true;
+          nextMap[`workflow-${nextKey}`] = true;
+        }
+
+        return nextMap;
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to preview next step condition:', err);
+    }
+
+    return true;
+  };
+
+  const handleBackNavigation = () => {
+    onCancel();
+    router.push(INVOICE_CONFIG.homePath);
+  };
+
+  // We inject activeWorkflowData so FinalPreview can use it
+  const enhancedFormData = {
+    ...formData,
+    activeWorkflowData,
+  };
 
   return (
-    <Wrapper>
-      {!isAddingBatchFor && (
-        <>
-          <div className="sticky top-0 z-20 -mx-4 flex items-end gap-2 border-t bg-white px-3">
-            <SubHeader
-              name={name}
-              className="text-xl font-bold text-neutral-800"
-            />
-            <InvoiceTypePopover
-              triggerInvoiceTypeModal={
+    <div className="h-full">
+      <MultiStepForm
+        steps={stepsConfig}
+        formData={enhancedFormData}
+        setFormData={setFormData}
+        errors={errors}
+        setErrors={setErrors}
+        onSubmit={() => {}} // Invoice creation is handled by FinalPreview via PINVerifyModal
+        onCancel={onCancel}
+        onBeforeNext={handleBeforeNext}
+        isSubmitting={false} // Handled within InvoicePreview
+        onBack={handleBackNavigation}
+        headerExtra={
+          <InvoiceTypePopover
+            triggerInvoiceTypeModal={
+              <button className="flex items-center rounded p-1 hover:bg-neutral-100">
                 <ChevronDown
-                  className="mb-1 cursor-pointer text-neutral-500 hover:text-primary"
+                  className="cursor-pointer text-neutral-500 hover:text-primary"
                   size={20}
                 />
-              }
-              invoiceType={invoiceType}
-              setInvoiceType={setInvoiceType}
-            />
-          </div>
-
-          {!isInvoicePreview && (
-            <div className="flex min-h-[calc(100vh-100px)] flex-col">
-              <div className="flex flex-1 flex-col gap-4 overflow-y-auto pt-4">
-                {/* 1. Invoice Details Section */}
-                <B2BInvoiceDetailsSection
-                  fields={fields}
-                  handleSetFields={handleSetFields}
-                  order={order}
-                  setOrder={setOrder}
-                  setSelectedItem={setSelectedItem}
-                  baseVersion={baseVersion}
-                  etag={etag}
-                  originalCustomFields={originalCustomFields}
-                  originalSystemFields={originalSystemFields}
-                  revision={revision}
-                  handleSaveSuccess={handleSaveSuccess}
-                  errorMsg={errorMsg}
-                  setErrorMsg={setErrorMsg}
-                  translations={translations}
-                  clientOptions={clientOptions}
-                  itemTypeOptions={itemTypeOptions}
-                  enterpriseId={enterpriseId}
-                />
-
-                {/* 2. Custom/Additional Fields Section */}
-                <B2BAdditionalInfoSection
-                  fields={fields}
-                  handleSetFields={handleSetFields}
-                  order={order}
-                  setOrder={setOrder}
-                  baseVersion={baseVersion}
-                  etag={etag}
-                  originalCustomFields={originalCustomFields}
-                  originalSystemFields={originalSystemFields}
-                  revision={revision}
-                  handleSaveSuccess={handleSaveSuccess}
-                  errorMsg={errorMsg}
-                  isDeveloperMode={isDeveloperMode}
-                />
-
-                {/* 3. Add Items Section */}
-                <B2BAddItemSection
-                  fields={fields}
-                  handleSetFields={handleSetFields}
-                  selectedItem={selectedItem}
-                  setSelectedItem={setSelectedItem}
-                  order={order}
-                  setOrder={setOrder}
-                  baseVersion={baseVersion}
-                  etag={etag}
-                  originalCustomFields={originalCustomFields}
-                  originalSystemFields={originalSystemFields}
-                  revision={revision}
-                  handleSaveSuccess={handleSaveSuccess}
-                  errorMsg={errorMsg}
-                  setErrorMsg={setErrorMsg}
-                  translations={translations}
-                  itemClientListingOptions={itemClientListingOptions}
-                  units={units}
-                  goodsData={goodsData}
-                  isGstApplicableForSalesOrders={isGstApplicableForSalesOrders}
-                  isItemInputsDisabled={isItemInputsDisabled}
-                  isItemAlreadyAdded={isItemAlreadyAdded}
-                  setProductBatchesMap={setProductBatchesMap}
-                  setIsAddingBatchFor={setIsAddingBatchFor}
-                />
-
-                {/* 4. Line Items Table */}
-                <B2BLineItemsTableSection
-                  columns={columns}
-                  orderItems={order.orderItems}
-                />
-              </div>
-
-              {/* 5. Footer Section */}
-              <B2BInvoiceFooter
-                totalAmount={totalAmount}
-                totalGstAmt={totalGstAmt}
-                roundOff={roundOff}
-                roundedTotal={roundedTotal}
-                isGstApplicableForSalesOrders={isGstApplicableForSalesOrders}
-                onCancel={onCancel}
-                isOrder={isOrder}
-                handlePreview={handlePreview}
-                handleSubmit={handleSubmit}
-                order={order}
-                isPending={invoiceMutation.isPending}
-                translations={translations}
-              />
-            </div>
-          )}
-        </>
-      )}
-
-      {isInvoicePreview && (
-        <InvoicePreview
-          enterpriseId={enterpriseId}
-          order={order}
-          setOrder={setOrder}
-          getAddressRelatedData={order?.getAddressRelatedData}
-          setIsPreviewOpen={setIsInvoicePreview}
-          url={url}
-          isPDFProp={true}
-          isPendingInvoice={invoiceMutation.isPending}
-          handleCreateFn={handleSubmit}
-          handlePreview={handlePreview}
-          isCreatable={true}
-          isAddressAddable={true}
-          isCustomerRemarksAddable={true}
-          isBankAccountDetailsSelectable={true}
-          isActionable={true}
-          isPINError={isPINError}
-          setIsPINError={setIsPINError}
-        />
-      )}
-
-      {isAddingBatchFor && (
-        <div className="h-full w-full">
-          <AddBatch
-            setIsAdding={(val) => {
-              if (!val) {
-                if (isAddingBatchFor?.skuId) {
-                  GetProductBatchList({
-                    searchString: isAddingBatchFor.skuId,
-                  }).then((res) => {
-                    const batches = res?.data?.data?.data || [];
-                    if (selectedItem.productId === isAddingBatchFor.productId) {
-                      setSelectedItem((prev) => ({ ...prev, batches }));
-                    }
-                    setProductBatchesMap((prev) => ({
-                      ...prev,
-                      [isAddingBatchFor.productId]: batches,
-                    }));
-                  });
-                }
-                setIsAddingBatchFor(null);
-              }
-            }}
-            setIsEditing={() => {}}
-            initialSku={isAddingBatchFor}
+              </button>
+            }
+            invoiceType={invoiceType}
+            setInvoiceType={setInvoiceType}
           />
-        </div>
-      )}
-    </Wrapper>
+        }
+        breadcrumbs={INVOICE_CONFIG.breadcrumbs}
+        breadcrumbHome={INVOICE_CONFIG.homePath}
+        breadcrumbHomeText={INVOICE_CONFIG.homeText}
+        breadcrumbTitle={INVOICE_CONFIG.title}
+        finalStepActions={({ isSubmitting }) => (
+          <Button
+            size="sm"
+            onClick={() => {
+              const btn = document.getElementById('hidden-create-invoice-btn');
+              if (btn) btn.click();
+            }}
+            disabled={isSubmitting}
+            className="min-w-[100px]"
+          >
+            Create Invoice
+          </Button>
+        )}
+      />
+    </div>
   );
 };
 
